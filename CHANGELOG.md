@@ -1,4 +1,12 @@
 
+## v0.1.6 - Mobile navigation real fix
+
+- Restored the full `site.css` from v0.1.4 after the previous mobile patch accidentally replaced the file with only a small override.
+- Added a mobile scroll-shell layout so the page content scrolls inside `.container` on small screens.
+- Stabilized the bottom mobile navigation on Android/Chrome where the browser address bar changes viewport height during scroll.
+- Added `mobile-viewport-lock.js` to measure the mobile header height and keep the content area correctly positioned.
+- Updated application version display to v0.1.6.
+
 ## v0.1.5 - Mobile bottom navigation stabilization
 
 - Σταθεροποιήθηκε το κάτω mobile navigation bar ώστε να μη φαίνεται σαν να “χορεύει” κατά το scroll σε κινητά/tablets.

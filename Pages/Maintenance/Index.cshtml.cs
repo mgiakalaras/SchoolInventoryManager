@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using SchoolInventoryManager.Data;
 
@@ -102,10 +103,19 @@ public class IndexModel : PageModel
             return;
         }
 
-        var quotedNames = string.Join(", ", tableNames.Select(x => $"'{x.Replace("'", "''")}'"));
         try
         {
-            await _db.Database.ExecuteSqlRawAsync($"DELETE FROM sqlite_sequence WHERE name IN ({quotedNames})");
+            var sequenceParameters = tableNames
+                .Select((name, index) => new SqliteParameter($"@name{index}", name))
+                .ToArray();
+
+            var sequencePlaceholders = string.Join(", ", sequenceParameters.Select(p => p.ParameterName));
+
+            var sql = "DELETE FROM sqlite_sequence WHERE name IN (" + sequencePlaceholders + ")";
+
+            await _db.Database.ExecuteSqlRawAsync(
+                sql,
+                sequenceParameters);
         }
         catch
         {
