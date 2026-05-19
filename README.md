@@ -354,5 +354,8 @@ git push origin v0.x.x
 
 ## License
 
-Δεν έχει οριστεί ακόμη τελική άδεια χρήσης.  
-Μέχρι να προστεθεί επίσημο `LICENSE` file, το project θεωρείται υπό ανάπτυξη και δεν παρέχεται ξεκάθαρη άδεια επαναχρησιμοποίησης ή διανομής.
+Δ## License
+
+This project is licensed under the MIT License.
+
+Copyright © 2026 Marios Giakalaras.
