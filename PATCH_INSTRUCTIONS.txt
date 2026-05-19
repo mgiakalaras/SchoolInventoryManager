@@ -1,0 +1,23 @@
+SchoolInventoryManager - Patch v13.1
+====================================
+
+Σκοπός:
+- Διορθώνει οριστικά το κόψιμο του λογότυπου στην αρχική σελίδα, όπου το "School Inventory" εμφανιζόταν κομμένο ως "School Invento".
+
+Περιέχει:
+- Pages/Index.cshtml
+- wwwroot/css/site.css
+- wwwroot/assets/brand/sim-mark.svg
+- CHANGELOG.md
+
+Οδηγίες:
+1. Κλείσε την εφαρμογή αν τρέχει.
+2. Κάνε backup τον φάκελο του project.
+3. Αντέγραψε τα αρχεία του patch πάνω από τα υπάρχοντα.
+4. Στο Visual Studio κάνε Clean Solution.
+5. Κάνε Build Solution.
+6. Τρέξε την εφαρμογή.
+7. Στην αρχική σελίδα πάτα Ctrl + F5 για hard refresh, ώστε να μη βλέπεις παλιό cache από SVG/CSS.
+
+Σημείωση:
+Δεν αλλάζει βάση δεδομένων. Δεν χρειάζεται migration.

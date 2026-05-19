@@ -1,0 +1,108 @@
+@page
+@model SchoolInventoryManager.Pages.Maintenance.IndexModel
+@{
+    ViewData["Title"] = "Συντήρηση";
+}
+
+<section class="page-header danger maintenance-hero">
+    <div>
+        <span class="hero-kicker">Εργαλεία δοκιμών & καθαρισμού</span>
+        <h1>Συντήρηση βάσης</h1>
+        <p>Για δοκιμές import/export χωρίς να μένει σαβούρα στη βάση. Πριν από σοβαρή χρήση, κράτα πάντα export Excel.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary" asp-page="/ImportExport/Index" asp-page-handler="ExportExcel">Export Excel</a>
+        <a class="btn secondary" asp-page="/ImportExport/Index">Import / Export</a>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+{
+    <section class="card alert-success">
+        <strong>ΟΚ.</strong> @Model.SuccessMessage
+    </section>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <section class="card alert-danger">
+        <strong>Προσοχή.</strong> @Model.ErrorMessage
+    </section>
+}
+
+<section class="maintenance-stats-grid slim-summary">
+    <article class="stat-card accent-blue">
+        <span class="stat-icon">🏫</span>
+        <div>
+            <span class="label">Χώροι</span>
+            <span class="value">@Model.Stats.RoomCount</span>
+            <span class="stat-subtitle">τρέχουσα βάση</span>
+        </div>
+    </article>
+    <article class="stat-card accent-cyan">
+        <span class="stat-icon">🧩</span>
+        <div>
+            <span class="label">Κατηγορίες</span>
+            <span class="value">@Model.Stats.CategoryCount</span>
+            <span class="stat-subtitle">τρέχουσα βάση</span>
+        </div>
+    </article>
+    <article class="stat-card accent-green">
+        <span class="stat-icon">📋</span>
+        <div>
+            <span class="label">Εγγραφές</span>
+            <span class="value">@Model.Stats.ItemRowCount</span>
+            <span class="stat-subtitle">ενεργός εξοπλισμός</span>
+        </div>
+    </article>
+    <article class="stat-card accent-red">
+        <span class="stat-icon">📦</span>
+        <div>
+            <span class="label">Τεμάχια</span>
+            <span class="value">@Model.Stats.TotalQuantity</span>
+            <span class="stat-subtitle">σύνολο ποσοτήτων</span>
+        </div>
+    </article>
+</section>
+
+<div class="grid grid-2 maintenance-grid">
+    <section class="card maintenance-card">
+        <h2>Εκκαθάριση εξοπλισμού</h2>
+        <p class="muted">
+            Σβήνει μόνο τις εγγραφές εξοπλισμού. Κρατάει χώρους, κατηγορίες και στοιχεία σχολείου.
+            Είναι η πιο ασφαλής επιλογή όταν έγινε λάθος import και θέλεις να ξαναδοκιμάσεις.
+        </p>
+        <form method="post" asp-page-handler="ClearInventory" class="maintenance-form">
+            <label class="confirm-label" for="clear-confirm">Γράψε <strong>@Model.ConfirmationWord</strong> για επιβεβαίωση</label>
+            <input id="clear-confirm" name="ConfirmText" class="confirm-input" autocomplete="off" />
+            <div class="actions maintenance-actions">
+                <button class="btn danger" type="submit">Σβήσιμο εξοπλισμού</button>
+                <a class="btn secondary" asp-page="/ImportExport/Index" asp-page-handler="ExportExcel">Πρώτα export</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card danger-zone-card">
+        <h2>Πλήρης επαναφορά βάσης</h2>
+        <p>
+            Σβήνει εξοπλισμό, χώρους, κατηγορίες και στοιχεία σχολείου. Μετά ξαναπερνά τα βασικά αρχικά δεδομένα.
+            Χρήσιμο μόνο όταν θέλεις πραγματικά καθαρή δοκιμή από την αρχή.
+        </p>
+        <form method="post" asp-page-handler="ResetDatabase" class="maintenance-form">
+            <label class="confirm-label" for="reset-confirm">Γράψε <strong>@Model.ConfirmationWord</strong> για επιβεβαίωση</label>
+            <input id="reset-confirm" name="ConfirmText" class="confirm-input" autocomplete="off" />
+            <div class="actions maintenance-actions">
+                <button class="btn danger" type="submit">Πλήρης επαναφορά</button>
+                <a class="btn secondary" asp-page="/Settings/Index">Έλεγχος στοιχείων σχολείου</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+<section class="card soft guide-card">
+    <h2>Σημείωση για Α/Α</h2>
+    <p>
+        Το Α/Α βγαίνει πλέον αυτόματα στις λίστες και στην εκτύπωση. Ο χρήστης δεν χρειάζεται να βάζει προτεραιότητα ή σειρά εμφάνισης με το χέρι.
+        Η εσωτερική σειρά χρησιμοποιείται μόνο από την εφαρμογή, όταν δημιουργούνται αυτόματα νέοι χώροι ή κατηγορίες.
+    </p>
+</section>

@@ -1,0 +1,28 @@
+@model SchoolInventoryManager.Models.Room
+<div asp-validation-summary="ModelOnly"></div>
+<div class="form-grid">
+    <div class="form-row">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name"></span>
+    </div>
+    <div class="form-row">
+        <label asp-for="RoomType"></label>
+        <input asp-for="RoomType" placeholder="π.χ. Γραφείο, Εργαστήριο, Αίθουσα" />
+        <span asp-validation-for="RoomType"></span>
+    </div>
+    <div class="form-row">
+        <label asp-for="Floor"></label>
+        <input asp-for="Floor" placeholder="π.χ. Ισόγειο, Α΄ όροφος" />
+        <span asp-validation-for="Floor"></span>
+    </div>
+    <div class="form-row full inline-help-row">
+        <strong>Α/Α αυτόματο</strong>
+        <span>Δεν χρειάζεται να βάλεις σειρά/προτεραιότητα. Η εφαρμογή αριθμεί αυτόματα τους χώρους στις λίστες και στην εκτύπωση.</span>
+    </div>
+    <div class="form-row full">
+        <label asp-for="Notes"></label>
+        <textarea asp-for="Notes"></textarea>
+        <span asp-validation-for="Notes"></span>
+    </div>
+</div>

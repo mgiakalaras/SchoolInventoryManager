@@ -1,0 +1,89 @@
+@page
+@model SchoolInventoryManager.Pages.Settings.IndexModel
+@{
+    ViewData["Title"] = "Στοιχεία σχολείου";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Στοιχεία σχολείου</h1>
+        <p>Αυτά εμφανίζονται στο εξώφυλλο και στις αναφορές απογραφής.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary" asp-page="/Index">Πίσω</a>
+    </div>
+</section>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="card soft" style="margin-bottom:1rem;"><strong>@message</strong></div>
+}
+
+<form method="post" enctype="multipart/form-data" class="card">
+    <div asp-validation-summary="ModelOnly"></div>
+    <input type="hidden" asp-for="Settings.Id" />
+    <input type="hidden" asp-for="Settings.LogoPath" />
+
+    <div class="form-grid">
+        <div class="form-row">
+            <label asp-for="Settings.SchoolName"></label>
+            <input asp-for="Settings.SchoolName" />
+            <span asp-validation-for="Settings.SchoolName"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Settings.SchoolType"></label>
+            <input asp-for="Settings.SchoolType" />
+            <span asp-validation-for="Settings.SchoolType"></span>
+        </div>
+        <div class="form-row full">
+            <label asp-for="Settings.Address"></label>
+            <input asp-for="Settings.Address" />
+            <span asp-validation-for="Settings.Address"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Settings.SchoolYear"></label>
+            <input asp-for="Settings.SchoolYear" />
+            <span asp-validation-for="Settings.SchoolYear"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Settings.InventoryDate"></label>
+            <input asp-for="Settings.InventoryDate" type="date" />
+            <span asp-validation-for="Settings.InventoryDate"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Settings.InventoryManagerName"></label>
+            <input asp-for="Settings.InventoryManagerName" />
+            <span asp-validation-for="Settings.InventoryManagerName"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Settings.InventoryManagerTitle"></label>
+            <input asp-for="Settings.InventoryManagerTitle" placeholder="π.χ. Υπεύθυνος/η απογραφής, Εκπαιδευτικός, Τεχνικός υπεύθυνος" />
+            <small class="muted">Δεν είναι απαραίτητα ΠΕ86. Συμπλήρωσε ό,τι ισχύει για το σχολείο.</small>
+            <span asp-validation-for="Settings.InventoryManagerTitle"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Settings.PrincipalName"></label>
+            <input asp-for="Settings.PrincipalName" />
+            <span asp-validation-for="Settings.PrincipalName"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="LogoFile">Λογότυπο σχολείου</label>
+            <input asp-for="LogoFile" type="file" accept="image/png,image/jpeg,image/webp" />
+            <span asp-validation-for="LogoFile"></span>
+            @if (!string.IsNullOrWhiteSpace(Model.Settings.LogoPath))
+            {
+                <small class="muted">Τρέχον αρχείο: @Model.Settings.LogoPath</small>
+            }
+        </div>
+        <div class="form-row full">
+            <label asp-for="Settings.GeneralNotes"></label>
+            <textarea asp-for="Settings.GeneralNotes"></textarea>
+            <span asp-validation-for="Settings.GeneralNotes"></span>
+        </div>
+    </div>
+
+    <div class="actions" style="margin-top:1rem;">
+        <button class="btn" type="submit">Αποθήκευση</button>
+        <a class="btn secondary" asp-page="/Reports/Print">Προεπισκόπηση αναφοράς</a>
+    </div>
+</form>

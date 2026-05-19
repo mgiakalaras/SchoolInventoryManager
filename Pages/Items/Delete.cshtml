@@ -1,0 +1,23 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Items.DeleteModel
+@{
+    ViewData["Title"] = "Διαγραφή αντικειμένου";
+}
+
+<section class="page-header danger">
+    <div>
+        <h1>Διαγραφή αντικειμένου</h1>
+        <p>Η εγγραφή θα αφαιρεθεί από την απογραφή.</p>
+    </div>
+</section>
+
+<form method="post" class="card">
+    <h2>@Model.Item.Name</h2>
+    <p>Χώρος: <strong>@Model.Item.Room?.Name</strong></p>
+    <p>Κατηγορία: <strong>@Model.Item.InventoryCategory?.Name</strong></p>
+    <p>Ποσότητα: <strong>@Model.Item.Quantity</strong></p>
+    <div class="actions">
+        <button class="btn danger" type="submit">Ναι, διαγραφή</button>
+        <a class="btn secondary" asp-page="Index">Άκυρο</a>
+    </div>
+</form>

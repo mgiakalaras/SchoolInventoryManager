@@ -1,0 +1,133 @@
+@page
+@model SchoolInventoryManager.Pages.Rooms.IndexModel
+@{
+    ViewData["Title"] = "Χώροι";
+}
+
+<section class="page-header room-hero">
+    <div>
+        <span class="hero-kicker">Field-friendly απογραφή</span>
+        <h1>Χώροι σχολείου</h1>
+        <p>Πιο πρακτική λίστα για απογραφή: γρήγορη αναζήτηση, καθαρά κουμπιά και άμεσο άνοιγμα εξοπλισμού ανά χώρο.</p>
+    </div>
+    <div class="actions">
+        <a class="btn" asp-page="Create">+ Νέος χώρος</a>
+        <a class="btn secondary" asp-page="/Items/Create">+ Νέο αντικείμενο</a>
+    </div>
+</section>
+
+<form method="get" class="card room-toolbar compact-filters">
+    <div class="form-row search-row">
+        <label asp-for="Q">Αναζήτηση χώρου</label>
+        <input asp-for="Q" placeholder="π.χ. εργαστήριο, γραφείο, ισόγειο, βιβλιοθήκη..." inputmode="search" />
+    </div>
+    <div class="actions filter-actions">
+        <button class="btn" type="submit">Αναζήτηση</button>
+        <a class="btn secondary" asp-page="Index">Καθαρισμός</a>
+    </div>
+</form>
+
+<section class="room-overview-grid slim-summary">
+    <article class="stat-card accent-blue">
+        <span class="stat-icon">🏫</span>
+        <div>
+            <span class="label">Χώροι</span>
+            <span class="value">@Model.TotalRooms</span>
+            <span class="stat-subtitle">στα τρέχοντα αποτελέσματα</span>
+        </div>
+    </article>
+    <article class="stat-card accent-cyan">
+        <span class="stat-icon">📋</span>
+        <div>
+            <span class="label">Εγγραφές</span>
+            <span class="value">@Model.TotalItemRows</span>
+            <span class="stat-subtitle">ενεργές καταχωρίσεις</span>
+        </div>
+    </article>
+    <article class="stat-card accent-green">
+        <span class="stat-icon">📦</span>
+        <div>
+            <span class="label">Τεμάχια</span>
+            <span class="value">@Model.TotalQuantity</span>
+            <span class="stat-subtitle">σύνολο ποσοτήτων</span>
+        </div>
+    </article>
+    <article class="stat-card accent-red">
+        <span class="stat-icon">∅</span>
+        <div>
+            <span class="label">Κενοί χώροι</span>
+            <span class="value">@Model.EmptyRooms</span>
+            <span class="stat-subtitle">χωρίς ενεργό εξοπλισμό</span>
+        </div>
+    </article>
+</section>
+
+<div class="field-hint card soft">
+    <strong>Για κινητό/tablet:</strong>
+    κράτα τη λίστα απλή. Άνοιξε τον χώρο που βρίσκεσαι, πάτα <strong>Εξοπλισμός</strong> ή <strong>+ Προσθήκη</strong> και συνέχισε στην επόμενη αίθουσα.
+</div>
+
+<section class="card rooms-card list-mode-card">
+    <div class="section-title-row">
+        <div>
+            <h2>Λίστα χώρων</h2>
+            <p class="muted">Πίνακας αντί για κάρτες, για να φαίνονται περισσότερες αίθουσες με λιγότερο scrolling.</p>
+        </div>
+    </div>
+
+    @if (!Model.Rooms.Any())
+    {
+        <div class="empty">Δεν υπάρχουν χώροι με τα τρέχοντα φίλτρα.</div>
+    }
+    else
+    {
+        <div class="table-wrap responsive-table-wrap">
+            <table class="responsive-table rooms-list-table">
+                <thead>
+                    <tr>
+                        <th class="nowrap">Α/Α</th>
+                        <th>Χώρος</th>
+                        <th>Τύπος</th>
+                        <th>Όροφος</th>
+                        <th>Εγγραφές</th>
+                        <th>Τεμάχια</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var roomRowNumber = 1; }
+                    @foreach (var room in Model.Rooms)
+                    {
+                        var activeItems = room.Items.Where(x => x.IsActive).ToList();
+                        var totalQuantity = activeItems.Sum(x => x.Quantity);
+                        var roomType = string.IsNullOrWhiteSpace(room.RoomType) ? "-" : room.RoomType;
+                        var floor = string.IsNullOrWhiteSpace(room.Floor) ? "-" : room.Floor;
+
+                        <tr>
+                            <td data-label="Α/Α" class="row-number-cell">@(roomRowNumber++)</td>
+                            <td data-label="Χώρος">
+                                <strong>@room.Name</strong>
+                                @if (!string.IsNullOrWhiteSpace(room.Notes))
+                                {
+                                    <small class="muted block">@room.Notes</small>
+                                }
+                            </td>
+                            <td data-label="Τύπος">@roomType</td>
+                            <td data-label="Όροφος">@floor</td>
+                            <td data-label="Εγγραφές">@activeItems.Count</td>
+                            <td data-label="Τεμάχια"><strong>@totalQuantity</strong></td>
+                            <td data-label="Ενέργειες">
+                                <div class="actions compact-row-actions">
+                                    <a class="btn tiny" asp-page="/Items/Index" asp-route-roomId="@room.Id">Εξοπλισμός</a>
+                                    <a class="btn tiny secondary" asp-page="/Items/Create" asp-route-roomId="@room.Id">+ Προσθήκη</a>
+                                    <a class="btn tiny secondary" asp-page="Edit" asp-route-id="@room.Id">Edit</a>
+                                    <a class="btn tiny danger" asp-page="Delete" asp-route-id="@room.Id">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

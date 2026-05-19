@@ -1,0 +1,304 @@
+@page
+@model SchoolInventoryManager.Pages.ImportExport.IndexModel
+@{
+    ViewData["Title"] = "Import / Export";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Import / Export</h1>
+        <p>Μαζική εισαγωγή από Excel με προεπισκόπηση, έλεγχο χώρων/κατηγοριών και εξαγωγή για άλλες εφαρμογές.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary" asp-page-handler="Template">Λήψη Excel Template</a>
+        <a class="btn" asp-page-handler="ExportExcel">Export Excel</a>
+        <a class="btn secondary" asp-page-handler="ExportCsv">Export CSV</a>
+    </div>
+</section>
+
+<div class="grid grid-3 import-stats">
+    <div class="card stat">
+        <span class="value">@Model.RoomCount</span>
+        <span class="label">Χώροι</span>
+    </div>
+    <div class="card stat">
+        <span class="value">@Model.CategoryCount</span>
+        <span class="label">Κατηγορίες</span>
+    </div>
+    <div class="card stat">
+        <span class="value">@Model.ItemCount</span>
+        <span class="label">Ενεργά αντικείμενα</span>
+    </div>
+</div>
+
+@if (Model.Result != null)
+{
+    <section class="card @(Model.Result.HasErrors && Model.Result.ImportedItems == 0 ? "alert-danger" : "alert-success")">
+        <h2>Αποτέλεσμα</h2>
+        <div class="grid grid-5 compact-stats">
+            <div><strong>@Model.Result.ImportedItems</strong><span>νέες εγγραφές</span></div>
+            <div><strong>@Model.Result.SplitRowsCreated</strong><span>αναλυμένα τεμάχια</span></div>
+            <div><strong>@Model.Result.CreatedRooms</strong><span>νέοι χώροι</span></div>
+            <div><strong>@Model.Result.CreatedCategories</strong><span>νέες κατηγορίες</span></div>
+            <div><strong>@Model.Result.SkippedRows</strong><span>γραμμές αγνοήθηκαν</span></div>
+        </div>
+
+        @if (Model.Result.HasErrors)
+        {
+            <details class="import-errors" open>
+                <summary>Μηνύματα / σφάλματα</summary>
+                <ul>
+                    @foreach (var error in Model.Result.Errors.Take(40))
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+                @if (Model.Result.Errors.Count > 40)
+                {
+                    <p class="muted">Εμφανίζονται τα πρώτα 40 μηνύματα.</p>
+                }
+            </details>
+        }
+    </section>
+}
+
+<div class="grid grid-2">
+    <section class="card">
+        <h2>1. Ανέβασμα Excel για προεπισκόπηση</h2>
+        <p class="muted">
+            Πρώτα γίνεται έλεγχος. Αν βρεθεί χώρος ή κατηγορία που δεν υπάρχει ήδη, η εφαρμογή θα σε ρωτήσει αν θα δημιουργηθεί ή αν θα αντιστοιχιστεί σε υπάρχον.
+        </p>
+
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Preview" class="upload-box">
+            <div class="form-row">
+                <label asp-for="UploadFile">Αρχείο .xlsx</label>
+                <input asp-for="UploadFile" type="file" accept=".xlsx" />
+            </div>
+            <label class="check-row">
+                <input asp-for="SplitTrackedBulkItems" type="checkbox" />
+                <span>
+                    Ανάλυση μαζικών εγγραφών για Η/Υ, laptop, tablet και οθόνες
+                    <small>π.χ. ποσότητα 21 tablets → 21 ξεχωριστές εγγραφές ποσότητας 1, που μετά φαίνονται ομαδοποιημένες.</small>
+                </span>
+            </label>
+            <div class="actions">
+                <button class="btn" type="submit">Έλεγχος / Προεπισκόπηση</button>
+                <a class="btn secondary" asp-page-handler="Template">Κατέβασμα προτύπου</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="card soft">
+        <h2>Στήλες που διαβάζει</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Στήλη</th>
+                        <th>Υποχρεωτική</th>
+                        <th>Σημείωση</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Χώρος</td><td>Ναι</td><td>Π.χ. Γραφείο Καθηγητών</td></tr>
+                    <tr><td>Κατηγορία</td><td>Όχι</td><td>Π.χ. Η/Υ, Οθόνη, Tablet, Εκτυπωτής</td></tr>
+                    <tr><td>Αντικείμενο</td><td>Ναι</td><td>Το όνομα που θα φαίνεται στην απογραφή</td></tr>
+                    <tr><td>Ποσότητα</td><td>Όχι</td><td>Αν μείνει κενό, μπαίνει 1</td></tr>
+                    <tr><td>Μάρκα / Μοντέλο / Serial Number</td><td>Όχι</td><td>Για αναλυτική καταγραφή τεμαχίων</td></tr>
+                    <tr><td>Κατάσταση</td><td>Όχι</td><td>Λειτουργικό, Χαλασμένο, Προς απόσυρση κλπ.</td></tr>
+                    <tr><td>Περιγραφή / Παρατηρήσεις</td><td>Όχι</td><td>Ελεύθερο κείμενο</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+@if (Model.Preview != null)
+{
+    <section class="card import-preview-card">
+        <div class="section-title-row">
+            <div>
+                <h2>2. Προεπισκόπηση εισαγωγής</h2>
+                <p class="muted">
+                    Βρέθηκαν @Model.Preview.ValidRows έγκυρες γραμμές. Θα δημιουργηθούν περίπου @Model.Preview.EstimatedImportedItems εγγραφές.
+                    @if (Model.Preview.SplitRowsEstimated > 0)
+                    {
+                        <span> Από αυτές, @Model.Preview.SplitRowsEstimated είναι επιπλέον αναλυτικές εγγραφές από μαζικές ποσότητες.</span>
+                    }
+                </p>
+            </div>
+        </div>
+
+        @if (Model.Preview.Errors.Any())
+        {
+            <div class="alert-danger import-errors">
+                <h3>Θέματα στο Excel</h3>
+                <ul>
+                    @foreach (var error in Model.Preview.Errors.Take(40))
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+                @if (Model.Preview.Errors.Count > 40)
+                {
+                    <p class="muted">Εμφανίζονται τα πρώτα 40 θέματα.</p>
+                }
+            </div>
+        }
+
+        <form method="post" asp-page-handler="ConfirmImport">
+            <input type="hidden" name="ImportBatchId" value="@Model.Preview.BatchId" />
+            <input type="hidden" name="SplitTrackedBulkItems" value="@(Model.SplitTrackedBulkItems ? "true" : "false")" />
+
+            @if (Model.Preview.UnknownRooms.Any())
+            {
+                <div class="decision-panel">
+                    <h3>Άγνωστοι χώροι</h3>
+                    <p class="muted">Διάλεξε αν κάθε χώρος θα δημιουργηθεί ή αν αντιστοιχεί σε υπάρχον χώρο.</p>
+                    <div class="table-wrap">
+                        <table class="compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Χώρος από Excel</th>
+                                    <th>Ενέργεια</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var room in Model.Preview.UnknownRooms)
+                                {
+                                    <tr>
+                                        <td><strong>@room.Name</strong></td>
+                                        <td>
+                                            <select name="RoomDecisions[@room.Key]">
+                                                <option value="@Model.CreateDecisionValue">Δημιουργία νέου χώρου</option>
+                                                @foreach (var existing in Model.ExistingRooms)
+                                                {
+                                                    if (room.SuggestedId == existing.Id.ToString())
+                                                    {
+                                                        <option value="@existing.Id" selected>Αντιστοίχιση με: @existing.Name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@existing.Id">Αντιστοίχιση με: @existing.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Preview.UnknownCategories.Any())
+            {
+                <div class="decision-panel">
+                    <h3>Άγνωστες κατηγορίες</h3>
+                    <p class="muted">Εδώ μαζεύουμε τις κατηγορίες, ώστε να μη γεμίσει η βάση με Tablet, Tablets, Τάμπλετ κλπ.</p>
+                    <div class="table-wrap">
+                        <table class="compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Κατηγορία από Excel</th>
+                                    <th>Ενέργεια</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model.Preview.UnknownCategories)
+                                {
+                                    <tr>
+                                        <td><strong>@category.Name</strong></td>
+                                        <td>
+                                            <select name="CategoryDecisions[@category.Key]">
+                                                <option value="@Model.CreateDecisionValue">Δημιουργία νέας κατηγορίας</option>
+                                                @foreach (var existing in Model.ExistingCategories)
+                                                {
+                                                    if (category.SuggestedId == existing.Id.ToString())
+                                                    {
+                                                        <option value="@existing.Id" selected>Αντιστοίχιση με: @existing.Name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@existing.Id">Αντιστοίχιση με: @existing.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <details class="preview-details" open>
+                <summary>Δείγμα γραμμών που θα εισαχθούν</summary>
+                <div class="table-wrap">
+                    <table class="compact-table">
+                        <thead>
+                            <tr>
+                                <th>Γραμμή</th>
+                                <th>Χώρος</th>
+                                <th>Κατηγορία</th>
+                                <th>Αντικείμενο</th>
+                                <th>Ποσότητα</th>
+                                <th>Μετά την εισαγωγή</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Preview.Rows)
+                            {
+                                <tr>
+                                    <td>@row.ExcelRow</td>
+                                    <td>@row.RoomName</td>
+                                    <td>@(row.CategoryName ?? "-")</td>
+                                    <td>@row.ItemName</td>
+                                    <td>@row.Quantity</td>
+                                    <td>
+                                        @if (row.WillSplit)
+                                        {
+                                            <span class="badge badge-info">@row.OutputRows αναλυτικές εγγραφές</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-muted">1 εγγραφή</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (Model.Preview.ValidRows > Model.Preview.Rows.Count)
+                {
+                    <p class="muted">Εμφανίζονται οι πρώτες @Model.Preview.Rows.Count γραμμές από @Model.Preview.ValidRows.</p>
+                }
+            </details>
+
+            <div class="actions import-confirm-actions">
+                @if (Model.Preview.Errors.Any())
+                {
+                    <button class="btn" type="submit" disabled>Οριστική εισαγωγή</button>
+                }
+                else
+                {
+                    <button class="btn" type="submit">Οριστική εισαγωγή</button>
+                }
+                <a class="btn secondary" asp-page="Index">Ακύρωση / νέο αρχείο</a>
+            </div>
+        </form>
+    </section>
+}
+
+<section class="card guide-card">
+    <h2>Προτεινόμενη λογική απογραφής</h2>
+    <ol>
+        <li>Τα <strong>αναλώσιμα/μικρά περιφερειακά</strong> μπορούν να μπαίνουν μαζικά με ποσότητα.</li>
+        <li>Τα <strong>Η/Υ, laptop, tablet και οθόνες</strong> καλύτερα να μπαίνουν αναλυτικά, ένα-ένα, ώστε αργότερα να έχουν serial, κατάσταση και ιστορικό.</li>
+        <li>Στη λίστα εξοπλισμού θα φαίνονται ομαδοποιημένα, αλλά ανοίγουν για να δεις τις αναλυτικές εγγραφές.</li>
+    </ol>
+    <p class="muted">Το PDF είναι για επίσημη εκτύπωση. Το Excel/CSV είναι για μεταφορά δεδομένων και backup.</p>
+</section>

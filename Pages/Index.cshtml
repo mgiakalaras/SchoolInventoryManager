@@ -1,0 +1,252 @@
+@page
+@model SchoolInventoryManager.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+
+    string Pct(double value) => value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+}
+
+<section class="hero-card">
+    <div class="hero-content">
+        <span class="hero-kicker">Σχολική απογραφή ψηφιακού εξοπλισμού</span>
+        <h1>@Model.Settings.SchoolName</h1>
+        <p>
+            @Model.Settings.SchoolType · Σχολικό έτος @Model.Settings.SchoolYear ·
+            Ημερομηνία απογραφής @Model.Settings.InventoryDate.ToString("dd/MM/yyyy")
+        </p>
+        <div class="actions hero-actions">
+            <a class="btn" asp-page="/Items/Create">+ Νέο αντικείμενο</a>
+            <a class="btn secondary" asp-page="/ImportExport/Index">Import / Export</a>
+            <a class="btn secondary" asp-page="/Reports/Print">Προβολή αναφοράς</a>
+        </div>
+    </div>
+
+    <aside class="hero-side" aria-label="Σύνοψη απογραφής">
+        <div class="hero-logo-panel">
+            <div class="hero-brand-lockup" aria-label="School Inventory Manager">
+                <img class="hero-brand-mark" src="~/assets/brand/sim-mark.svg" alt="" aria-hidden="true" />
+                <div class="hero-brand-text">
+                    <strong>School Inventory</strong>
+                    <span>Manager</span>
+                </div>
+            </div>
+            <div class="hero-logo-note">
+                <span>Field-ready απογραφή</span>
+                <strong>PC · Tablet · Mobile</strong>
+            </div>
+        </div>
+
+        <div class="hero-metrics">
+            <div>
+                <strong>@Model.TotalQuantity</strong>
+                <span>τεμάχια</span>
+            </div>
+            <div>
+                <strong>@Model.WorkingPercent.ToString("0.#")%</strong>
+                <span>λειτουργικά</span>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<section class="dashboard-stats">
+    <div class="stat-card accent-blue">
+        <span class="stat-icon">🏫</span>
+        <div>
+            <span class="label">Χώροι</span>
+            <span class="value">@Model.RoomsCount</span>
+            <span class="stat-subtitle">αίθουσες / γραφεία</span>
+        </div>
+    </div>
+    <div class="stat-card accent-cyan">
+        <span class="stat-icon">📦</span>
+        <div>
+            <span class="label">Εγγραφές</span>
+            <span class="value">@Model.ItemsCount</span>
+            <span class="stat-subtitle">γραμμές απογραφής</span>
+        </div>
+    </div>
+    <div class="stat-card accent-green">
+        <span class="stat-icon">✅</span>
+        <div>
+            <span class="label">Λειτουργικά</span>
+            <span class="value">@Model.WorkingQuantity</span>
+            <span class="stat-subtitle">@Model.WorkingPercent.ToString("0.#")% του συνόλου</span>
+        </div>
+    </div>
+    <div class="stat-card accent-red">
+        <span class="stat-icon">⚠️</span>
+        <div>
+            <span class="label">Θέλουν προσοχή</span>
+            <span class="value">@(Model.BrokenQuantity + Model.NeedsCheckQuantity + Model.ToWithdrawQuantity + Model.UnknownQuantity)</span>
+            <span class="stat-subtitle">@Model.ProblemPercent.ToString("0.#")% του συνόλου</span>
+        </div>
+    </div>
+</section>
+
+<section class="dashboard-layout">
+    <div class="card donut-card">
+        <div class="section-title-row">
+            <div>
+                <h2>Κατάσταση εξοπλισμού</h2>
+                <p class="muted">Ποσοστιαία εικόνα με βάση την ποσότητα τεμαχίων.</p>
+            </div>
+        </div>
+
+        <div class="donut-wrap">
+            <div class="donut-chart" style="@Model.ConditionPieStyle">
+                <div class="donut-hole">
+                    <strong>@Model.TotalQuantity</strong>
+                    <span>σύνολο</span>
+                </div>
+            </div>
+
+            <div class="legend-list">
+                @if (!Model.ConditionSummaries.Any())
+                {
+                    <div class="empty compact">Δεν υπάρχουν ακόμα δεδομένα.</div>
+                }
+                else
+                {
+                    @foreach (var row in Model.ConditionSummaries)
+                    {
+                        <div class="legend-row">
+                            <span class="legend-dot @row.DotClass"></span>
+                            <span class="legend-name">@row.Name</span>
+                            <strong>@row.Quantity</strong>
+                            <span class="muted">@row.Percent.ToString("0.#")%</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card quick-actions-card">
+        <h2>Γρήγορες ενέργειες</h2>
+        <p class="muted">Τα βασικά κουμπιά για να μη σκάβεις στα μενού.</p>
+        <div class="quick-actions-grid">
+            <a class="quick-action" asp-page="/Rooms/Create">
+                <strong>Νέος χώρος</strong>
+                <span>Προσθήκη αίθουσας ή γραφείου</span>
+            </a>
+            <a class="quick-action" asp-page="/Items/Create">
+                <strong>Νέο αντικείμενο</strong>
+                <span>Καταχώριση εξοπλισμού</span>
+            </a>
+            <a class="quick-action" asp-page="/Settings/Index">
+                <strong>Στοιχεία σχολείου</strong>
+                <span>Λογότυπο, έτος, υπεύθυνος</span>
+            </a>
+            <a class="quick-action" asp-page="/Reports/Index">
+                <strong>Αναφορές</strong>
+                <span>Εκτύπωση και PDF</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="grid grid-2" style="margin-top:1rem;">
+    <div class="card">
+        <div class="section-title-row">
+            <div>
+                <h2>Σύνολα ανά κατηγορία</h2>
+                <p class="muted">Top 8 κατηγορίες εξοπλισμού.</p>
+            </div>
+        </div>
+
+        @if (!Model.CategorySummaries.Any())
+        {
+            <div class="empty">Δεν υπάρχουν ακόμα αντικείμενα.</div>
+        }
+        else
+        {
+            <div class="progress-list">
+                @foreach (var row in Model.CategorySummaries)
+                {
+                    <div class="progress-row">
+                        <div class="progress-meta">
+                            <strong>@row.Category</strong>
+                            <span>@row.Quantity τεμ. · @row.Percent.ToString("0.#")%</span>
+                        </div>
+                        <div class="progress-track">
+                            <span class="progress-bar" style="width:@Pct(row.Percent)%;"></span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <div class="section-title-row">
+            <div>
+                <h2>Σύνολα ανά χώρο</h2>
+                <p class="muted">Οι χώροι με τον περισσότερο καταγεγραμμένο εξοπλισμό.</p>
+            </div>
+        </div>
+
+        @if (!Model.RoomSummaries.Any())
+        {
+            <div class="empty">Δεν υπάρχουν ακόμα αντικείμενα.</div>
+        }
+        else
+        {
+            <div class="mini-list">
+                @foreach (var row in Model.RoomSummaries)
+                {
+                    <div class="mini-list-row">
+                        <div>
+                            <strong>@row.Room</strong>
+                            <span>@row.Percent.ToString("0.#")% του συνόλου</span>
+                        </div>
+                        <b>@row.Quantity</b>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<section class="card" style="margin-top:1rem;">
+    <div class="section-title-row">
+        <div>
+            <h2>Τελευταίες εγγραφές</h2>
+            <p class="muted">Οι πιο πρόσφατες αλλαγές στην απογραφή.</p>
+        </div>
+        <a class="btn small secondary" asp-page="/Items/Index">Όλος ο εξοπλισμός</a>
+    </div>
+
+    @if (!Model.RecentItems.Any())
+    {
+        <div class="empty">Πέρνα το πρώτο αντικείμενο απογραφής για να ξεκινήσει η εφαρμογή.</div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Αντικείμενο</th>
+                        <th>Χώρος</th>
+                        <th>Ποσότητα</th>
+                        <th>Κατάσταση</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.RecentItems)
+                {
+                    <tr>
+                        <td><strong>@item.Name</strong><br /><span class="muted">@item.InventoryCategory?.Name</span></td>
+                        <td>@item.Room?.Name</td>
+                        <td>@item.Quantity</td>
+                        <td><span class="@item.Condition.CssClass()">@item.Condition.GetDisplayName()</span></td>
+                        <td><a class="btn small secondary" asp-page="/Items/Edit" asp-route-id="@item.Id">Άνοιγμα</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

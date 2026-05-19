@@ -1,0 +1,655 @@
+@page
+@model SchoolInventoryManager.Pages.Reports.PrintModel
+@{
+    Layout = null;
+    var pageNo = 3;
+    var totalRecords = Model.Rooms.Sum(r => r.Items.Count);
+    var totalQuantity = Model.Rooms.Sum(r => r.Items.Sum(i => i.Quantity));
+    var generatedAt = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+    var documentTitle = $"Απογραφή Η/Υ και Ψηφιακών Μέσων - {Model.Settings.SchoolName}";
+    var managerTitle = Model.Settings.InventoryManagerTitle == "Εκπαιδευτικός ΠΕ86"
+        ? "Υπεύθυνος/η απογραφής"
+        : Model.Settings.InventoryManagerTitle;
+}
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@documentTitle</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            color: #111827;
+            background: #eef2f7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 11.5pt;
+            line-height: 1.35;
+        }
+
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .print-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: .85rem 1rem;
+            background: #0f172a;
+            color: #e5e7eb;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, .25);
+        }
+
+        .print-toolbar strong { display: block; }
+        .print-toolbar small { display: block; color: #cbd5e1; margin-top: .1rem; }
+
+        .toolbar-actions {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: .55rem .85rem;
+            border: 0;
+            border-radius: 999px;
+            background: #2563eb;
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn.secondary { background: #334155; }
+        .btn:hover { filter: brightness(1.06); text-decoration: none; }
+
+        .print-help {
+            max-width: 1060px;
+            margin: 12px auto 0;
+            padding: .85rem 1rem;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        .print-document {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 14px auto 28px;
+            padding: 18mm 14mm;
+            background: #fff;
+            box-shadow: 0 18px 55px rgba(15, 23, 42, .18);
+        }
+
+        h1, h2, h3, p { margin-top: 0; }
+        h1 { font-size: 19pt; margin-bottom: 9mm; }
+        h2 { font-size: 14pt; margin: 8mm 0 4mm; }
+        h3 { font-size: 12.5pt; margin: 6mm 0 3mm; }
+        p { margin-bottom: 3mm; }
+
+        .muted { color: #4b5563; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+
+        .report-cover {
+            min-height: 245mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .school-logo {
+            max-width: 32mm;
+            max-height: 32mm;
+            object-fit: contain;
+            margin-bottom: 18mm;
+        }
+
+        .cover-kicker {
+            font-size: 12pt;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            color: #374151;
+            margin-bottom: 5mm;
+        }
+
+        .report-title {
+            max-width: 160mm;
+            margin: 18mm auto;
+            padding: 10mm 8mm;
+            border-top: 2px solid #111827;
+            border-bottom: 2px solid #111827;
+            font-size: 21pt;
+            line-height: 1.25;
+            text-transform: uppercase;
+        }
+
+        .meta-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5mm;
+            margin: 8mm 0;
+        }
+
+        .meta-box {
+            padding: 4mm;
+            border: 1px solid #d1d5db;
+            border-radius: 3mm;
+            background: #f9fafb;
+        }
+
+        .meta-box .label {
+            display: block;
+            color: #4b5563;
+            font-size: 9.5pt;
+            margin-bottom: 1.5mm;
+        }
+
+        .meta-box .value {
+            display: block;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .document-section {
+            page-break-before: always;
+            break-before: page;
+            padding-top: 0;
+        }
+
+        .document-section.first-after-cover {
+            page-break-before: auto;
+            break-before: auto;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8mm;
+            padding-bottom: 3mm;
+            margin-bottom: 6mm;
+            border-bottom: 2px solid #111827;
+        }
+
+        .section-heading h1 { margin: 0; }
+        .section-heading .small-meta { color: #4b5563; font-size: 9.5pt; text-align: right; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4mm 0 8mm;
+            page-break-inside: auto;
+        }
+
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; break-inside: avoid; }
+
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 2.4mm 2.2mm;
+            vertical-align: top;
+            overflow-wrap: anywhere;
+        }
+
+        th {
+            background: #e5e7eb;
+            color: #111827;
+            font-weight: 800;
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) td { background: #fafafa; }
+        .qty { text-align: center; font-weight: 800; }
+        .nowrap { white-space: nowrap; }
+        .small { font-size: 9.5pt; color: #4b5563; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5mm;
+            margin: 2mm 0 8mm;
+        }
+
+        .summary-card {
+            padding: 5mm;
+            border: 1px solid #d1d5db;
+            border-radius: 3mm;
+            background: #f9fafb;
+            text-align: center;
+        }
+
+        .summary-card .label {
+            display: block;
+            color: #4b5563;
+            font-size: 9.5pt;
+            margin-bottom: 1mm;
+        }
+
+        .summary-card .value {
+            display: block;
+            font-size: 19pt;
+            font-weight: 900;
+        }
+
+        .notes-box {
+            min-height: 38mm;
+            padding: 5mm;
+            border: 1px solid #d1d5db;
+            border-radius: 3mm;
+            background: #f9fafb;
+            white-space: pre-wrap;
+        }
+
+        .signature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18mm;
+            margin-top: 18mm;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .signature-box {
+            min-height: 42mm;
+            text-align: center;
+        }
+
+        .signature-title {
+            font-weight: 800;
+            margin-bottom: 22mm;
+        }
+
+        .signature-line {
+            border-top: 1px solid #111827;
+            padding-top: 2mm;
+            min-height: 13mm;
+        }
+
+        .room-subtitle {
+            margin-top: -4mm;
+            margin-bottom: 5mm;
+            color: #4b5563;
+        }
+
+        .official-footer {
+            margin-top: 8mm;
+            padding-top: 3mm;
+            border-top: 1px solid #d1d5db;
+            color: #6b7280;
+            font-size: 9pt;
+            display: flex;
+            justify-content: space-between;
+            gap: 8mm;
+        }
+
+        .screen-only { display: block; }
+
+    </style>
+
+    <style media="screen and (max-width: 900px)">
+        .print-toolbar { align-items: flex-start; flex-direction: column; }
+        .toolbar-actions { justify-content: flex-start; }
+        .print-document { width: calc(100% - 20px); min-height: auto; padding: 20px; }
+        .meta-grid, .summary-grid, .signature-row { grid-template-columns: 1fr; }
+        .report-title { font-size: 17pt; }
+    </style>
+
+    <style media="print">
+        html, body {
+            background: #fff !important;
+            color: #111827 !important;
+            font-size: 10.8pt;
+        }
+
+        .screen-only, .print-toolbar, .print-help {
+            display: none !important;
+        }
+
+        .print-document {
+            width: auto;
+            min-height: auto;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        .document-section, .report-cover { box-shadow: none; }
+        th { background: #e5e7eb !important; color: #111827 !important; }
+        tbody tr:nth-child(even) td { background: #fafafa !important; }
+    </style>
+</head>
+<body>
+    <div class="print-toolbar screen-only">
+        <div>
+            <strong>Έντυπο απογραφής</strong>
+            <small>Το κουμπί ανοίγει το παράθυρο του browser για εκτύπωση ή αποθήκευση ως PDF.</small>
+        </div>
+        <div class="toolbar-actions">
+            <button type="button" class="btn" onclick="window.print()">PDF / Εκτύπωση</button>
+            <a class="btn secondary" href="/Reports">Πίσω στις αναφορές</a>
+        </div>
+    </div>
+
+    <div class="print-help screen-only">
+        Για PDF διάλεξε <strong>Save as PDF / Microsoft Print to PDF</strong>. Για χαρτί διάλεξε τον εκτυπωτή. Αν ο browser βάζει δικό του URL/ημερομηνία πάνω ή κάτω, απενεργοποίησε το <strong>Headers and footers</strong> στο παράθυρο εκτύπωσης.
+    </div>
+
+    <main class="print-document">
+        <section class="report-cover">
+            @if (!string.IsNullOrWhiteSpace(Model.Settings.LogoPath))
+            {
+                <img class="school-logo" src="@Model.Settings.LogoPath" alt="Λογότυπο σχολείου" />
+            }
+
+            <div class="cover-kicker">Σχολική μονάδα</div>
+            <h2>@Model.Settings.SchoolName</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.Settings.SchoolType))
+            {
+                <h3>@Model.Settings.SchoolType</h3>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Settings.Address))
+            {
+                <p class="muted">@Model.Settings.Address</p>
+            }
+
+            <h1 class="report-title">Απογραφή Η/Υ και Ψηφιακών Μέσων</h1>
+
+            <div class="meta-grid">
+                <div class="meta-box">
+                    <span class="label">Σχολικό έτος</span>
+                    <span class="value">@Model.Settings.SchoolYear</span>
+                </div>
+                <div class="meta-box">
+                    <span class="label">Ημερομηνία απογραφής</span>
+                    <span class="value">@Model.Settings.InventoryDate.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="meta-box">
+                    <span class="label">Δημιουργία εντύπου</span>
+                    <span class="value">@generatedAt</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Settings.InventoryManagerName))
+            {
+                <p><strong>Υπεύθυνος/η απογραφής:</strong> @Model.Settings.InventoryManagerName</p>
+            }
+        </section>
+
+        <section class="document-section first-after-cover">
+            <div class="section-heading">
+                <h1>Περιεχόμενα</h1>
+                <div class="small-meta">@Model.Settings.SchoolName<br />@Model.Settings.SchoolYear</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ενότητα</th>
+                        <th style="width: 24mm;" class="nowrap">Σελίδα</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Συγκεντρωτικά στοιχεία</td><td class="qty">2</td></tr>
+                    @foreach (var room in Model.Rooms)
+                    {
+                        <tr><td>Πίνακας απογραφής: @room.Name</td><td class="qty">@pageNo</td></tr>
+                        pageNo++;
+                    }
+                    <tr><td>Προβληματικός εξοπλισμός / προς έλεγχο</td><td class="qty">@pageNo</td></tr>
+                    <tr><td>Παρατηρήσεις και υπογραφές</td><td class="qty">@(pageNo + 1)</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="document-section">
+            <div class="section-heading">
+                <h1>Συγκεντρωτικά στοιχεία</h1>
+                <div class="small-meta">Σύνοψη απογραφής</div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card"><span class="label">Χώροι</span><span class="value">@Model.Rooms.Count</span></div>
+                <div class="summary-card"><span class="label">Εγγραφές</span><span class="value">@totalRecords</span></div>
+                <div class="summary-card"><span class="label">Σύνολο τεμαχίων</span><span class="value">@totalQuantity</span></div>
+            </div>
+
+            <h2>Σύνολα ανά κατηγορία</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Κατηγορία</th>
+                        <th style="width: 30mm;" class="nowrap">Πλήθος</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.CategoryRows.Any())
+                    {
+                        <tr><td colspan="2">Δεν υπάρχουν καταχωρισμένα αντικείμενα.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var row in Model.CategoryRows)
+                        {
+                            <tr><td>@row.Category</td><td class="qty">@row.Quantity</td></tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </section>
+
+        @foreach (var room in Model.Rooms)
+        {
+            var index = 1;
+            <section class="document-section">
+                <div class="section-heading">
+                    <h1>Πίνακας απογραφής</h1>
+                    <div class="small-meta">Χώρος: @room.Name</div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(room.RoomType) || !string.IsNullOrWhiteSpace(room.Floor))
+                {
+                    <p class="room-subtitle"><strong>Στοιχεία χώρου:</strong> @room.RoomType @room.Floor</p>
+                }
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 12mm;" class="nowrap">Α/Α</th>
+                            <th style="width: 42mm;">Αντικείμενο</th>
+                            <th style="width: 18mm;" class="nowrap">Ποσότητα</th>
+                            <th>Περιγραφή</th>
+                            <th style="width: 29mm;">Κατάσταση</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var groupedRoomItems = room.Items
+                                .Where(i => i.IsActive)
+                                .GroupBy(i => new
+                                {
+                                    i.Name,
+                                    CategoryName = i.InventoryCategory?.Name ?? "",
+                                    i.Condition
+                                })
+                                .OrderBy(g => g.Key.Name)
+                                .ToList();
+                        }
+                        @if (!groupedRoomItems.Any())
+                        {
+                            <tr><td colspan="5">Δεν έχουν καταχωριστεί αντικείμενα.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var group in groupedRoomItems)
+                            {
+                                var groupedItems = group.ToList();
+                                var totalQuantityForGroup = groupedItems.Sum(i => i.Quantity);
+                                var detailLines = groupedItems
+                                    .Select(i => string.Join(" ", new[] { i.Brand, i.Model }.Where(x => !string.IsNullOrWhiteSpace(x))))
+                                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                                    .Distinct()
+                                    .Take(4)
+                                    .ToList();
+                                var serials = groupedItems
+                                    .Select(i => i.SerialNumber)
+                                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                                    .Distinct()
+                                    .Take(4)
+                                    .ToList();
+                                var descriptions = groupedItems
+                                    .Select(i => i.Description)
+                                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                                    .Distinct()
+                                    .Take(2)
+                                    .ToList();
+                                <tr>
+                                    <td class="qty">@index</td>
+                                    <td>
+                                        <strong>@group.Key.Name</strong>
+                                        @if (!string.IsNullOrWhiteSpace(group.Key.CategoryName))
+                                        {
+                                            <br /><span class="small">@group.Key.CategoryName</span>
+                                        }
+                                        @if (groupedItems.Count > 1)
+                                        {
+                                            <br /><span class="small">@groupedItems.Count αναλυτικές εγγραφές</span>
+                                        }
+                                    </td>
+                                    <td class="qty">@totalQuantityForGroup</td>
+                                    <td>
+                                        @if (detailLines.Any())
+                                        {
+                                            <span>@string.Join(" / ", detailLines)</span><br />
+                                        }
+                                        @if (serials.Any())
+                                        {
+                                            <span>SN: @string.Join(", ", serials)</span><br />
+                                        }
+                                        @if (descriptions.Any())
+                                        {
+                                            <span>@string.Join(" | ", descriptions)</span>
+                                        }
+                                    </td>
+                                    <td>@group.Key.Condition.GetDisplayName()</td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+
+        <section class="document-section">
+            <div class="section-heading">
+                <h1>Προβληματικός εξοπλισμός / προς έλεγχο</h1>
+                <div class="small-meta">Εξοπλισμός που χρειάζεται ενέργεια</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Χώρος</th>
+                        <th>Αντικείμενο</th>
+                        <th style="width: 18mm;" class="nowrap">Ποσότητα</th>
+                        <th>Κατάσταση</th>
+                        <th>Παρατηρήσεις</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.ProblematicItems.Any())
+                    {
+                        <tr><td colspan="5">Δεν έχει καταχωριστεί προβληματικός εξοπλισμός.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.ProblematicItems)
+                        {
+                            <tr>
+                                <td>@item.Room?.Name</td>
+                                <td>@item.Name</td>
+                                <td class="qty">@item.Quantity</td>
+                                <td>@item.Condition.GetDisplayName()</td>
+                                <td>@item.Notes</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </section>
+
+        <section class="document-section">
+            <div class="section-heading">
+                <h1>Παρατηρήσεις και υπογραφές</h1>
+                <div class="small-meta">Τελική κατάθεση</div>
+            </div>
+
+            <h2>Παρατηρήσεις</h2>
+            <div class="notes-box">
+                @if (!string.IsNullOrWhiteSpace(Model.Settings.GeneralNotes))
+                {
+                    <p>@Model.Settings.GeneralNotes</p>
+                }
+                else
+                {
+                    <p>Η παρούσα απογραφή αποτελεί προσπάθεια καταγραφής του ψηφιακού εξοπλισμού της σχολικής μονάδας και μπορεί να επικαιροποιείται όταν υπάρχουν αλλαγές στον εξοπλισμό ή στην κατάστασή του.</p>
+                }
+            </div>
+
+            <div class="signature-row">
+                <div class="signature-box">
+                    <div class="signature-title">Ο/Η υπεύθυνος/η απογραφής</div>
+                    <div class="signature-line">
+                        <strong>@Model.Settings.InventoryManagerName</strong><br />
+                        <span class="small">@managerTitle</span>
+                    </div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-title">Ο/Η Διευθυντής/ντρια</div>
+                    <div class="signature-line">
+                        <strong>@Model.Settings.PrincipalName</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="official-footer">
+                <span>@Model.Settings.SchoolName</span>
+                <span>Απογραφή Η/Υ και Ψηφιακών Μέσων</span>
+            </div>
+        </section>
+    </main>
+
+    @if (Model.AutoPrint)
+    {
+        <script>
+            window.addEventListener('load', function () {
+                window.setTimeout(function () { window.print(); }, 350);
+            });
+        </script>
+    }
+</body>
+</html>

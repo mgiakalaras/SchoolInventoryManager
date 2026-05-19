@@ -1,0 +1,24 @@
+@page
+@model SchoolInventoryManager.Pages.Rooms.CreateModel
+@{
+    ViewData["Title"] = "Νέος χώρος";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Νέος χώρος</h1>
+        <p>Πρόσθεσε αίθουσα, γραφείο, εργαστήριο ή αποθήκη.</p>
+    </div>
+</section>
+
+<form method="post" class="card">
+    @{
+        var roomViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData);
+        roomViewData.TemplateInfo.HtmlFieldPrefix = "Room";
+    }
+    <partial name="_RoomForm" model="Model.Room" view-data="roomViewData" />
+    <div class="actions" style="margin-top:1rem;">
+        <button class="btn" type="submit">Αποθήκευση</button>
+        <a class="btn secondary" asp-page="Index">Άκυρο</a>
+    </div>
+</form>

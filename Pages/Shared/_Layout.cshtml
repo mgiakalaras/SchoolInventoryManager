@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#07111f" />
+    <title>@ViewData["Title"] - School Inventory Manager</title>
+    <link rel="icon" type="image/svg+xml" href="~/assets/brand/favicon.svg" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <input class="nav-toggle" type="checkbox" id="nav-toggle" aria-hidden="true" />
+
+    <header class="topbar">
+        <a class="brand" asp-page="/Index">
+            <img class="brand-logo" src="~/assets/brand/sim-mark.svg" alt="School Inventory Manager" />
+            <span>
+                <strong>School Inventory Manager</strong>
+                <small>Απογραφή Η/Υ & Ψηφιακών Μέσων</small>
+            </span>
+        </a>
+
+        <label class="nav-toggle-button" for="nav-toggle" aria-label="Άνοιγμα μενού" title="Μενού">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+
+        <nav class="nav" aria-label="Κύρια πλοήγηση">
+            <a asp-page="/Index">Dashboard</a>
+            <a asp-page="/Settings/Index">Σχολείο</a>
+            <a asp-page="/Rooms/Index">Χώροι</a>
+            <a asp-page="/Items/Index">Εξοπλισμός</a>
+            <a asp-page="/ImportExport/Index">Import / Export</a>
+            <a asp-page="/Maintenance/Index">Συντήρηση</a>
+            <a asp-page="/Reports/Index">Αναφορές</a>
+        </nav>
+    </header>
+
+    <label class="nav-backdrop" for="nav-toggle" aria-hidden="true"></label>
+
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <nav class="mobile-bottom-nav" aria-label="Γρήγορη πλοήγηση πεδίου">
+        <a asp-page="/Index"><span>⌂</span><strong>Αρχική</strong></a>
+        <a asp-page="/Rooms/Index"><span>🏫</span><strong>Χώροι</strong></a>
+        <a class="mobile-primary-action" asp-page="/Items/Create"><span>＋</span><strong>Νέο</strong></a>
+        <a asp-page="/Items/Index"><span>📦</span><strong>Εξοπλ.</strong></a>
+        <a asp-page="/Reports/Index"><span>📄</span><strong>PDF</strong></a>
+    </nav>
+
+    <footer class="footer">
+        <span>© @DateTime.Now.Year - School Inventory Manager</span>
+        <span>Offline-first σχολική απογραφή</span>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

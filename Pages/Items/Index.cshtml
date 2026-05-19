@@ -1,0 +1,190 @@
+@page
+@model SchoolInventoryManager.Pages.Items.IndexModel
+@{
+    ViewData["Title"] = "Εξοπλισμός";
+}
+
+<section class="page-header inventory-hero">
+    <div>
+        <span class="hero-kicker">Κεντρική απογραφή</span>
+        <h1>Εξοπλισμός</h1>
+        <p>Πρακτική λίστα με ομαδοποίηση: βλέπεις σύνολα, αλλά ανοίγεις κάθε ομάδα για αναλυτικές εγγραφές.</p>
+    </div>
+    <div class="actions">
+        <a class="btn" asp-page="Create">+ Νέο αντικείμενο</a>
+        <a class="btn secondary" asp-page="/ImportExport/Index">Import / Export</a>
+    </div>
+</section>
+
+<form method="get" class="card filters inventory-filters compact-filters">
+    <div class="form-row search-row">
+        <label asp-for="Q">Αναζήτηση</label>
+        <input asp-for="Q" placeholder="αντικείμενο, μάρκα, μοντέλο, serial, περιγραφή..." />
+    </div>
+    <div class="form-row">
+        <label asp-for="RoomId">Χώρος</label>
+        <select asp-for="RoomId" asp-items="Model.Rooms">
+            <option value="">Όλοι οι χώροι</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label asp-for="CategoryId">Κατηγορία</label>
+        <select asp-for="CategoryId" asp-items="Model.Categories">
+            <option value="">Όλες οι κατηγορίες</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label asp-for="Condition">Κατάσταση</label>
+        <select asp-for="Condition" asp-items="Html.GetEnumSelectList<EquipmentCondition>()">
+            <option value="">Όλες</option>
+        </select>
+    </div>
+    <div class="actions filter-actions">
+        <button class="btn" type="submit">Φίλτρο</button>
+        <a class="btn secondary" asp-page="Index">Καθαρισμός</a>
+    </div>
+</form>
+
+<section class="inventory-summary-grid slim-summary">
+    <article class="stat-card accent-blue">
+        <span class="stat-icon">📦</span>
+        <div>
+            <span class="label">Τεμάχια</span>
+            <span class="value">@Model.TotalMatchingQuantity</span>
+            <span class="stat-subtitle">@Model.TotalMatchingRows αναλυτικές εγγραφές</span>
+        </div>
+    </article>
+    <article class="stat-card accent-green">
+        <span class="stat-icon">✅</span>
+        <div>
+            <span class="label">Λειτουργικά</span>
+            <span class="value">@Model.WorkingPercent%</span>
+            <span class="stat-subtitle">@Model.WorkingQuantity τεμάχια</span>
+        </div>
+    </article>
+    <article class="stat-card accent-red">
+        <span class="stat-icon">⚠️</span>
+        <div>
+            <span class="label">Θέλουν προσοχή</span>
+            <span class="value">@Model.AttentionPercent%</span>
+            <span class="stat-subtitle">@Model.AttentionQuantity τεμάχια</span>
+        </div>
+    </article>
+    <article class="stat-card accent-cyan">
+        <span class="stat-icon">🧩</span>
+        <div>
+            <span class="label">Ομάδες</span>
+            <span class="value">@Model.GroupedItems.Count</span>
+            <span class="stat-subtitle">με βάση χώρο/κατηγορία/είδος</span>
+        </div>
+    </article>
+</section>
+
+<section class="card inventory-results-card list-mode-card">
+    <div class="section-title-row">
+        <div>
+            <h2>Ομαδοποιημένη λίστα εξοπλισμού</h2>
+            <p class="muted">Τα πολλά ίδια αντικείμενα φαίνονται μαζεμένα. Πάτα «Άνοιγμα» για να δεις ή να επεξεργαστείς τις αναλυτικές εγγραφές.</p>
+        </div>
+        <div class="actions">
+            <a class="btn small secondary" asp-page="/Reports/Index">Αναφορές</a>
+            <a class="btn small secondary" asp-page="/ImportExport/Index">Excel</a>
+        </div>
+    </div>
+
+    @if (!Model.GroupedItems.Any())
+    {
+        <div class="empty-state">
+            <img src="~/assets/illustrations/empty-inventory.svg" alt="" />
+            <h3>Δεν βρέθηκαν εγγραφές</h3>
+            <p>Δοκίμασε να καθαρίσεις τα φίλτρα ή να κάνεις εισαγωγή από Excel.</p>
+            <div class="actions">
+                <a class="btn" asp-page="Create">+ Νέο αντικείμενο</a>
+                <a class="btn secondary" asp-page="Index">Καθαρισμός φίλτρων</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap responsive-table-wrap">
+            <table class="responsive-table inventory-list-table">
+                <thead>
+                    <tr>
+                        <th class="nowrap">Α/Α</th>
+                        <th>Αντικείμενο</th>
+                        <th>Χώρος</th>
+                        <th>Κατηγορία</th>
+                        <th>Ποσότητα</th>
+                        <th>Αναλυτικές</th>
+                        <th>Κατάσταση</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var itemRowNumber = 1; }
+                    @foreach (var group in Model.GroupedItems)
+                    {
+                        <tr class="group-row">
+                            <td data-label="Α/Α" class="row-number-cell">@(itemRowNumber++)</td>
+                            <td data-label="Αντικείμενο">
+                                <details class="row-details">
+                                    <summary>
+                                        <strong>@group.Name</strong>
+                                        <span class="summary-hint">Άνοιγμα</span>
+                                    </summary>
+                                    <div class="nested-detail-list">
+                                        @{ var detailRowNumber = 1; }
+                                        @foreach (var item in group.Details)
+                                        {
+                                            var details = string.Join(" ", new[] { item.Brand, item.Model }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                                            <article class="nested-detail-item">
+                                                <div>
+                                                    <strong>#@(detailRowNumber++) · @item.Name</strong>
+                                                    <span class="muted">Ποσότητα: @item.Quantity</span>
+                                                    @if (!string.IsNullOrWhiteSpace(details))
+                                                    {
+                                                        <span>Μάρκα/Μοντέλο: @details</span>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+                                                    {
+                                                        <span>Serial: @item.SerialNumber</span>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(item.Description))
+                                                    {
+                                                        <span>@item.Description</span>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(item.Notes))
+                                                    {
+                                                        <span class="muted">@item.Notes</span>
+                                                    }
+                                                </div>
+                                                <div class="actions">
+                                                    <a class="btn tiny secondary" asp-page="Edit" asp-route-id="@item.Id">Edit</a>
+                                                    <a class="btn tiny danger" asp-page="Delete" asp-route-id="@item.Id">Delete</a>
+                                                </div>
+                                            </article>
+                                        }
+                                    </div>
+                                </details>
+                            </td>
+                            <td data-label="Χώρος">@group.RoomName</td>
+                            <td data-label="Κατηγορία">@group.CategoryName</td>
+                            <td data-label="Ποσότητα"><strong>@group.TotalQuantity</strong></td>
+                            <td data-label="Αναλυτικές">@group.RowCount</td>
+                            <td data-label="Κατάσταση"><span class="@group.Condition.CssClass()">@group.Condition.GetDisplayName()</span></td>
+                            <td data-label="Ενέργειες">
+                                <div class="actions compact-row-actions">
+                                    <a class="btn tiny secondary" asp-page="Create" asp-route-roomId="@group.RoomId">+ στο χώρο</a>
+                                    @if (group.Details.Count == 1)
+                                    {
+                                        <a class="btn tiny secondary" asp-page="Edit" asp-route-id="@group.Details.First().Id">Edit</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

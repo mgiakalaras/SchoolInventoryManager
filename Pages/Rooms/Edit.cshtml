@@ -1,0 +1,25 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Rooms.EditModel
+@{
+    ViewData["Title"] = "Επεξεργασία χώρου";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Επεξεργασία χώρου</h1>
+        <p>@Model.Room.Name</p>
+    </div>
+</section>
+
+<form method="post" class="card">
+    <input type="hidden" asp-for="Room.Id" />
+    @{
+        var roomViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData);
+        roomViewData.TemplateInfo.HtmlFieldPrefix = "Room";
+    }
+    <partial name="_RoomForm" model="Model.Room" view-data="roomViewData" />
+    <div class="actions" style="margin-top:1rem;">
+        <button class="btn" type="submit">Αποθήκευση</button>
+        <a class="btn secondary" asp-page="Index">Άκυρο</a>
+    </div>
+</form>

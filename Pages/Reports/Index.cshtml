@@ -1,0 +1,49 @@
+@page
+@model SchoolInventoryManager.Pages.Reports.IndexModel
+@{
+    ViewData["Title"] = "Αναφορές";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Αναφορές απογραφής</h1>
+        <p>Καθαρό έντυπο Α4 για PDF ή απευθείας εκτύπωση, χωρίς μενού/μπάρες της εφαρμογής.</p>
+    </div>
+    <div class="actions">
+        <a class="btn" asp-page="Print">Προεπισκόπηση εντύπου</a>
+        <a class="btn secondary" asp-page="Print" asp-route-autoPrint="true">PDF / Εκτύπωση</a>
+    </div>
+</section>
+
+<section class="grid grid-3">
+    <div class="card stat">
+        <span class="label">Χώροι</span>
+        <span class="value">@Model.RoomsCount</span>
+    </div>
+    <div class="card stat">
+        <span class="label">Σύνολο τεμαχίων</span>
+        <span class="value">@Model.TotalQuantity</span>
+    </div>
+    <div class="card stat">
+        <span class="label">Προς έλεγχο / πρόβλημα</span>
+        <span class="value">@Model.ProblematicQuantity</span>
+    </div>
+</section>
+
+<section class="grid grid-2" style="margin-top:1rem;">
+    <div class="card">
+        <h2>Καθαρή εκτύπωση</h2>
+        <p>Η νέα εκτυπώσιμη αναφορά ανοίγει ως ανεξάρτητο έντυπο, χωρίς το επάνω μενού, χωρίς footer της εφαρμογής και χωρίς dark theme.</p>
+        <p class="muted">Το έντυπο είναι στημένο για A4, με εξώφυλλο, περιεχόμενα, συγκεντρωτικά, πίνακες ανά χώρο, προβληματικό εξοπλισμό και τελικές υπογραφές.</p>
+    </div>
+
+    <div class="card">
+        <h2>PDF ή εκτυπωτής</h2>
+        <ol>
+            <li>Πάτα <strong>PDF / Εκτύπωση</strong>.</li>
+            <li>Στο παράθυρο του browser διάλεξε <strong>Save as PDF</strong> ή τον φυσικό εκτυπωτή.</li>
+            <li>Αν εμφανίζονται URL/ημερομηνίες πάνω-κάτω, κλείσε το <strong>Headers and footers</strong> στις επιλογές εκτύπωσης.</li>
+            <li>Μετά την εκτύπωση μπαίνουν οι υπογραφές και κατατίθεται στη Διεύθυνση.</li>
+        </ol>
+    </div>
+</section>
