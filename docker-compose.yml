@@ -1,0 +1,13 @@
+services:
+  school-inventory-manager:
+    build: .
+    container_name: school-inventory-manager
+    restart: unless-stopped
+    ports:
+      - "5148:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Data Source=/app/App_Data/school_inventory.db"
+    volumes:
+      - ./App_Data:/app/App_Data

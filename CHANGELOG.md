@@ -1,3 +1,14 @@
+
+## v0.1.1 - Docker/server preparation
+
+- Added Dockerfile for .NET 8 container builds.
+- Added docker-compose.yml for local school server deployment.
+- Added .dockerignore to keep build context clean.
+- Moved default SQLite database path to App_Data/school_inventory.db.
+- Added automatic App_Data/imports folder creation on startup.
+- Added configuration switch for HTTPS redirection, disabled by default for school LAN/Docker testing.
+- Added DEPLOYMENT.md with server, Docker, firewall, update, and safety instructions.
+
 ## v13.1 - Home logo lockup fix
 - Replaced the full SVG-with-text logo in the home dashboard panel with a safer lockup: SVG icon + real HTML text.
 - This prevents the word `Inventory` from being clipped as `Invento` on narrower panels or cached SVG scaling.

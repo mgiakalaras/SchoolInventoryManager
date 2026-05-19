@@ -3,6 +3,11 @@ using SchoolInventoryManager.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure local runtime folders exist both on Windows and inside Docker.
+var appDataPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
+Directory.CreateDirectory(appDataPath);
+Directory.CreateDirectory(Path.Combine(appDataPath, "imports"));
+
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -22,7 +27,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// For school LAN / Docker deployment we usually serve plain HTTP.
+// Enable HTTPS redirection only if explicitly requested in configuration.
+if (builder.Configuration.GetValue<bool>("App:UseHttpsRedirection"))
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
