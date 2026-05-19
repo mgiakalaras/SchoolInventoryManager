@@ -1,4 +1,13 @@
+## v0.2.0 - Inventory pagination and compact table UI
 
+- Added pagination to the equipment list.
+- Added page size options: 25, 50, 100 results per page.
+- Added pagination controls above and below the equipment table.
+- Compact row number column in the equipment table.
+- Replaced equipment condition text with compact status icons and tooltips.
+- Replaced text action buttons with compact icon buttons.
+- Improved usability for large inventories with hundreds of devices.
+- 
 ## v0.1.7 - Mobile menu overlay fix
 
 - Διορθώθηκε το mobile hamburger menu ώστε να μην κρύβονται τα τελευταία links πίσω από το κάτω mobile navigation.

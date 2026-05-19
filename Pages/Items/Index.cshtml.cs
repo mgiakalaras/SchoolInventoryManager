@@ -49,6 +49,18 @@ public class IndexModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public EquipmentCondition? Condition { get; set; }
+    [BindProperty(SupportsGet = true)]
+    public int PageNumber { get; set; } = 1;
+
+    [BindProperty(SupportsGet = true)]
+    public int PageSize { get; set; } = 50;
+
+    public int[] PageSizeOptions { get; } = new[] { 25, 50, 100 };
+
+    public int TotalGroups { get; set; }
+    public int TotalPages { get; set; }
+    public int PageStart { get; set; }
+    public int PageEnd { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -97,8 +109,41 @@ public class IndexModel : PageModel
 
         BuildStats();
         BuildGroups();
+        ApplyPaging();
     }
+    private void ApplyPaging()
+    {
+        if (!PageSizeOptions.Contains(PageSize))
+        {
+            PageSize = 50;
+        }
 
+        if (PageNumber < 1)
+        {
+            PageNumber = 1;
+        }
+
+        TotalGroups = GroupedItems.Count;
+        TotalPages = TotalGroups == 0
+            ? 1
+            : (int)Math.Ceiling((double)TotalGroups / PageSize);
+
+        if (PageNumber > TotalPages)
+        {
+            PageNumber = TotalPages;
+        }
+
+        PageStart = TotalGroups == 0
+            ? 0
+            : ((PageNumber - 1) * PageSize) + 1;
+
+        PageEnd = Math.Min(PageNumber * PageSize, TotalGroups);
+
+        GroupedItems = GroupedItems
+            .Skip((PageNumber - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+    }
     private void BuildStats()
     {
         TotalMatchingRows = Items.Count;

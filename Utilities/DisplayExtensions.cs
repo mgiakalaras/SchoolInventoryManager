@@ -25,4 +25,17 @@ public static class DisplayExtensions
             _ => "badge badge-muted"
         };
     }
+
+    public static string Symbol(this EquipmentCondition condition)
+    {
+        return condition switch
+        {
+            EquipmentCondition.Working => "✅",
+            EquipmentCondition.NeedsCheck => "⚠️",
+            EquipmentCondition.Broken => "❌",
+            EquipmentCondition.ToWithdraw => "♻️",
+            EquipmentCondition.Stored => "📦",
+            _ => "❔"
+        };
+    }
 }

@@ -1,0 +1,45 @@
+﻿@model SchoolInventoryManager.Pages.Items.IndexModel
+
+@if (Model.TotalGroups > 0)
+{
+    <div class="pagination-bar">
+        <div class="pagination-info">
+            Εμφάνιση <strong>@Model.PageStart</strong>–<strong>@Model.PageEnd</strong>
+            από <strong>@Model.TotalGroups</strong> αποτελέσματα
+        </div>
+
+        <div class="pagination-actions">
+            @if (Model.PageNumber > 1)
+            {
+                <a class="btn small secondary"
+                       asp-page="Index"
+                       asp-route-Q="@Model.Q"
+                       asp-route-RoomId="@Model.RoomId"
+                       asp-route-CategoryId="@Model.CategoryId"
+                       asp-route-Condition="@Model.Condition"
+                       asp-route-PageSize="@Model.PageSize"
+                       asp-route-PageNumber="@(Model.PageNumber - 1)">
+                    ← Προηγούμενη
+                </a>
+            }
+
+            <span class="page-pill">
+                Σελίδα @Model.PageNumber / @Model.TotalPages
+            </span>
+
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <a class="btn small secondary"
+                       asp-page="Index"
+                       asp-route-Q="@Model.Q"
+                       asp-route-RoomId="@Model.RoomId"
+                       asp-route-CategoryId="@Model.CategoryId"
+                       asp-route-Condition="@Model.Condition"
+                       asp-route-PageSize="@Model.PageSize"
+                       asp-route-PageNumber="@(Model.PageNumber + 1)">
+                    Επόμενη →
+                </a>
+            }
+        </div>
+    </div>
+}
