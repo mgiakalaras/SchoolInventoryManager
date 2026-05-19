@@ -1,4 +1,10 @@
 
+## v0.1.4 - Creator bio in About
+
+- Added a creator section to the About page.
+- Added short bio for Marios Giakalaras.
+- Clarified that the application was created from a real school inventory workflow.
+
 ## v0.1.3 - About / Contact / Update Center
 
 - Added About page with application purpose, version and usage notes.
