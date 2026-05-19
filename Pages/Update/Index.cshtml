@@ -1,0 +1,106 @@
+@page
+@model SchoolInventoryManager.Pages.Update.IndexModel
+@{
+    ViewData["Title"] = "Update";
+}
+
+<section class="page-header app-info-hero update-hero">
+    <div>
+        <span class="eyebrow">Update Center</span>
+        <h1>Αναβάθμιση εφαρμογής</h1>
+        <p>Οδηγός για ασφαλή ενημέρωση της εφαρμογής χωρίς να χαθούν τα δεδομένα απογραφής.</p>
+    </div>
+    <div class="version-pill">
+        <strong>@Model.Version</strong>
+        <span>@Model.Channel</span>
+    </div>
+</section>
+
+<section class="info-grid">
+    <article class="card info-card wide">
+        <h2>Πριν από κάθε update</h2>
+        <div class="update-warning">
+            <strong>Πρώτα backup/export, μετά update.</strong>
+            <span>Έτσι αν κάτι στραβώσει, γυρνάμε πίσω χωρίς δράματα και καφέδες πανικού.</span>
+        </div>
+        <div class="support-checklist">
+            <label><input type="checkbox" disabled /> Κάνε Export Excel από την εφαρμογή.</label>
+            <label><input type="checkbox" disabled /> Έλεγξε ότι το αρχείο ανοίγει κανονικά.</label>
+            <label><input type="checkbox" disabled /> Αν είσαι σε Docker, κράτησε backup το volume ή το App_Data.</label>
+            <label><input type="checkbox" disabled /> Μετά κάνε update/redeploy.</label>
+        </div>
+        <div class="actions">
+            <a class="btn" asp-page="/ImportExport/Index">Πήγαινε σε Export</a>
+            <a class="btn secondary" asp-page="/Maintenance/Index">Συντήρηση</a>
+        </div>
+    </article>
+
+    <article class="card info-card">
+        <h2>Τρέχουσα εγκατάσταση</h2>
+        <dl class="meta-list">
+            <div><dt>Version</dt><dd>@Model.Version</dd></div>
+            <div><dt>Κανάλι</dt><dd>@Model.Channel</dd></div>
+            <div><dt>Repository</dt><dd><a href="@Model.RepositoryUrl" target="_blank" rel="noopener">GitHub</a></dd></div>
+            <div><dt>Releases</dt><dd><a href="@Model.ReleasesUrl" target="_blank" rel="noopener">Διαθέσιμες εκδόσεις</a></dd></div>
+        </dl>
+    </article>
+
+    <article class="card info-card">
+        <h2>Τι δεν κάνει ακόμα</h2>
+        <p>
+            Η εφαρμογή δεν πατάει μόνη της κουμπί για να αλλάξει τον ίδιο της τον container/server.
+            Αυτό θα ήταν ριψοκίνδυνο χωρίς login, backup και έλεγχο δικαιωμάτων.
+        </p>
+        <p>
+            Για τώρα δίνει ασφαλείς οδηγίες update. Αργότερα μπορεί να συνδεθεί με Portainer GitOps ή webhook.
+        </p>
+    </article>
+
+    <article class="card info-card wide">
+        <h2>Update σε Docker / Portainer</h2>
+        <p>Αν το stack έχει στηθεί από GitHub repository μέσα από Portainer:</p>
+        <ol class="steps-list">
+            <li>Πήγαινε <strong>Portainer → Stacks → school-inventory-manager</strong>.</li>
+            <li>Πάτα <strong>Pull and redeploy</strong> ή <strong>Update the stack</strong>, ανάλογα με την έκδοση Portainer.</li>
+            <li>Άφησέ το να κάνει build/redeploy.</li>
+            <li>Άνοιξε ξανά την εφαρμογή από PC/tablet/κινητό.</li>
+        </ol>
+        <p>Εναλλακτικά, από terminal στον server:</p>
+        <div class="copy-row">
+            <pre class="code-box"><code id="dockerUpdateCmd">cd /DATA/AppData/SchoolInventoryManager
+git pull
+docker compose up -d --build</code></pre>
+            <button class="btn small secondary" type="button" onclick="copyCode('dockerUpdateCmd')">Copy</button>
+        </div>
+    </article>
+
+    <article class="card info-card wide">
+        <h2>Update σε Visual Studio / τοπική εγκατάσταση</h2>
+        <p>Αν δουλεύεις από το project στον υπολογιστή σου:</p>
+        <div class="copy-row">
+            <pre class="code-box"><code id="localUpdateCmd">git pull
+# Μετά στο Visual Studio:
+# Clean Solution
+# Build Solution
+# Run</code></pre>
+            <button class="btn small secondary" type="button" onclick="copyCode('localUpdateCmd')">Copy</button>
+        </div>
+    </article>
+</section>
+
+@section Scripts {
+<script>
+    function copyCode(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        navigator.clipboard.writeText(el.innerText).then(() => {
+            const buttons = document.querySelectorAll('button[onclick*="' + id + '"]');
+            buttons.forEach(btn => {
+                const old = btn.innerText;
+                btn.innerText = 'Copied';
+                setTimeout(() => btn.innerText = old, 1200);
+            });
+        });
+    }
+</script>
+}

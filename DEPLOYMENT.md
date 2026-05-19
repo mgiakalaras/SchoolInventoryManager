@@ -1,4 +1,28 @@
 
+## Updating after v0.1.3
+
+Before updating, export the inventory data from the application or back up the Docker volume that contains `App_Data`.
+
+### Portainer repository stack
+
+If the stack was deployed from the GitHub repository, open Portainer and use the stack update/redeploy action for `school-inventory-manager`.
+
+### Terminal / Docker Compose
+
+```bash
+cd /DATA/AppData/SchoolInventoryManager
+git pull
+docker compose up -d --build
+```
+
+### Local Visual Studio development
+
+```powershell
+git pull
+```
+
+Then run Clean Solution, Build Solution and Run from Visual Studio.
+
 ## Portainer Repository deployment note
 
 For Portainer Repository deployments, the application uses a Docker named volume instead of a relative host bind mount:

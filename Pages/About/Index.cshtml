@@ -1,0 +1,67 @@
+@page
+@model SchoolInventoryManager.Pages.About.IndexModel
+@{
+    ViewData["Title"] = "About";
+}
+
+<section class="page-header app-info-hero">
+    <div>
+        <span class="eyebrow">About</span>
+        <h1>School Inventory Manager</h1>
+        <p>Εφαρμογή απογραφής Η/Υ και ψηφιακού εξοπλισμού για σχολικές μονάδες.</p>
+    </div>
+    <div class="version-pill">
+        <strong>@Model.Version</strong>
+        <span>@Model.Channel</span>
+    </div>
+</section>
+
+<section class="info-grid">
+    <article class="card info-card wide">
+        <h2>Τι κάνει η εφαρμογή</h2>
+        <p>
+            Το School Inventory Manager βοηθά ένα σχολείο να οργανώσει την απογραφή ψηφιακού εξοπλισμού
+            ανά χώρο, κατηγορία και κατάσταση. Στόχος είναι να αντικαταστήσει τα χειροκίνητα αρχεία με
+            μια πιο καθαρή, επαναχρησιμοποιήσιμη και εκτυπώσιμη διαδικασία.
+        </p>
+        <div class="feature-list">
+            <span>Χώροι / αίθουσες</span>
+            <span>Εξοπλισμός ανά χώρο</span>
+            <span>Import / Export Excel</span>
+            <span>Αναφορές PDF / εκτύπωση</span>
+            <span>Στατιστικά απογραφής</span>
+            <span>Responsive χρήση σε κινητό/tablet</span>
+        </div>
+    </article>
+
+    <article class="card info-card">
+        <h2>Για ποιον είναι</h2>
+        <p>
+            Για σχολικές μονάδες που θέλουν να απογράφουν υπολογιστές, οθόνες, tablets, βιντεοπροβολείς,
+            εκτυπωτές, δικτυακό εξοπλισμό και γενικά ψηφιακά μέσα χωρίς να βασίζονται σε σκόρπια αρχεία.
+        </p>
+    </article>
+
+    <article class="card info-card">
+        <h2>Τρέχουσα έκδοση</h2>
+        <dl class="meta-list">
+            <div><dt>Version</dt><dd>@Model.Version</dd></div>
+            <div><dt>Κανάλι</dt><dd>@Model.Channel</dd></div>
+            <div><dt>Τύπος</dt><dd>Offline-first web app</dd></div>
+            <div><dt>Βάση</dt><dd>SQLite</dd></div>
+        </dl>
+    </article>
+
+    <article class="card info-card wide">
+        <h2>Σημείωση χρήσης</h2>
+        <p>
+            Η εφαρμογή είναι σε φάση MVP/δοκιμών. Πριν από κάθε αναβάθμιση ή μαζική εισαγωγή δεδομένων,
+            κράτησε πάντα export/backup των δεδομένων. Το επίσημο παραδοτέο παραμένει η καθαρή εκτύπωση
+            ή το PDF απογραφής με υπογραφές.
+        </p>
+        <div class="actions">
+            <a class="btn" asp-page="/Reports/Index">Αναφορές</a>
+            <a class="btn secondary" asp-page="/Update/Index">Έλεγχος / αναβάθμιση</a>
+        </div>
+    </article>
+</section>

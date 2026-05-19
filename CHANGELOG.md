@@ -1,4 +1,13 @@
 
+## v0.1.3 - About / Contact / Update Center
+
+- Added About page with application purpose, version and usage notes.
+- Added Contact page with support checklist and issue-report template.
+- Added Update Center page with safe update workflow for Docker/Portainer and local Visual Studio use.
+- Added shared AppVersion utility for displaying the current application version.
+- Added navigation links for About, Contact and Update pages.
+- Added responsive styling for informational/admin pages.
+
 ## v0.1.2 - Portainer volume fix
 
 - Replaced the relative bind mount `./App_Data:/app/App_Data` with a Docker named volume.

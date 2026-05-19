@@ -1,0 +1,62 @@
+@page
+@model SchoolInventoryManager.Pages.Contact.IndexModel
+@{
+    ViewData["Title"] = "Επικοινωνία";
+}
+
+<section class="page-header app-info-hero">
+    <div>
+        <span class="eyebrow">Επικοινωνία</span>
+        <h1>Υποστήριξη και στοιχεία έργου</h1>
+        <p>Χρήσιμες πληροφορίες για αναφορά προβλήματος, προτάσεις και τεχνική υποστήριξη.</p>
+    </div>
+</section>
+
+<section class="info-grid">
+    <article class="card info-card wide">
+        <h2>Πώς αναφέρουμε πρόβλημα</h2>
+        <p>
+            Για να διορθώνεται γρήγορα ένα θέμα, κράτησε όσο γίνεται πιο συγκεκριμένες πληροφορίες:
+            σελίδα, βήματα που έκανες, μήνυμα λάθους, screenshot και αν συνέβη σε PC, tablet ή κινητό.
+        </p>
+        <div class="support-checklist">
+            <label><input type="checkbox" disabled /> Σε ποια σελίδα έγινε το πρόβλημα;</label>
+            <label><input type="checkbox" disabled /> Τι πάτησες ακριβώς πριν εμφανιστεί;</label>
+            <label><input type="checkbox" disabled /> Υπάρχει screenshot ή μήνυμα λάθους;</label>
+            <label><input type="checkbox" disabled /> Είναι σε PC, tablet ή κινητό;</label>
+            <label><input type="checkbox" disabled /> Υπάρχουν logs από Portainer/Docker;</label>
+        </div>
+    </article>
+
+    <article class="card info-card">
+        <h2>Τεχνικά στοιχεία</h2>
+        <dl class="meta-list">
+            <div><dt>Εφαρμογή</dt><dd>School Inventory Manager</dd></div>
+            <div><dt>Τεχνολογία</dt><dd>ASP.NET Core Razor Pages</dd></div>
+            <div><dt>Βάση δεδομένων</dt><dd>SQLite</dd></div>
+            <div><dt>Deployment</dt><dd>Docker / Portainer</dd></div>
+        </dl>
+    </article>
+
+    <article class="card info-card">
+        <h2>Γρήγορες ενέργειες</h2>
+        <div class="stacked-actions">
+            <a class="btn" asp-page="/ImportExport/Index">Import / Export</a>
+            <a class="btn secondary" asp-page="/Maintenance/Index">Συντήρηση βάσης</a>
+            <a class="btn secondary" asp-page="/Update/Index">Οδηγίες αναβάθμισης</a>
+        </div>
+    </article>
+
+    <article class="card info-card wide">
+        <h2>Πρότυπο αναφοράς προβλήματος</h2>
+        <p>Αν χρειαστείς βοήθεια, μπορείς να αντιγράψεις το παρακάτω και να το συμπληρώσεις.</p>
+        <pre class="code-box">Σελίδα:
+Συσκευή: PC / Tablet / Κινητό
+Browser:
+Τι έκανα:
+Τι περίμενα να γίνει:
+Τι έγινε τελικά:
+Μήνυμα λάθους / screenshot:
+Logs από Portainer, αν υπάρχουν:</pre>
+    </article>
+</section>

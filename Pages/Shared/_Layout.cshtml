@@ -34,6 +34,9 @@
             <a asp-page="/ImportExport/Index">Import / Export</a>
             <a asp-page="/Maintenance/Index">Συντήρηση</a>
             <a asp-page="/Reports/Index">Αναφορές</a>
+            <a asp-page="/Update/Index">Update</a>
+            <a asp-page="/About/Index">About</a>
+            <a asp-page="/Contact/Index">Επικοινωνία</a>
         </nav>
     </header>
 
@@ -53,6 +56,11 @@
 
     <footer class="footer">
         <span>© @DateTime.Now.Year - School Inventory Manager</span>
+        <span class="footer-links">
+            <a asp-page="/About/Index">About</a>
+            <a asp-page="/Contact/Index">Επικοινωνία</a>
+            <a asp-page="/Update/Index">Update</a>
+        </span>
         <span>Offline-first σχολική απογραφή</span>
     </footer>
 
