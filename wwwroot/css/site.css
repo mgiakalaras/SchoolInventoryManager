@@ -1775,3 +1775,53 @@ button:disabled,
     .meta-list div { grid-template-columns: 1fr; gap: .25rem; }
     .feature-list span { width: 100%; justify-content: center; }
 }
+
+/* v16 - Mobile bottom navigation stabilization
+   Fixes visual jitter/dancing on mobile browsers while scrolling. */
+@media (max-width: 880px) {
+    html,
+    body {
+        overflow-x: hidden;
+        overscroll-behavior-x: none;
+    }
+
+    body {
+        padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .mobile-bottom-nav {
+        height: calc(66px + env(safe-area-inset-bottom, 0px));
+        min-height: calc(66px + env(safe-area-inset-bottom, 0px));
+        padding: .34rem .45rem calc(.34rem + env(safe-area-inset-bottom, 0px));
+        background: #08111f;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        will-change: transform;
+        contain: layout paint;
+        isolation: isolate;
+    }
+
+    .mobile-bottom-nav a {
+        min-height: 52px;
+        line-height: 1;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-bottom-nav span,
+    .mobile-bottom-nav strong {
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+
+    .mobile-bottom-nav a,
+    .mobile-bottom-nav a:hover,
+    .mobile-bottom-nav .mobile-primary-action {
+        transition: none;
+    }
+}

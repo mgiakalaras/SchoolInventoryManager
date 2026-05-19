@@ -1,4 +1,10 @@
 
+## v0.1.5 - Mobile bottom navigation stabilization
+
+- Σταθεροποιήθηκε το κάτω mobile navigation bar ώστε να μη φαίνεται σαν να “χορεύει” κατά το scroll σε κινητά/tablets.
+- Αφαιρέθηκε το έντονο backdrop blur από το κάτω mobile menu για καλύτερη απόδοση σε mobile browsers.
+- Προστέθηκαν mobile CSS optimizations για fixed navigation, safe-area και touch rendering.
+
 ## v0.1.4 - Creator bio in About
 
 - Added a creator section to the About page.
