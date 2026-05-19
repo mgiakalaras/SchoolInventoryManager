@@ -1,4 +1,11 @@
 
+## v0.1.2 - Portainer volume fix
+
+- Replaced the relative bind mount `./App_Data:/app/App_Data` with a Docker named volume.
+- Fixed Portainer Repository deployment on systems where `/data/compose/...` cannot be created because the root filesystem is read-only.
+- The SQLite database remains persistent inside the Docker named volume `school_inventory_app_data`.
+
+
 ## v0.1.1 - Docker/server preparation
 
 - Added Dockerfile for .NET 8 container builds.

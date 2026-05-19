@@ -1,3 +1,28 @@
+
+## Portainer Repository deployment note
+
+For Portainer Repository deployments, the application uses a Docker named volume instead of a relative host bind mount:
+
+```yaml
+volumes:
+  - school_inventory_app_data:/app/App_Data
+```
+
+This avoids errors like:
+
+```text
+mkdir /data: read-only file system
+```
+
+The SQLite database remains persistent, but it is stored inside a Docker volume managed by Docker/Portainer rather than in a visible project folder. In Portainer you can see it under:
+
+```text
+Volumes → school_inventory_app_data
+```
+
+For production use, add a backup process for this volume before relying on the app for official school records.
+
+
 # School Inventory Manager - Docker / Server Deployment
 
 This deployment is intended for a school LAN server, for example ZimaOS, CasaOS, a Linux server, or a Windows machine with Docker Desktop.

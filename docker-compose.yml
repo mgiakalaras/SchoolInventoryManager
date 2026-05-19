@@ -10,4 +10,7 @@ services:
       ASPNETCORE_ENVIRONMENT: "Production"
       ConnectionStrings__DefaultConnection: "Data Source=/app/App_Data/school_inventory.db"
     volumes:
-      - ./App_Data:/app/App_Data
+      - school_inventory_app_data:/app/App_Data
+
+volumes:
+  school_inventory_app_data:
