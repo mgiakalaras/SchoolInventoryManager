@@ -1938,4 +1938,45 @@ button:disabled,
     width: auto !important;
   }
 }
+/* TEMP TEST - mobile menu visibility fix */
+@media (max-width: 880px) {
+    .topbar {
+        z-index: 80 !important;
+        overflow: visible !important;
+    }
 
+    .nav-toggle:checked ~ .topbar {
+        z-index: 90 !important;
+    }
+
+        .nav-toggle:checked ~ .topbar .nav {
+            position: fixed !important;
+            top: calc(var(--mobile-topbar-height, 68px) + 8px) !important;
+            left: .75rem !important;
+            right: .75rem !important;
+            bottom: calc(var(--mobile-bottom-nav-height, 74px) + 12px + env(safe-area-inset-bottom)) !important;
+            width: auto !important;
+            max-height: none !important;
+            min-height: 260px !important;
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            align-content: start !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: none !important;
+            z-index: 100 !important;
+            background: rgba(10, 20, 36, .99) !important;
+            border: 1px solid rgba(148, 163, 184, .25) !important;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .55) !important;
+        }
+
+    .nav-toggle:checked ~ .mobile-bottom-nav {
+        z-index: 40 !important;
+    }
+
+    .nav-toggle:checked ~ .nav-backdrop {
+        z-index: 70 !important;
+    }
+}
