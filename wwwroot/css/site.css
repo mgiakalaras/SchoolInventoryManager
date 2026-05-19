@@ -2149,3 +2149,54 @@ button:disabled,
         justify-content: flex-end;
     }
 }
+/* Inventory row details caret */
+.row-details-summary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: .5rem !important;
+    cursor: pointer;
+    list-style: none;
+}
+
+    .row-details-summary::marker {
+        content: "";
+    }
+
+    .row-details-summary::after {
+        content: none !important;
+    }
+
+.row-details summary::after {
+    content: none !important;
+}
+
+.summary-hint {
+    display: none !important;
+}
+
+.details-caret {
+    width: 1.35rem;
+    height: 1.35rem;
+    min-width: 1.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .45rem;
+    color: var(--muted);
+    background: rgba(148, 163, 184, .10);
+    border: 1px solid rgba(148, 163, 184, .16);
+    font-size: .8rem;
+    line-height: 1;
+    transition: transform .15s ease, color .15s ease, background .15s ease, border-color .15s ease;
+}
+
+.row-details summary:hover .details-caret {
+    color: var(--text);
+    background: rgba(96, 165, 250, .14);
+    border-color: rgba(96, 165, 250, .25);
+}
+
+.row-details[open] .details-caret {
+    transform: rotate(180deg);
+}

@@ -1,3 +1,9 @@
+## v0.2.1 - Inventory row expand caret polish
+
+- Replaced the repeated "Άνοιγμα" text in the equipment table with a compact caret icon.
+- Moved the expand/collapse indicator before the item name.
+- Improved readability of grouped equipment rows.
+
 ## v0.2.0 - Inventory pagination and compact table UI
 
 - Added pagination to the equipment list.
