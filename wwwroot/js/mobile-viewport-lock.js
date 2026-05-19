@@ -2,10 +2,16 @@
     function updateMobileShell() {
         var root = document.documentElement;
         var topbar = document.querySelector('.topbar');
+        var bottomNav = document.querySelector('.mobile-bottom-nav');
 
         if (topbar) {
             var topbarHeight = Math.ceil(topbar.getBoundingClientRect().height);
             root.style.setProperty('--mobile-topbar-height', topbarHeight + 'px');
+        }
+
+        if (bottomNav) {
+            var bottomNavHeight = Math.ceil(bottomNav.getBoundingClientRect().height);
+            root.style.setProperty('--mobile-bottom-nav-height', bottomNavHeight + 'px');
         }
 
         if (window.visualViewport) {
@@ -24,5 +30,6 @@
 
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', updateMobileShell, { passive: true });
+        window.visualViewport.addEventListener('scroll', updateMobileShell, { passive: true });
     }
 })();

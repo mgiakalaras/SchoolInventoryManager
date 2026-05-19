@@ -1,4 +1,10 @@
 
+## v0.1.7 - Mobile menu overlay fix
+
+- Διορθώθηκε το mobile hamburger menu ώστε να μην κρύβονται τα τελευταία links πίσω από το κάτω mobile navigation.
+- Το ανοιχτό mobile menu πλέον κάθεται πάνω από το bottom nav και έχει δικό του scroll.
+- Προστέθηκε δυναμικός υπολογισμός ύψους του bottom navigation στο `mobile-viewport-lock.js`.
+
 ## v0.1.6 - Mobile navigation real fix
 
 - Restored the full `site.css` from v0.1.4 after the previous mobile patch accidentally replaced the file with only a small override.

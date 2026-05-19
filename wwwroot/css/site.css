@@ -1885,3 +1885,57 @@ button:disabled,
   }
 }
 
+/* v17.1 - Mobile hamburger menu overlay fix
+   Keeps the opened top menu above the fixed bottom navigation and makes it scrollable
+   so the last links, such as Επικοινωνία, are not hidden on phones. */
+@media (max-width: 880px) {
+  .topbar {
+    z-index: 90 !important;
+  }
+
+  .mobile-bottom-nav {
+    z-index: 60 !important;
+  }
+
+  .nav-toggle:checked ~ .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70 !important;
+    background: rgba(0, 0, 0, .34);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .topbar .nav {
+    z-index: 100 !important;
+  }
+
+  .nav-toggle:checked ~ .topbar .nav {
+    position: fixed !important;
+    top: calc(var(--mobile-topbar-height, 68px) + .55rem) !important;
+    right: .75rem !important;
+    bottom: calc(var(--mobile-bottom-nav-height, 82px) + .65rem) !important;
+    width: min(330px, calc(100vw - 1.5rem)) !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: .75rem .75rem 1rem !important;
+    scroll-padding-bottom: 1rem;
+  }
+
+  .nav-toggle:checked ~ .topbar .nav a:last-child {
+    margin-bottom: .25rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .nav-toggle:checked ~ .topbar .nav {
+    left: .75rem !important;
+    right: .75rem !important;
+    width: auto !important;
+  }
+}
+
