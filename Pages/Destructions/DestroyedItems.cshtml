@@ -1,0 +1,135 @@
+@page
+@model SchoolInventoryManager.Pages.Destructions.DestroyedItemsModel
+@using SchoolInventoryManager.Utilities
+@{
+    ViewData["Title"] = "Κατεστραμμένα υλικά";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Κατεστραμμένα υλικά</h1>
+        <p>Ιστορικό υλικών που έχουν οριστικοποιηθεί σε πράξη/πρωτόκολλο καταστροφής.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary with-icon btn-back" asp-page="Index">Φάκελοι</a>
+        <a class="btn with-icon btn-new" asp-page="SelectItems">Νέος φάκελος</a>
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-title-row">
+        <div>
+            <h2>Ιστορικό κατεστραμμένων υλικών</h2>
+            <p class="muted">
+                Τα υλικά εδώ έχουν αφαιρεθεί από την ενεργή απογραφή, αλλά παραμένουν διαθέσιμα για έλεγχο και τεκμηρίωση.
+            </p>
+        </div>
+        <span class="badge badge-dark">@Model.TotalDestroyedItems υλικά</span>
+    </div>
+
+    <form method="get" class="filters-bar">
+        <div class="field grow">
+            <label for="search">Αναζήτηση</label>
+            <input id="search" name="Search" value="@Model.Search" placeholder="Υλικό, serial, χώρος, πράξη, πρωτόκολλο..." />
+        </div>
+        <div class="filter-actions action-panel">
+            <button class="btn" type="submit">Αναζήτηση</button>
+            <a class="btn secondary" asp-page="DestroyedItems">Καθαρισμός</a>
+        </div>
+    </form>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="empty-state compact-empty">
+            <h3>Δεν βρέθηκαν κατεστραμμένα υλικά</h3>
+            <p>Θα εμφανιστούν εδώ όταν οριστικοποιηθεί ένας φάκελος καταστροφής.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap responsive-table-wrap">
+            <table class="responsive-table compact-table destroyed-items-table">
+                <thead>
+                    <tr>
+                        <th>Α/Α</th>
+                        <th>Υλικό</th>
+                        <th>Χώρος / Κατηγορία</th>
+                        <th>Serial / Σελ. βιβλίου</th>
+                        <th>Ποσότητα</th>
+                        <th>Πράξη</th>
+                        <th>Πρωτόκολλο</th>
+                        <th>Καταστράφηκε</th>
+                        <th>Φάκελος</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var row = 1;
+                    }
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td data-label="Α/Α">@(row++)</td>
+                            <td data-label="Υλικό">
+                                <strong>@item.ItemNameSnapshot</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.BrandSnapshot) || !string.IsNullOrWhiteSpace(item.ModelSnapshot))
+                                {
+                                    <br />
+                                    <span class="muted">@item.BrandSnapshot @item.ModelSnapshot</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.NotesSnapshot))
+                                {
+                                    <br />
+                                    <span class="muted">@item.NotesSnapshot</span>
+                                }
+                            </td>
+                            <td data-label="Χώρος / Κατηγορία">
+                                <strong>@(item.RoomSnapshot ?? "-")</strong><br />
+                                <span class="muted">@(item.CategorySnapshot ?? "-")</span>
+                            </td>
+                            <td data-label="Serial / Σελ. βιβλίου">
+                                <strong>@(item.SerialNumberSnapshot ?? "-")</strong><br />
+                                <span class="muted">Σελ.: @(item.RegistryBookPageSnapshot ?? "-")</span>
+                            </td>
+                            <td data-label="Ποσότητα">@item.QuantitySnapshot</td>
+                            <td data-label="Πράξη">
+                                <strong>@(item.DestructionBatch?.ActNumber ?? "χωρίς αριθμό")</strong><br />
+                                <span class="muted">@item.DestructionBatch?.ActDate.ToString("dd/MM/yyyy")</span>
+                            </td>
+                            <td data-label="Πρωτόκολλο">
+                                <strong>@(item.DestructionBatch?.ProtocolNumber ?? "χωρίς αριθμό")</strong><br />
+                                <span class="muted">@item.DestructionBatch?.ProtocolDate.ToString("dd/MM/yyyy")</span>
+                            </td>
+                            <td data-label="Καταστράφηκε">
+                                @if (item.InventoryItem?.DestroyedAt != null)
+                                {
+                                    <strong>@item.InventoryItem.DestroyedAt.Value.ToString("dd/MM/yyyy")</strong>
+                                }
+                                else if (item.DestructionBatch?.FinalizedAt != null)
+                                {
+                                    <strong>@item.DestructionBatch.FinalizedAt.Value.ToString("dd/MM/yyyy")</strong>
+                                }
+                                else
+                                {
+                                    <span class="muted">-</span>
+                                }
+                                <br />
+                                <span class="badge badge-dark">Κατεστραμμένο</span>
+                            </td>
+                            <td data-label="Φάκελος">
+                                @if (item.DestructionBatch != null)
+                                {
+                                    <div class="actions icon-actions">
+                                        <a class="btn small secondary with-icon btn-folder" asp-page="Edit" asp-route-id="@item.DestructionBatchId">Άνοιγμα</a>
+                                        <a class="btn small secondary with-icon btn-act" asp-page="Act" asp-route-id="@item.DestructionBatchId">Πράξη</a>
+                                        <a class="btn small secondary with-icon btn-protocol" asp-page="Protocol" asp-route-id="@item.DestructionBatchId">Πρωτόκολλο</a>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

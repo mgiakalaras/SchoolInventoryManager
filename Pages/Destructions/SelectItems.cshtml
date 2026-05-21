@@ -1,0 +1,116 @@
+@page
+@model SchoolInventoryManager.Pages.Destructions.SelectItemsModel
+@{
+    ViewData["Title"] = "Επιλογή υλικών προς καταστροφή";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Επιλογή υλικών προς καταστροφή</h1>
+        <p>Φίλτραρε και επίλεξε τα μη λειτουργικά ή προς απόσυρση υλικά που θα μπουν σε νέο φάκελο καταστροφής.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary with-icon btn-back" asp-page="Index">Πίσω στους φακέλους</a>
+    </div>
+</section>
+
+<form method="get" class="card filter-card">
+    <div class="form-grid compact-filter-grid">
+        <div class="form-row">
+            <label asp-for="Q">Αναζήτηση</label>
+            <input asp-for="Q" placeholder="αντικείμενο, serial, σελ. βιβλίου, παρατηρήσεις" />
+        </div>
+        <div class="form-row">
+            <label asp-for="RoomId">Χώρος</label>
+            <select asp-for="RoomId" asp-items="Model.Rooms">
+                <option value="">Όλοι οι χώροι</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label asp-for="CategoryId">Κατηγορία</label>
+            <select asp-for="CategoryId" asp-items="Model.Categories">
+                <option value="">Όλες οι κατηγορίες</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label asp-for="Condition">Κατάσταση</label>
+            <select asp-for="Condition" asp-items="Html.GetEnumSelectList<EquipmentCondition>()">
+                <option value="">Προτεινόμενα: έλεγχος/χαλασμένο/απόσυρση</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-actions-bar">
+        <div class="form-actions-left">
+            <button class="btn" type="submit">Φίλτρο</button>
+            <a class="btn secondary" asp-page="SelectItems">Καθαρισμός</a>
+        </div>
+    </div>
+</form>
+
+<form method="post" class="card destruction-selection-card">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div class="section-title-row">
+        <div>
+            <h2>Υλικά προς επιλογή</h2>
+            <p class="muted">Η τελική καταστροφή δεν γίνεται τώρα. Πρώτα δημιουργείται φάκελος, πράξη και πρωτόκολλο.</p>
+        </div>
+        <div class="action-panel">
+            <span class="action-panel-title">Επιλογή υλικών</span>
+            <button class="btn with-icon btn-new" type="submit">Δημιουργία φακέλου</button>
+        </div>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="empty-state compact-empty">
+            <h3>Δεν βρέθηκαν υλικά</h3>
+            <p>Δοκίμασε διαφορετικά φίλτρα ή έλεγξε τις καταστάσεις εξοπλισμού.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap responsive-table-wrap">
+            <table class="responsive-table compact-table">
+                <thead>
+                    <tr>
+                        <th>Επιλογή</th>
+                        <th>Υλικό</th>
+                        <th>Χώρος</th>
+                        <th>Κατηγορία</th>
+                        <th>Ποσότητα</th>
+                        <th>Σελ. βιβλίου</th>
+                        <th>Κατάσταση</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        var details = string.Join(" ", new[] { item.Brand, item.Model }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                        <tr>
+                            <td data-label="Επιλογή">
+                                <input type="checkbox" name="SelectedItemIds" value="@item.Id" />
+                            </td>
+                            <td data-label="Υλικό">
+                                <strong>@item.Name</strong>
+                                @if (!string.IsNullOrWhiteSpace(details))
+                                {
+                                    <div class="muted">@details</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+                                {
+                                    <div class="muted">Serial: @item.SerialNumber</div>
+                                }
+                            </td>
+                            <td data-label="Χώρος">@item.Room?.Name</td>
+                            <td data-label="Κατηγορία">@(item.InventoryCategory?.Name ?? "-")</td>
+                            <td data-label="Ποσότητα">@item.Quantity</td>
+                            <td data-label="Σελ. βιβλίου">@(item.InventoryBookPage ?? "-")</td>
+                            <td data-label="Κατάσταση"><span class="@item.Condition.CssClass()">@item.Condition.GetDisplayName()</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</form>

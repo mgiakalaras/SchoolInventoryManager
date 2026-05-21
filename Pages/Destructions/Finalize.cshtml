@@ -1,0 +1,44 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Destructions.FinalizeModel
+@{
+    ViewData["Title"] = "Οριστικοποίηση καταστροφής";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Οριστικοποίηση καταστροφής</h1>
+        <p>Μετά την οριστικοποίηση τα υλικά φεύγουν από την ενεργή απογραφή και μένουν μόνο στο ιστορικό.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary with-icon btn-back" asp-page="Edit" asp-route-id="@Model.Batch?.Id">Πίσω στον φάκελο</a>
+    </div>
+</section>
+
+@if (Model.Batch != null)
+{
+    <div class="card destruction-warning-card">
+        <h2>Προσοχή</h2>
+        <p>
+            Θα οριστικοποιηθεί ο φάκελος καταστροφής και θα μαρκαριστούν ως κατεστραμμένα
+            <strong>@Model.Batch.Items.Count</strong> υλικά. Δεν θα εμφανίζονται πλέον στην ενεργή απογραφή.
+        </p>
+        <p class="muted">Δεν γίνεται hard delete. Τα στοιχεία παραμένουν στο ιστορικό και στα έγγραφα πράξης/πρωτοκόλλου.</p>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="card soft" style="margin-top:1rem;"></div>
+
+    <form method="post" class="card" style="margin-top:1rem;">
+        <h2>Επιβεβαίωση</h2>
+        <p>Βεβαιώσου ότι έχεις εκτυπώσει/αποθηκεύσει την πράξη και το πρωτόκολλο πριν συνεχίσεις.</p>
+        <div class="form-actions-bar">
+            <div class="form-actions-left">
+                <button class="btn danger with-icon btn-finalize" type="submit" disabled="@Model.Batch.IsFinalized">Οριστικοποίηση καταστροφής</button>
+            </div>
+            <div class="form-actions-right">
+                <a class="btn secondary with-icon btn-act" asp-page="Act" asp-route-id="@Model.Batch.Id">Πράξη</a>
+                <a class="btn secondary with-icon btn-protocol" asp-page="Protocol" asp-route-id="@Model.Batch.Id">Πρωτόκολλο</a>
+                <a class="btn secondary with-icon btn-back" asp-page="Edit" asp-route-id="@Model.Batch.Id">Άκυρο</a>
+            </div>
+        </div>
+    </form>
+}

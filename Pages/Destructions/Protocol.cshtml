@@ -1,0 +1,67 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Destructions.ProtocolModel
+@{
+    ViewData["Title"] = "Πρωτόκολλο καταστροφής υλικού";
+}
+
+<div class="print-toolbar no-print actions">
+    <a class="btn secondary with-icon btn-back" asp-page="Edit" asp-route-id="@Model.Batch?.Id">Πίσω</a>
+    <button class="btn with-icon btn-report" type="button" onclick="window.print()">Εκτύπωση / PDF</button>
+</div>
+
+@if (Model.Batch != null)
+{
+    <article class="destruction-print-page legal-document">
+        <h1>Πρωτόκολλο</h1>
+        <h2>Πρωτόκολλο Καταστροφής Υλικού</h2>
+
+        <p>
+            Στο/στην <strong>@(Model.Batch.Location ?? Model.Batch.SchoolName)</strong> και στον χώρο του
+            <strong>@Model.Batch.SchoolName</strong>, η τριμελής επιτροπή που ορίστηκε με την αριθμ.
+            <strong>@(Model.Batch.ActNumber ?? "../...")</strong> πράξη της σχολικής επιτροπής και αποτελείται από τους:
+        </p>
+
+        <ol>
+            @foreach (var member in Model.Batch.CommitteeMembers.OrderBy(x => x.SortOrder))
+            {
+                <li>@member.FullName @(string.IsNullOrWhiteSpace(member.Role) ? "" : $"- {member.Role}")</li>
+            }
+        </ol>
+
+        <p>
+            προχώρησε στις <strong>@Model.Batch.ProtocolDate.ToString("dd/MM/yyyy")</strong> στην καταστροφή των παρακάτω υλικών,
+            των οποίων η καταστροφή είχε εγκριθεί με την αριθμ.
+            <strong>@(Model.Batch.ActNumber ?? "../...")</strong> πράξη της σχολικής επιτροπής.
+        </p>
+
+        <ol class="destruction-items-list">
+            @foreach (var item in Model.Batch.Items.OrderBy(x => x.SortOrder))
+            {
+                <li>
+                    @item.ItemNameSnapshot
+                    @if (!string.IsNullOrWhiteSpace(item.SerialNumberSnapshot))
+                    {
+                        <text> - Serial: @item.SerialNumberSnapshot</text>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(item.RegistryBookPageSnapshot))
+                    {
+                        <text> - σελ. βιβλίου υλικού @item.RegistryBookPageSnapshot</text>
+                    }
+                </li>
+            }
+        </ol>
+
+        <p>Για τον σκοπό αυτό συντάχθηκε το παρόν πρωτόκολλο.</p>
+
+        <footer class="destruction-signatures protocol-signatures">
+            <div></div>
+            <div>
+                <strong>Η Επιτροπή</strong>
+                @foreach (var member in Model.Batch.CommitteeMembers.OrderBy(x => x.SortOrder))
+                {
+                    <span>@member.SortOrder. @member.FullName</span>
+                }
+            </div>
+        </footer>
+    </article>
+}

@@ -1,0 +1,56 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Destructions.ReportModel
+@{
+    ViewData["Title"] = "Αναφορά υλικών προς καταστροφή";
+}
+
+<div class="print-toolbar no-print actions">
+    <a class="btn secondary with-icon btn-back" asp-page="Edit" asp-route-id="@Model.Batch?.Id">Πίσω</a>
+    <button class="btn with-icon btn-report" type="button" onclick="window.print()">Εκτύπωση / PDF</button>
+</div>
+
+@if (Model.Batch != null)
+{
+    <article class="destruction-print-page">
+        <header class="destruction-doc-header">
+            <div>
+                <h1>Αναφορά υλικών προς καταστροφή</h1>
+                <p>@Model.Batch.SchoolName</p>
+            </div>
+            <div class="destruction-doc-meta">
+                <strong>@DateTime.Today.ToString("dd/MM/yyyy")</strong>
+                <span>School Inventory Manager</span>
+            </div>
+        </header>
+
+        <table class="destruction-doc-table">
+            <thead>
+                <tr>
+                    <th>Α/Α</th>
+                    <th>Υλικό</th>
+                    <th>Χώρος</th>
+                    <th>Κατηγορία</th>
+                    <th>Ποσότητα</th>
+                    <th>Serial</th>
+                    <th>Σελ. βιβλίου</th>
+                    <th>Παρατηρήσεις</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Batch.Items.OrderBy(x => x.SortOrder))
+                {
+                    <tr>
+                        <td>@item.SortOrder</td>
+                        <td>@item.ItemNameSnapshot</td>
+                        <td>@item.RoomSnapshot</td>
+                        <td>@item.CategorySnapshot</td>
+                        <td>@item.QuantitySnapshot</td>
+                        <td>@item.SerialNumberSnapshot</td>
+                        <td>@item.RegistryBookPageSnapshot</td>
+                        <td>@item.NotesSnapshot</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </article>
+}

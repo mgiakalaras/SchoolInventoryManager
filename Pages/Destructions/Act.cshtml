@@ -1,0 +1,95 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Destructions.ActModel
+@{
+    ViewData["Title"] = "Πράξη καταστροφής υλικού";
+}
+
+<div class="print-toolbar no-print actions">
+    <a class="btn secondary with-icon btn-back" asp-page="Edit" asp-route-id="@Model.Batch?.Id">Πίσω</a>
+    <button class="btn with-icon btn-report" type="button" onclick="window.print()">Εκτύπωση / PDF</button>
+</div>
+
+@if (Model.Batch != null)
+{
+    <article class="destruction-print-page legal-document">
+        <h1>Πράξη</h1>
+        <h2>Πράξη @(Model.Batch.ActNumber ?? "../...")</h2>
+        <h3>ΘΕΜΑ: «Καταστροφή υλικού»</h3>
+
+        <p>
+            Στο/στην <strong>@(Model.Batch.Location ?? Model.Batch.SchoolName)</strong> συνήλθε σε συνεδρίαση η σχολική επιτροπή
+            σήμερα <strong>@Model.Batch.ActDate.ToString("dd/MM/yyyy")</strong>, ημέρα <strong>@Model.Batch.MeetingDayName</strong>
+            και ώρα <strong>@Model.Batch.MeetingTime</strong>, με θέμα την καταστροφή υλικού του
+            <strong>@Model.Batch.SchoolName</strong>.
+        </p>
+
+        <p>Στη συνεδρίαση πήραν μέρος οι:</p>
+        <ol>
+            @foreach (var member in Model.Batch.CommitteeMembers.OrderBy(x => x.SortOrder))
+            {
+                <li>@member.FullName @(string.IsNullOrWhiteSpace(member.Role) ? "" : $"- {member.Role}")</li>
+            }
+        </ol>
+
+        <p>
+            Μετά τη διαπίστωση της νόμιμης απαρτίας, @(Model.Batch.RecommenderTitle ?? "ο/η Διευθυντής/ντρια")
+            κ. <strong>@(Model.Batch.RecommenderName ?? "................................")</strong> εισηγείται το θέμα και τονίζει ότι
+            στο σχολείο υπάρχουν υλικά τα οποία έχουν υποστεί φθορές ή έχουν καταστραφεί και δεν είναι δυνατόν ούτε να χρησιμοποιηθούν
+            ούτε να εκποιηθούν. Τα υλικά αυτά δημιουργούν πρόβλημα στο σχολείο και καλύπτουν χώρους που μπορούν να αξιοποιηθούν δημιουργικά.
+        </p>
+
+        <p>Για τον λόγο αυτό εισηγείται την καταστροφή του παρακάτω υλικού:</p>
+
+        <ol class="destruction-items-list">
+            @foreach (var item in Model.Batch.Items.OrderBy(x => x.SortOrder))
+            {
+                <li>
+                    @item.ItemNameSnapshot
+                    @if (!string.IsNullOrWhiteSpace(item.SerialNumberSnapshot))
+                    {
+                        <text> - Serial: @item.SerialNumberSnapshot</text>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(item.RegistryBookPageSnapshot))
+                    {
+                        <text> - σελ. βιβλίου υλικού @item.RegistryBookPageSnapshot</text>
+                    }
+                </li>
+            }
+        </ol>
+
+        <p>Η σχολική επιτροπή, αφού έλαβε υπόψη της την εισήγηση και μετά από διαλογική συζήτηση,</p>
+
+        <h3>Αποφασίζει</h3>
+
+        <p>
+            Την καταστροφή των παραπάνω υλικών και για τον σκοπό αυτό συγκροτεί τριμελή επιτροπή καταστροφής υλικών αποτελούμενη από τους:
+        </p>
+
+        <ol>
+            @foreach (var member in Model.Batch.CommitteeMembers.OrderBy(x => x.SortOrder))
+            {
+                <li>@member.FullName @(string.IsNullOrWhiteSpace(member.Role) ? "" : $"- {member.Role}")</li>
+            }
+        </ol>
+
+        <p>
+            Μετά την ολοκλήρωση του έργου της, η επιτροπή θα υποβάλει στη σχολική επιτροπή σχετικό πρωτόκολλο καταστροφής υλικών.
+        </p>
+
+        <p>Για τον σκοπό αυτό συντάχθηκε το πρακτικό, διαβάζεται και υπογράφεται.</p>
+
+        <footer class="destruction-signatures">
+            <div>
+                <strong>Ο/Η Πρόεδρος</strong>
+                <span>@(Model.Batch.ChairpersonName ?? "........................")</span>
+            </div>
+            <div>
+                <strong>Τα μέλη</strong>
+                @foreach (var member in Model.Batch.CommitteeMembers.OrderBy(x => x.SortOrder))
+                {
+                    <span>@member.FullName</span>
+                }
+            </div>
+        </footer>
+    </article>
+}

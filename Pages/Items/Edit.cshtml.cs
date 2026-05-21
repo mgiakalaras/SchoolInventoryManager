@@ -53,6 +53,7 @@ public class EditModel : PageModel
         existing.Brand = Item.Brand;
         existing.Model = Item.Model;
         existing.SerialNumber = Item.SerialNumber;
+        existing.InventoryBookPage = Item.InventoryBookPage;
         existing.Description = Item.Description;
         existing.Condition = Item.Condition;
         existing.Notes = Item.Notes;

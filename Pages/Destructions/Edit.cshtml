@@ -1,0 +1,168 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.Destructions.EditModel
+@{
+    ViewData["Title"] = "Φάκελος καταστροφής";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Φάκελος καταστροφής υλικού</h1>
+        <p>Συμπλήρωσε στοιχεία πράξης, πρωτοκόλλου και επιτροπής πριν την εκτύπωση ή την οριστικοποίηση.</p>
+    </div>
+    <div class="actions">
+        <a class="btn secondary with-icon btn-back" asp-page="Index">Φάκελοι</a>
+    </div>
+</section>
+
+<div class="destruction-action-strip">
+    <span class="action-panel-title">Έγγραφα φακέλου</span>
+    <a class="btn secondary with-icon btn-report" asp-page="Report" asp-route-id="@Model.Batch.Id">Αναφορά</a>
+    <a class="btn secondary with-icon btn-act" asp-page="Act" asp-route-id="@Model.Batch.Id">Πράξη</a>
+    <a class="btn secondary with-icon btn-protocol" asp-page="Protocol" asp-route-id="@Model.Batch.Id">Πρωτόκολλο</a>
+</div>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="card soft" style="margin-bottom:1rem;"><strong>@message</strong></div>
+}
+
+@if (Model.Batch.IsFinalized)
+{
+    <div class="card destruction-warning-card" style="margin-bottom:1rem;">
+        <strong>Οριστικοποιημένο.</strong> Τα υλικά έχουν αφαιρεθεί από την ενεργή απογραφή και ο φάκελος είναι κλειδωμένος.
+    </div>
+}
+
+<form method="post" class="card">
+    <div asp-validation-summary="ModelOnly"></div>
+    <input type="hidden" asp-for="Batch.Id" />
+
+    <div class="form-grid">
+        <div class="form-row">
+            <label asp-for="Batch.ActNumber"></label>
+            <input asp-for="Batch.ActNumber" placeholder="π.χ. 12/2026" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.ActDate"></label>
+            <input asp-for="Batch.ActDate" type="date" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.ProtocolNumber"></label>
+            <input asp-for="Batch.ProtocolNumber" placeholder="π.χ. 3/2026" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.ProtocolDate"></label>
+            <input asp-for="Batch.ProtocolDate" type="date" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row full">
+            <label asp-for="Batch.SchoolName"></label>
+            <input asp-for="Batch.SchoolName" disabled="@Model.Batch.IsFinalized" />
+            <span asp-validation-for="Batch.SchoolName"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.Location"></label>
+            <input asp-for="Batch.Location" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.MeetingDayName"></label>
+            <input asp-for="Batch.MeetingDayName" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.MeetingTime"></label>
+            <input asp-for="Batch.MeetingTime" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.RecommenderName"></label>
+            <input asp-for="Batch.RecommenderName" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.RecommenderTitle"></label>
+            <input asp-for="Batch.RecommenderTitle" placeholder="π.χ. Διευθυντής/ντρια" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Batch.ChairpersonName"></label>
+            <input asp-for="Batch.ChairpersonName" disabled="@Model.Batch.IsFinalized" />
+        </div>
+        <div class="form-row full">
+            <label asp-for="Batch.Notes"></label>
+            <textarea asp-for="Batch.Notes" disabled="@Model.Batch.IsFinalized"></textarea>
+        </div>
+    </div>
+
+    <hr />
+
+    <h2>Τριμελής επιτροπή καταστροφής</h2>
+    <p class="muted">Συμπλήρωσε τα μέλη που θα εμφανιστούν στην πράξη και στο πρωτόκολλο.</p>
+
+    <div class="form-grid">
+        @for (var i = 0; i < Model.CommitteeMembers.Count; i++)
+        {
+            <input type="hidden" name="CommitteeMembers[@i].Id" value="@Model.CommitteeMembers[i].Id" />
+            <input type="hidden" name="CommitteeMembers[@i].SortOrder" value="@(i + 1)" />
+            <div class="form-row">
+                <label>Μέλος @(i + 1)</label>
+                <input name="CommitteeMembers[@i].FullName" value="@Model.CommitteeMembers[i].FullName" placeholder="Ονοματεπώνυμο" disabled="@Model.Batch.IsFinalized" />
+            </div>
+            <div class="form-row">
+                <label>Ιδιότητα</label>
+                <input name="CommitteeMembers[@i].Role" value="@Model.CommitteeMembers[i].Role" placeholder="π.χ. Εκπαιδευτικός, μέλος επιτροπής" disabled="@Model.Batch.IsFinalized" />
+            </div>
+        }
+    </div>
+
+    <div class="form-actions-bar">
+        <div class="form-actions-left">
+            @if (!Model.Batch.IsFinalized)
+            {
+                <button class="btn with-icon btn-save" type="submit">Αποθήκευση φακέλου</button>
+                <a class="btn danger with-icon btn-finalize" asp-page="Finalize" asp-route-id="@Model.Batch.Id">Οριστικοποίηση</a>
+            }
+        </div>
+        <div class="form-actions-right">
+            <a class="btn secondary with-icon btn-report" asp-page="Report" asp-route-id="@Model.Batch.Id">Αναφορά</a>
+            <a class="btn secondary with-icon btn-act" asp-page="Act" asp-route-id="@Model.Batch.Id">Πράξη</a>
+            <a class="btn secondary with-icon btn-protocol" asp-page="Protocol" asp-route-id="@Model.Batch.Id">Πρωτόκολλο</a>
+        </div>
+    </div>
+</form>
+
+<section class="card" style="margin-top:1rem;">
+    <h2>Υλικά φακέλου</h2>
+    <div class="table-wrap responsive-table-wrap">
+        <table class="responsive-table compact-table">
+            <thead>
+                <tr>
+                    <th>Α/Α</th>
+                    <th>Υλικό</th>
+                    <th>Χώρος</th>
+                    <th>Κατηγορία</th>
+                    <th>Ποσότητα</th>
+                    <th>Σελ. βιβλίου</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items.OrderBy(x => x.SortOrder))
+                {
+                    <tr>
+                        <td data-label="Α/Α">@item.SortOrder</td>
+                        <td data-label="Υλικό">
+                            <strong>@item.ItemNameSnapshot</strong>
+                            @if (!string.IsNullOrWhiteSpace(item.SerialNumberSnapshot))
+                            {
+                                <div class="muted">Serial: @item.SerialNumberSnapshot</div>
+                            }
+                        </td>
+                        <td data-label="Χώρος">@item.RoomSnapshot</td>
+                        <td data-label="Κατηγορία">@item.CategorySnapshot</td>
+                        <td data-label="Ποσότητα">@item.QuantitySnapshot</td>
+                        <td data-label="Σελ. βιβλίου">@(item.RegistryBookPageSnapshot ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

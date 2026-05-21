@@ -36,6 +36,10 @@ public class InventoryItem
     [StringLength(180)]
     public string? SerialNumber { get; set; }
 
+    [Display(Name = "Σελίδα βιβλίου υλικού")]
+    [StringLength(80)]
+    public string? InventoryBookPage { get; set; }
+
     [Display(Name = "Περιγραφή")]
     public string? Description { get; set; }
 
@@ -47,6 +51,11 @@ public class InventoryItem
 
     [Display(Name = "Ενεργό")]
     public bool IsActive { get; set; } = true;
+
+    public int? DestructionBatchId { get; set; }
+    public DestructionBatch? DestructionBatch { get; set; }
+
+    public DateTime? DestroyedAt { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

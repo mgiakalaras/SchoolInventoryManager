@@ -1,0 +1,118 @@
+@page
+@model SchoolInventoryManager.Pages.Destructions.IndexModel
+@{
+    ViewData["Title"] = "Καταστροφή υλικού";
+}
+
+<section class="page-header">
+    <div>
+        <h1>Καταστροφή υλικού</h1>
+        <p>Φάκελοι καταστροφής, πράξεις, πρωτόκολλα και ιστορικό αποσυρμένων υλικών.</p>
+    </div>
+    <div class="actions">
+        <a class="btn with-icon btn-new" asp-page="SelectItems">Νέος φάκελος</a>
+    </div>
+</section>
+
+<section class="card destruction-nav-card">
+    <div class="destruction-nav-grid">
+        <a class="destruction-nav-link primary" asp-page="SelectItems">
+            <span class="destruction-nav-icon">＋</span>
+            <span>
+                <strong>Νέος φάκελος καταστροφής</strong>
+                <small>Επιλογή μη λειτουργικών ή προς απόσυρση υλικών.</small>
+            </span>
+        </a>
+
+        <a class="destruction-nav-link" asp-page="DestroyedItems">
+            <span class="destruction-nav-icon">🕘</span>
+            <span>
+                <strong>Κατεστραμμένα υλικά</strong>
+                <small>Ιστορικό υλικών που αφαιρέθηκαν από την ενεργή απογραφή.</small>
+            </span>
+        </a>
+
+        <a class="destruction-nav-link" asp-page="/Items/Index">
+            <span class="destruction-nav-icon">📦</span>
+            <span>
+                <strong>Ενεργός εξοπλισμός</strong>
+                <small>Επιστροφή στη βασική λίστα εξοπλισμού.</small>
+            </span>
+        </a>
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-title-row">
+        <div>
+            <h2>Φάκελοι καταστροφής</h2>
+            <p class="muted">Τα οριστικοποιημένα υλικά δεν εμφανίζονται στην ενεργή απογραφή, αλλά παραμένουν στο ιστορικό.</p>
+            <p class="muted">Σύνολο κατεστραμμένων υλικών: <strong>@Model.DestroyedItemsCount</strong></p>
+        </div>
+    </div>
+
+    @if (!Model.Batches.Any())
+    {
+        <div class="empty-state compact-empty">
+            <h3>Δεν υπάρχουν φάκελοι καταστροφής</h3>
+            <p>Ξεκίνα επιλέγοντας μη λειτουργικά ή προς απόσυρση υλικά.</p>
+            <a class="btn with-icon btn-new" asp-page="SelectItems">Επιλογή υλικών</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap responsive-table-wrap">
+            <table class="responsive-table compact-table">
+                <thead>
+                    <tr>
+                        <th>Α/Α</th>
+                        <th>Πράξη</th>
+                        <th>Πρωτόκολλο</th>
+                        <th>Υλικά</th>
+                        <th>Επιτροπή</th>
+                        <th>Κατάσταση</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var row = 1;
+                    }
+                    @foreach (var batch in Model.Batches)
+                    {
+                        <tr>
+                            <td data-label="Α/Α">@(row++)</td>
+                            <td data-label="Πράξη">
+                                <strong>@(batch.ActNumber ?? "χωρίς αριθμό")</strong><br />
+                                <span class="muted">@batch.ActDate.ToString("dd/MM/yyyy")</span>
+                            </td>
+                            <td data-label="Πρωτόκολλο">
+                                <strong>@(batch.ProtocolNumber ?? "χωρίς αριθμό")</strong><br />
+                                <span class="muted">@batch.ProtocolDate.ToString("dd/MM/yyyy")</span>
+                            </td>
+                            <td data-label="Υλικά">@batch.Items.Count</td>
+                            <td data-label="Επιτροπή">@batch.CommitteeMembers.Count</td>
+                            <td data-label="Κατάσταση">
+                                @if (batch.IsFinalized)
+                                {
+                                    <span class="badge badge-dark">Οριστικοποιημένο</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">Σε επεξεργασία</span>
+                                }
+                            </td>
+                            <td data-label="Ενέργειες">
+                                <div class="actions icon-actions">
+                                    <a class="btn small secondary with-icon btn-folder" asp-page="Edit" asp-route-id="@batch.Id">Άνοιγμα</a>
+                                    <a class="btn small secondary with-icon btn-act" asp-page="Act" asp-route-id="@batch.Id">Πράξη</a>
+                                    <a class="btn small secondary with-icon btn-protocol" asp-page="Protocol" asp-route-id="@batch.Id">Πρωτόκολλο</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

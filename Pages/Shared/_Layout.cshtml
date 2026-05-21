@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="~/assets/brand/favicon.svg" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body class="sim-ops-theme">
     <input class="nav-toggle" type="checkbox" id="nav-toggle" aria-hidden="true" />
 
     <header class="topbar">
@@ -16,8 +16,9 @@
             <img class="brand-logo" src="~/assets/brand/sim-mark.svg" alt="School Inventory Manager" />
             <span>
                 <strong>School Inventory Manager</strong>
-                <small>Απογραφή Η/Υ & Ψηφιακών Μέσων</small>
+                <small>Ψηφιακή απογραφή σχολικού υλικού</small>
             </span>
+            <em class="brand-console-chip">NYX SYSTEMS</em>
         </a>
 
         <label class="nav-toggle-button" for="nav-toggle" aria-label="Άνοιγμα μενού" title="Μενού">
@@ -26,17 +27,44 @@
             <span></span>
         </label>
 
-        <nav class="nav" aria-label="Κύρια πλοήγηση">
-            <a asp-page="/Index">Dashboard</a>
-            <a asp-page="/Settings/Index">Σχολείο</a>
-            <a asp-page="/Rooms/Index">Χώροι</a>
-            <a asp-page="/Items/Index">Εξοπλισμός</a>
-            <a asp-page="/ImportExport/Index">Import / Export</a>
-            <a asp-page="/Maintenance/Index">Συντήρηση</a>
-            <a asp-page="/Reports/Index">Αναφορές</a>
-            <a asp-page="/Update/Index">Update</a>
-            <a asp-page="/About/Index">About</a>
-            <a asp-page="/Contact/Index">Επικοινωνία</a>
+        <nav class="nav nav-groups" aria-label="Κύρια πλοήγηση">
+            <a class="nav-link-single" asp-page="/Index">Κέντρο ελέγχου</a>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Δεδομένα</span>
+                <div class="nav-group-menu">
+                    <a asp-page="/Settings/Index">Σχολείο</a>
+                    <a asp-page="/Rooms/Index">Χώροι</a>
+                    <a asp-page="/Items/Index">Εξοπλισμός</a>
+                    <a asp-page="/Items/Create">Νέο υλικό</a>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Εργασίες</span>
+                <div class="nav-group-menu">
+                    <a asp-page="/ImportExport/Index">Import / Export</a>
+                    <a asp-page="/Maintenance/Index">Συντήρηση</a>
+                    <a asp-page="/Update/Index">Update</a>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Αναφορές</span>
+                <div class="nav-group-menu">
+                    <a asp-page="/Reports/Index">Αναφορές απογραφής</a>
+                    <a asp-page="/Destructions/Index">Καταστροφή υλικού</a>
+                    <a asp-page="/Destructions/DestroyedItems">Κατεστραμμένα υλικά</a>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Βοήθεια</span>
+                <div class="nav-group-menu nav-group-menu-right">
+                    <a asp-page="/About/Index">About</a>
+                    <a asp-page="/Contact/Index">Επικοινωνία</a>
+                </div>
+            </div>
         </nav>
     </header>
 
@@ -51,7 +79,7 @@
         <a asp-page="/Rooms/Index"><span>🏫</span><strong>Χώροι</strong></a>
         <a class="mobile-primary-action" asp-page="/Items/Create"><span>＋</span><strong>Νέο</strong></a>
         <a asp-page="/Items/Index"><span>📦</span><strong>Εξοπλ.</strong></a>
-        <a asp-page="/Reports/Index"><span>📄</span><strong>PDF</strong></a>
+        <a asp-page="/Destructions/Index"><span>🧾</span><strong>Καταστ.</strong></a>
     </nav>
 
     <footer class="footer">
@@ -61,7 +89,7 @@
             <a asp-page="/Contact/Index">Επικοινωνία</a>
             <a asp-page="/Update/Index">Update</a>
         </span>
-        <span>Offline-first σχολική απογραφή</span>
+        <span>Σχολική απογραφή · Nyx Systems</span>
     </footer>
 
     <script src="~/js/mobile-viewport-lock.js" asp-append-version="true"></script>

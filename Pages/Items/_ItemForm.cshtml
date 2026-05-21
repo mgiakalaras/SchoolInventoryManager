@@ -41,6 +41,11 @@
         <span asp-validation-for="SerialNumber"></span>
     </div>
     <div class="form-row">
+        <label asp-for="InventoryBookPage"></label>
+        <input asp-for="InventoryBookPage" placeholder="π.χ. σελ. 12" />
+        <span asp-validation-for="InventoryBookPage"></span>
+    </div>
+    <div class="form-row">
         <label asp-for="Condition"></label>
         <select asp-for="Condition" asp-items="Html.GetEnumSelectList<EquipmentCondition>()"></select>
         <span asp-validation-for="Condition"></span>

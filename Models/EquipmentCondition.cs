@@ -20,5 +20,8 @@ public enum EquipmentCondition
     ToWithdraw = 4,
 
     [Display(Name = "Αποθηκευμένο")]
-    Stored = 5
+    Stored = 5,
+
+    [Display(Name = "Κατεστραμμένο / αποσυρμένο")]
+    Destroyed = 6
 }

@@ -22,6 +22,7 @@ public static class DisplayExtensions
             EquipmentCondition.Broken => "badge badge-danger",
             EquipmentCondition.ToWithdraw => "badge badge-dark",
             EquipmentCondition.Stored => "badge badge-info",
+            EquipmentCondition.Destroyed => "badge badge-dark",
             _ => "badge badge-muted"
         };
     }
@@ -35,6 +36,7 @@ public static class DisplayExtensions
             EquipmentCondition.Broken => "❌",
             EquipmentCondition.ToWithdraw => "♻️",
             EquipmentCondition.Stored => "📦",
+            EquipmentCondition.Destroyed => "🧾",
             _ => "❔"
         };
     }

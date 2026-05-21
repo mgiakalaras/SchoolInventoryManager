@@ -2200,3 +2200,829 @@ button:disabled,
 .row-details[open] .details-caret {
     transform: rotate(180deg);
 }
+/* =========================================================
+   Destruction workflow / printable docs
+   ========================================================= */
+.destruction-selection-card input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent);
+}
+
+.destruction-warning-card {
+    border-color: rgba(251, 113, 133, .45) !important;
+    background: linear-gradient(135deg, rgba(127, 29, 29, .30), rgba(13, 25, 43, .88)) !important;
+}
+
+.print-toolbar {
+    margin-bottom: 1rem;
+}
+
+.destruction-print-page {
+    background: #fff;
+    color: #111827;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 38px 44px;
+    border-radius: 18px;
+    box-shadow: 0 20px 70px rgba(0,0,0,.30);
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.destruction-print-page h1,
+.destruction-print-page h2,
+.destruction-print-page h3,
+.destruction-print-page p,
+.destruction-print-page li,
+.destruction-print-page td,
+.destruction-print-page th,
+.destruction-print-page span,
+.destruction-print-page strong {
+    color: #111827;
+}
+
+.destruction-doc-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    border-bottom: 2px solid #111827;
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+}
+
+.destruction-doc-header h1 {
+    margin: 0 0 4px 0;
+    font-size: 1.35rem;
+}
+
+.destruction-doc-header p {
+    margin: 0;
+}
+
+.destruction-doc-meta {
+    text-align: right;
+    font-size: .85rem;
+}
+
+.destruction-doc-meta span {
+    display: block;
+    margin-top: 4px;
+    color: #6b7280;
+}
+
+.destruction-doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .84rem;
+}
+
+.destruction-doc-table th,
+.destruction-doc-table td {
+    border: 1px solid #111827;
+    padding: 6px 7px;
+    vertical-align: top;
+}
+
+.destruction-doc-table th {
+    background: #e5e7eb;
+    font-weight: 800;
+    text-align: center;
+}
+
+.legal-document {
+    max-width: 900px;
+    line-height: 1.55;
+    font-size: .98rem;
+}
+
+.legal-document h1,
+.legal-document h2,
+.legal-document h3 {
+    text-align: center;
+}
+
+.legal-document h1 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.legal-document h2 {
+    font-size: 1.15rem;
+    margin-bottom: 14px;
+}
+
+.legal-document h3 {
+    font-size: 1rem;
+    margin: 16px 0 10px 0;
+}
+
+.destruction-items-list li {
+    margin-bottom: 4px;
+}
+
+.destruction-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 64px;
+    text-align: center;
+}
+
+.destruction-signatures div {
+    min-height: 90px;
+}
+
+.destruction-signatures span {
+    display: block;
+    margin-top: 14px;
+}
+
+.protocol-signatures {
+    grid-template-columns: 1fr 300px;
+}
+
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding-top: 0 !important;
+        display: block !important;
+    }
+
+    .topbar,
+    .mobile-bottom-nav,
+    .footer,
+    .no-print {
+        display: none !important;
+    }
+
+    .container {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .destruction-print-page {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .destruction-doc-table {
+        font-size: .76rem;
+    }
+
+    .destruction-doc-table th,
+    .destruction-doc-table td {
+        padding: 4px 5px;
+    }
+
+    .legal-document {
+        font-size: .92rem;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 14mm;
+    }
+}
+
+/* =========================================================
+   Patch 3 - Cleaner top menu and action/button organization
+   ========================================================= */
+
+/* Compact grouped desktop menu */
+.topbar {
+    z-index: 80;
+}
+
+.nav.nav-groups {
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: nowrap;
+}
+
+.nav-link-single,
+.nav-group-title {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: .55rem .78rem;
+    color: var(--text);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-weight: 750;
+    font-size: .92rem;
+    line-height: 1;
+    cursor: default;
+    user-select: none;
+}
+
+.nav-link-single:hover,
+.nav-group:hover .nav-group-title,
+.nav-group:focus-within .nav-group-title {
+    background: rgba(79, 140, 255, .12);
+    border-color: rgba(79, 140, 255, .24);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.nav-group {
+    position: relative;
+}
+
+.nav-group-title::after {
+    content: "⌄";
+    margin-left: .45rem;
+    color: var(--muted);
+    font-size: .78rem;
+    transition: transform .16s ease;
+}
+
+.nav-group:hover .nav-group-title::after,
+.nav-group:focus-within .nav-group-title::after {
+    transform: rotate(180deg);
+}
+
+.nav-group-menu {
+    position: absolute;
+    top: calc(100% + .45rem);
+    left: 0;
+    z-index: 100;
+    min-width: 220px;
+    display: none;
+    padding: .45rem;
+    border-radius: 18px;
+    background: rgba(8, 17, 31, .98);
+    border: 1px solid rgba(148, 163, 184, .18);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, .38);
+    backdrop-filter: blur(14px);
+}
+
+.nav-group-menu-right {
+    left: auto;
+    right: 0;
+}
+
+.nav-group:hover .nav-group-menu,
+.nav-group:focus-within .nav-group-menu {
+    display: grid;
+    gap: .25rem;
+}
+
+.nav-group-menu a {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    width: 100%;
+    padding: .62rem .72rem;
+    border-radius: 13px;
+    color: var(--text);
+    border: 1px solid transparent;
+    white-space: nowrap;
+    font-weight: 650;
+}
+
+.nav-group-menu a:hover {
+    background: rgba(79, 140, 255, .13);
+    border-color: rgba(79, 140, 255, .20);
+    text-decoration: none;
+}
+
+/* More deliberate action areas instead of loose button trains */
+.page-header .actions {
+    padding: .45rem;
+    border-radius: 18px;
+    background: rgba(5, 12, 24, .42);
+    border: 1px solid rgba(148, 163, 184, .12);
+    justify-content: flex-end;
+}
+
+.action-panel,
+.destruction-action-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    align-items: center;
+    padding: .75rem;
+    border-radius: 18px;
+    background: rgba(5, 12, 24, .45);
+    border: 1px solid rgba(148, 163, 184, .14);
+}
+
+.destruction-action-strip {
+    margin-bottom: 1rem;
+}
+
+.action-panel-title {
+    color: var(--muted);
+    font-weight: 850;
+    margin-right: auto;
+    padding: 0 .35rem;
+}
+
+.destruction-nav-card {
+    margin-bottom: 1rem;
+}
+
+.destruction-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .85rem;
+}
+
+.destruction-nav-link {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+    padding: .95rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(148, 163, 184, .13);
+    color: var(--text);
+}
+
+.destruction-nav-link:hover {
+    text-decoration: none;
+    border-color: rgba(79, 140, 255, .32);
+    background: rgba(79, 140, 255, .10);
+}
+
+.destruction-nav-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 15px;
+    background: rgba(79, 140, 255, .14);
+    font-size: 1.25rem;
+}
+
+.destruction-nav-link strong {
+    display: block;
+    color: var(--text);
+}
+
+.destruction-nav-link span:last-child,
+.destruction-nav-link small {
+    display: block;
+    color: var(--muted);
+    margin-top: .15rem;
+    line-height: 1.3;
+}
+
+.destruction-nav-link.primary {
+    border-color: rgba(79, 140, 255, .26);
+    background: linear-gradient(135deg, rgba(79, 140, 255, .18), rgba(52, 211, 153, .08));
+}
+
+.form-actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding: .75rem;
+    border-radius: 16px;
+    background: rgba(5, 12, 24, .36);
+    border: 1px solid rgba(148, 163, 184, .12);
+}
+
+.form-actions-left,
+.form-actions-right {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.icon-actions {
+    gap: .35rem;
+}
+
+.icon-actions .btn.small {
+    white-space: nowrap;
+    min-height: 30px;
+    border-radius: 10px;
+}
+
+.btn.with-icon::before {
+    display: inline-block;
+    margin-right: .1rem;
+}
+
+.btn-new::before { content: "＋"; }
+.btn-history::before { content: "🕘"; }
+.btn-folder::before { content: "📁"; }
+.btn-report::before { content: "📋"; }
+.btn-act::before { content: "🧾"; }
+.btn-protocol::before { content: "📄"; }
+.btn-save::before { content: "✓"; }
+.btn-finalize::before { content: "⚠"; }
+.btn-back::before { content: "←"; }
+
+@media (max-width: 1180px) {
+    .nav.nav-groups {
+        gap: .25rem;
+    }
+
+    .nav-link-single,
+    .nav-group-title {
+        padding-left: .62rem;
+        padding-right: .62rem;
+        font-size: .88rem;
+    }
+}
+
+@media (max-width: 880px) {
+    .nav.nav-groups {
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: .65rem;
+    }
+
+    .nav-link-single,
+    .nav-group-title {
+        width: 100%;
+        justify-content: space-between;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .04);
+    }
+
+    .nav-group-menu {
+        position: static;
+        display: grid;
+        min-width: 0;
+        margin-top: .35rem;
+        box-shadow: none;
+        background: rgba(5, 12, 24, .40);
+    }
+
+    .page-header .actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .destruction-nav-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions-bar {
+        align-items: stretch;
+    }
+
+    .form-actions-left,
+    .form-actions-right {
+        width: 100%;
+    }
+
+    .form-actions-left .btn,
+    .form-actions-right .btn,
+    .action-panel .btn,
+    .page-header .actions .btn {
+        flex: 1 1 auto;
+    }
+}
+
+/* =========================================================
+   Patch 4 - Stable desktop dropdown hover/click behavior
+   Fixes the gap between top menu item and dropdown menu.
+   ========================================================= */
+
+@media (min-width: 881px) {
+    .nav-group {
+        position: relative;
+        padding-bottom: .55rem;
+        margin-bottom: -.55rem;
+    }
+
+    .nav-group::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        height: .75rem;
+        display: block;
+        pointer-events: auto;
+    }
+
+    .nav-group-menu {
+        top: calc(100% + .05rem) !important;
+        display: grid !important;
+        gap: .25rem;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-4px);
+        transition:
+            opacity .14s ease,
+            transform .14s ease,
+            visibility 0s linear .14s;
+    }
+
+    .nav-group:hover .nav-group-menu,
+    .nav-group:focus-within .nav-group-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition-delay: 0s;
+    }
+
+    .nav-group:hover .nav-group-title,
+    .nav-group:focus-within .nav-group-title {
+        background: rgba(79, 140, 255, .12);
+        border-color: rgba(79, 140, 255, .24);
+    }
+}
+
+/* =========================================================
+   Patch 5 - Distinctive SIM Ops Theme
+   More inventory / lab-operations look, less generic dashboard.
+   ========================================================= */
+
+:root {
+    color-scheme: dark;
+    --bg: #070b12;
+    --bg-2: #0b111c;
+    --surface: #101823;
+    --surface-2: #142033;
+    --surface-3: #1b2b43;
+    --text: #edf4ff;
+    --muted: #9cadc2;
+    --line: #2a3a4f;
+    --primary: #22d3ee;
+    --primary-2: #67e8f9;
+    --accent: #f59e0b;
+    --danger: #fb7185;
+    --warning: #fbbf24;
+    --success: #34d399;
+    --info: #38bdf8;
+    --shadow: 0 18px 42px rgba(0, 0, 0, .34);
+    --glow: 0 0 0 1px rgba(34, 211, 238, .18), 0 18px 48px rgba(34, 211, 238, .10);
+    --radius: 16px;
+}
+
+body.sim-ops-theme {
+    background:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(34, 211, 238, .16), transparent 30rem),
+        radial-gradient(circle at 90% 10%, rgba(245, 158, 11, .10), transparent 26rem),
+        linear-gradient(180deg, var(--bg), var(--bg-2));
+    background-size: 28px 28px, 28px 28px, auto, auto, auto;
+}
+
+body.sim-ops-theme::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.04), transparent 18%),
+        radial-gradient(circle at center, transparent 55%, rgba(0,0,0,.22));
+    z-index: -1;
+}
+
+/* Command-bar top navigation */
+.topbar {
+    min-height: 74px;
+    padding: .75rem 1.25rem;
+    background: rgba(7, 11, 18, .92) !important;
+    border-bottom: 1px solid rgba(103, 232, 249, .18) !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .32);
+}
+
+.topbar::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, .75), rgba(245, 158, 11, .65), transparent);
+    opacity: .9;
+}
+
+.brand {
+    position: relative;
+    padding: .38rem .65rem .38rem .38rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(148, 163, 184, .12);
+}
+
+.brand-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: rgba(34, 211, 238, .08);
+    box-shadow: 0 0 0 1px rgba(103, 232, 249, .16), 0 16px 30px rgba(34, 211, 238, .12);
+}
+
+.brand strong {
+    letter-spacing: -.02em;
+}
+
+.brand small {
+    color: #a7f3d0;
+    font-weight: 650;
+}
+
+.brand-console-chip {
+    display: inline-flex;
+    align-items: center;
+    margin-left: .35rem;
+    padding: .18rem .42rem;
+    border-radius: 999px;
+    background: rgba(52, 211, 153, .12);
+    border: 1px solid rgba(52, 211, 153, .22);
+    color: #bbf7d0;
+    font-style: normal;
+    font-size: .62rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+}
+
+.nav-link-single,
+.nav-group-title {
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .025);
+    border-color: rgba(148, 163, 184, .10);
+    text-transform: none;
+}
+
+.nav-link-single:hover,
+.nav-group:hover .nav-group-title,
+.nav-group:focus-within .nav-group-title {
+    background: rgba(34, 211, 238, .11) !important;
+    border-color: rgba(34, 211, 238, .32) !important;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, .07);
+}
+
+.nav-group-menu {
+    background: rgba(7, 11, 18, .98) !important;
+    border-color: rgba(103, 232, 249, .18) !important;
+    border-radius: 16px;
+    box-shadow: 0 26px 58px rgba(0, 0, 0, .52), 0 0 0 1px rgba(255,255,255,.035);
+}
+
+.nav-group-menu a:hover {
+    background: rgba(34, 211, 238, .12) !important;
+    border-color: rgba(34, 211, 238, .24) !important;
+}
+
+/* Page headers look like operational panels */
+.page-header,
+.hero-card,
+.card,
+.stat-card,
+.inventory-card-item,
+.room-card,
+.destruction-print-page,
+.report-page {
+    border-color: rgba(103, 232, 249, .13);
+}
+
+.page-header {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(90deg, rgba(34, 211, 238, .13), transparent 38%),
+        linear-gradient(135deg, rgba(16, 24, 35, .98), rgba(20, 32, 51, .92));
+}
+
+.page-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+}
+
+.page-header h1,
+.hero-card h1 {
+    letter-spacing: -.045em;
+}
+
+.card,
+.stat-card,
+.inventory-card-item,
+.room-card {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .018)),
+        rgba(12, 20, 31, .88);
+    border-radius: 18px;
+}
+
+.card:hover,
+.stat-card:hover,
+.inventory-card-item:hover,
+.room-card:hover {
+    border-color: rgba(34, 211, 238, .28);
+    box-shadow: var(--glow);
+}
+
+/* Buttons become less generic and more product-like */
+.btn,
+button.btn {
+    border-radius: 11px;
+    background: linear-gradient(135deg, #22d3ee, #67e8f9);
+    color: #06101d;
+    box-shadow: 0 12px 24px rgba(34, 211, 238, .14);
+}
+
+.btn.secondary {
+    background: rgba(255,255,255,.045);
+    color: var(--text);
+    border-color: rgba(148, 163, 184, .18);
+}
+
+.btn.warning {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.btn.danger {
+    background: linear-gradient(135deg, #e11d48, #fb7185);
+}
+
+/* Tables: clearer lab-inventory look */
+.table-wrap {
+    border-color: rgba(103, 232, 249, .14);
+    background: rgba(5, 12, 24, .72);
+}
+
+th {
+    background: rgba(34, 211, 238, .075);
+    color: #dffafe;
+    text-transform: none;
+    letter-spacing: .01em;
+}
+
+tr:hover td {
+    background: rgba(34, 211, 238, .06);
+}
+
+.badge {
+    border: 1px solid rgba(255, 255, 255, .07);
+}
+
+/* Destruction module: amber accent so it stands out as a legal/admin workflow */
+.destruction-nav-link.primary,
+.page-header.danger,
+.destruction-action-strip,
+.action-panel {
+    border-color: rgba(245, 158, 11, .22);
+}
+
+.destruction-nav-icon {
+    background: rgba(245, 158, 11, .13);
+    color: #fde68a;
+}
+
+/* Footer / bottom nav */
+.footer {
+    background: rgba(7, 11, 18, .72);
+    border-top-color: rgba(103, 232, 249, .12);
+}
+
+.mobile-bottom-nav {
+    background: rgba(7, 11, 18, .94);
+    border-top: 1px solid rgba(103, 232, 249, .16);
+}
+
+.mobile-primary-action {
+    background: linear-gradient(135deg, #22d3ee, #f59e0b) !important;
+    color: #06101d !important;
+}
+
+@media (max-width: 880px) {
+    .brand-console-chip {
+        display: none;
+    }
+
+    .topbar {
+        min-height: 66px;
+    }
+}
+
+@media print {
+    body.sim-ops-theme {
+        background: #ffffff !important;
+    }
+
+    .page-header::before,
+    .topbar::before {
+        display: none !important;
+    }
+}
+
+/* Patch 7: destroyed equipment slice in dashboard condition pie */
+.dot-destroyed { background: #f97316; }

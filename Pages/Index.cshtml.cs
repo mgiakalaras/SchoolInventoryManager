@@ -20,12 +20,14 @@ public class IndexModel : PageModel
     public int RoomsCount { get; set; }
     public int ItemsCount { get; set; }
     public int TotalQuantity { get; set; }
+    public int ConditionPieTotalQuantity { get; set; }
     public int WorkingQuantity { get; set; }
     public int BrokenQuantity { get; set; }
     public int NeedsCheckQuantity { get; set; }
     public int UnknownQuantity { get; set; }
     public int ToWithdrawQuantity { get; set; }
     public int StoredQuantity { get; set; }
+    public int DestroyedQuantity { get; set; }
 
     public double WorkingPercent { get; set; }
     public double ProblemPercent { get; set; }
@@ -47,17 +49,35 @@ public class IndexModel : PageModel
             .Where(x => x.IsActive)
             .ToListAsync();
 
+        // For the condition pie we include destroyed items too, so the dashboard shows
+        // what percentage of the registered equipment has gone to destruction.
+        var conditionItems = await _db.InventoryItems
+            .Include(x => x.Room)
+            .Include(x => x.InventoryCategory)
+            .Where(x => x.IsActive || x.Condition == EquipmentCondition.Destroyed)
+            .ToListAsync();
+
         ItemsCount = activeItems.Count;
         TotalQuantity = activeItems.Sum(x => x.Quantity);
-        WorkingQuantity = activeItems.Where(x => x.Condition == EquipmentCondition.Working).Sum(x => x.Quantity);
-        NeedsCheckQuantity = activeItems.Where(x => x.Condition == EquipmentCondition.NeedsCheck).Sum(x => x.Quantity);
-        BrokenQuantity = activeItems.Where(x => x.Condition == EquipmentCondition.Broken).Sum(x => x.Quantity);
-        ToWithdrawQuantity = activeItems.Where(x => x.Condition == EquipmentCondition.ToWithdraw).Sum(x => x.Quantity);
-        StoredQuantity = activeItems.Where(x => x.Condition == EquipmentCondition.Stored).Sum(x => x.Quantity);
-        UnknownQuantity = activeItems.Where(x => x.Condition == EquipmentCondition.Unknown).Sum(x => x.Quantity);
 
-        WorkingPercent = Percent(WorkingQuantity, TotalQuantity);
-        ProblemPercent = Percent(BrokenQuantity + NeedsCheckQuantity + ToWithdrawQuantity + UnknownQuantity, TotalQuantity);
+        WorkingQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.Working).Sum(x => x.Quantity);
+        NeedsCheckQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.NeedsCheck).Sum(x => x.Quantity);
+        BrokenQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.Broken).Sum(x => x.Quantity);
+        ToWithdrawQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.ToWithdraw).Sum(x => x.Quantity);
+        StoredQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.Stored).Sum(x => x.Quantity);
+        UnknownQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.Unknown).Sum(x => x.Quantity);
+        DestroyedQuantity = conditionItems.Where(x => x.Condition == EquipmentCondition.Destroyed).Sum(x => x.Quantity);
+        ConditionPieTotalQuantity = conditionItems.Sum(x => x.Quantity);
+
+        WorkingPercent = Percent(activeItems.Where(x => x.Condition == EquipmentCondition.Working).Sum(x => x.Quantity), TotalQuantity);
+        ProblemPercent = Percent(
+            activeItems.Where(x =>
+                    x.Condition == EquipmentCondition.Broken ||
+                    x.Condition == EquipmentCondition.NeedsCheck ||
+                    x.Condition == EquipmentCondition.ToWithdraw ||
+                    x.Condition == EquipmentCondition.Unknown)
+                .Sum(x => x.Quantity),
+            TotalQuantity);
 
         ConditionSummaries = new List<ConditionSummary>
         {
@@ -66,7 +86,8 @@ public class IndexModel : PageModel
             BuildConditionSummary(EquipmentCondition.Broken, BrokenQuantity, "dot-danger"),
             BuildConditionSummary(EquipmentCondition.ToWithdraw, ToWithdrawQuantity, "dot-dark"),
             BuildConditionSummary(EquipmentCondition.Stored, StoredQuantity, "dot-info"),
-            BuildConditionSummary(EquipmentCondition.Unknown, UnknownQuantity, "dot-muted")
+            BuildConditionSummary(EquipmentCondition.Unknown, UnknownQuantity, "dot-muted"),
+            BuildConditionSummary(EquipmentCondition.Destroyed, DestroyedQuantity, "dot-destroyed")
         }
         .Where(x => x.Quantity > 0)
         .OrderByDescending(x => x.Quantity)
@@ -78,7 +99,8 @@ public class IndexModel : PageModel
             (BrokenQuantity, "var(--danger)"),
             (ToWithdrawQuantity, "#64748b"),
             (StoredQuantity, "var(--info)"),
-            (UnknownQuantity, "#94a3b8")
+            (UnknownQuantity, "#94a3b8"),
+            (DestroyedQuantity, "#f97316")
         );
 
         CategorySummaries = activeItems
@@ -106,7 +128,7 @@ public class IndexModel : PageModel
         return new ConditionSummary(
             condition.GetDisplayName(),
             quantity,
-            Percent(quantity, TotalQuantity),
+            Percent(quantity, ConditionPieTotalQuantity),
             condition.CssClass(),
             dotClass);
     }
