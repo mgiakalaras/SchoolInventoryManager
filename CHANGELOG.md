@@ -1,220 +1,195 @@
-# CHANGELOG
+# Changelog
 
-All notable changes to **School Inventory Manager** are documented here.
+All notable changes to School Inventory Manager are documented in this file.
 
-The project now follows semantic versioning:
+---
 
-- **Major**: breaking changes or major architecture changes
-- **Minor**: new feature modules or significant workflow additions
-- **Patch**: fixes, UI polish, small improvements
+## v0.4.0 - Technical identity, spare parts stock and dashboard refresh
+
+### Added
+
+- Added optional technical specifications for equipment.
+- Added conditional technical specs section for:
+  - Η/Υ
+  - PC
+  - Laptop
+  - Mini PC
+  - Server
+  - Διαδραστικός πίνακας / διαδραστική οθόνη
+  - OPS / embedded mini PC
+- Added technical specs fields:
+  - CPU
+  - RAM
+  - memory type
+  - storage
+  - storage type
+  - GPU
+  - operating system
+  - license / COA
+  - network
+  - OPS / mini PC module
+  - technical notes
+- Added technical reference library.
+- Added reference entries for processors, RAM, storage, disk types, GPUs, operating systems and power supplies.
+- Added manual entry support for missing technical references.
+- Added spare parts / consumables stock module.
+- Added stock categories for RAM, CPU, storage, power supplies, laptop chargers, keyboards, mice, cables, UPS, network parts and other items.
+- Added stock quantity tracking.
+- Added minimum stock threshold.
+- Added low stock indication.
+- Added archive/reactivate support for stock entries.
+- Added spare part usage workflow.
+- Added usage logging when a spare part is used on a device.
+- Added optional link between stock usage and an inventory item.
+- Added snapshot of the target device at the time of use.
+- Added automatic stock quantity decrease after usage.
+- Added spare part usage history page.
+- Added technical audit report.
+- Added detection for technical devices based on equipment/category names.
+- Added checks for:
+  - missing technical specs
+  - RAM below configurable threshold
+  - HDD / unknown storage
+  - old operating systems
+  - interactive displays without OPS / mini PC specs
+- Added clean printable technical audit report.
+- Added Excel export for technical audit.
+- Added clean printable spare parts stock report.
+- Added Excel export for spare parts stock.
+- Added dashboard widgets for:
+  - spare parts stock
+  - low stock items
+  - technical audit
+  - technical issue preview
+  - documents and workflows
+- Added Scoro-style mosaic dashboard layout.
+- Added visual dashboard refresh with compact KPI cards and independent widgets.
+
+### Changed
+
+- Reworked dashboard layout from large sections to a mosaic/card dashboard.
+- Improved dashboard readability and reduced long-page feeling.
+- Improved technical audit UI.
+- Improved technical audit Excel formatting.
+- Improved spare parts Excel formatting.
+- Improved print layouts for technical and stock reports.
+- Improved dashboard access to important workflows.
+- Improved layout consistency with the rest of the application.
+- Updated README documentation for the new modules.
+- Updated application version metadata.
+
+### Fixed
+
+- Fixed import duplicate handling for repeated Excel imports.
+- Fixed import conflict review for items with/without serial numbers.
+- Fixed model binding issue in import conflict review.
+- Fixed maintenance cleanup foreign key issue caused by destruction records.
+- Fixed technical audit print layout so it does not print the raw dashboard HTML.
+- Fixed dashboard donut layout issues from previous experimental layouts.
+
+### Notes
+
+- No manual EF migration is required for the new lightweight schema upgrades.
+- The app remains in school testing phase.
+- Recommended usage remains local network only.
 
 ---
 
 ## v0.3.0 - Destruction workflow and inventory dashboard refresh
 
 ### Added
-- Added new destruction workflow for non-functional / damaged inventory items.
-- Added destruction batch/folder workflow for selected inventory items.
-- Added item selection page for materials marked as non-functional or pending destruction.
-- Added printable report for selected items pending destruction.
-- Added printable “Πράξη Καταστροφής Υλικού” based on the provided school template.
-- Added printable “Πρωτόκολλο Καταστροφής Υλικού” based on the provided school template.
-- Added committee member fields for the destruction workflow.
+
+- Added destruction workflow for non-functional / damaged inventory items.
+- Added destruction folders/batches.
+- Added selection of items for destruction.
+- Added printable destruction report.
+- Added printable Πράξη Καταστροφής Υλικού.
+- Added printable Πρωτόκολλο Καταστροφής Υλικού.
+- Added committee member fields.
 - Added destroyed items history page.
-- Added links from destroyed items history to the related destruction folder, act and protocol.
-- Added destroyed / withdrawn items to the dashboard pie chart so the user can see what percentage of inventory has been removed from active use.
+- Added destroyed / withdrawn items to the dashboard pie chart.
 
 ### Changed
-- Reorganized the top navigation menu into clearer groups.
-- Improved action button layout across destruction-related pages.
-- Added a more distinctive visual theme for the School Inventory Manager.
-- Updated branding text to use “Ψηφιακή απογραφή σχολικού υλικού” and “Nyx Systems”.
-- Improved dropdown menu behavior so menus stay open while moving the mouse to menu items.
-- Updated application version display to `v0.3.0`.
+
+- Refreshed the visual theme.
+- Reorganized the top navigation menu.
+- Updated branding with Nyx Systems references.
+- Improved dropdown menu behavior.
+- Improved action button layout in destruction-related pages.
 
 ### Data / Safety
-- Destroyed items are not hard-deleted from the database.
-- Destroyed items are marked as inactive / destroyed and removed from active inventory views.
-- Destruction records preserve historical context for future reference.
 
-### Notes
-- This version is intended for development and school testing.
+- Destroyed items are not hard-deleted from the system logic.
+- Destroyed items are removed from active inventory views but remain available in history.
 - Existing inventory data is preserved.
 
 ---
 
 ## v0.2.1 - Inventory row expand caret polish
 
-### Changed
-- Replaced the repeated “Άνοιγμα” text in the equipment table with a compact caret icon.
-- Moved the expand/collapse indicator before the item name.
-- Improved readability of grouped equipment rows.
-
----
-
-## v0.2.0 - Inventory pagination and compact table UI
-
 ### Added
-- Added pagination to the equipment list.
-- Added page size options: 25, 50 and 100 results per page.
-- Added pagination controls above and below the equipment table.
+
+- Added row expand/collapse behavior for inventory item details.
+- Added clearer visual affordance for opening item details.
+- Added improved compact display for item rows.
 
 ### Changed
-- Added compact row number column in the equipment table.
-- Replaced equipment condition text with compact status icons and tooltips.
-- Replaced text action buttons with compact icon buttons.
-- Improved usability for large inventories with hundreds of devices.
+
+- Replaced unclear “open” style behavior with a caret/expand interaction.
+- Improved table usability for dense inventory lists.
+- Improved visual consistency of inventory actions.
 
 ---
 
-## v0.1.7 - Mobile menu overlay fix
-
-### Fixed
-- Fixed the mobile hamburger menu so the last links are no longer hidden behind the bottom mobile navigation.
-- The open mobile menu now appears above the bottom navigation and has its own scrolling area.
-- Added dynamic bottom navigation height calculation in `mobile-viewport-lock.js`.
-
----
-
-## v0.1.6 - Mobile navigation real fix
-
-### Fixed
-- Restored the full `site.css` from `v0.1.4` after the previous mobile patch accidentally replaced the file with only a small override.
-- Added a mobile scroll-shell layout so page content scrolls inside `.container` on small screens.
-- Stabilized the bottom mobile navigation on Android / Chrome where the browser address bar changes viewport height during scroll.
-- Added `mobile-viewport-lock.js` to measure the mobile header height and keep the content area correctly positioned.
-- Updated application version display to `v0.1.6`.
-
----
-
-## v0.1.5 - Mobile bottom navigation stabilization
-
-### Fixed
-- Stabilized the bottom mobile navigation bar so it no longer appears to “jump” while scrolling on phones and tablets.
-- Removed heavy backdrop blur from the bottom mobile menu for better mobile browser performance.
-- Added mobile CSS optimizations for fixed navigation, safe-area support and touch rendering.
-
----
-
-## v0.1.4 - Creator bio in About
+## v0.2.0 - Import/export and reporting improvements
 
 ### Added
-- Added a creator section to the About page.
-- Added short bio for Marios Giakalaras.
-- Clarified that the application was created from a real school inventory workflow.
 
----
-
-## v0.1.3 - About / Contact / Update Center
-
-### Added
-- Added About page with application purpose, version and usage notes.
-- Added Contact page with support checklist and issue-report template.
-- Added Update Center page with safe update workflow for Docker / Portainer and local Visual Studio use.
-- Added shared `AppVersion` utility for displaying the current application version.
-- Added navigation links for About, Contact and Update pages.
-- Added responsive styling for informational and admin pages.
-
----
-
-## v0.1.2 - Portainer volume fix
-
-### Fixed
-- Replaced the relative bind mount `./App_Data:/app/App_Data` with a Docker named volume.
-- Fixed Portainer Repository deployment on systems where `/data/compose/...` cannot be created because the root filesystem is read-only.
-- The SQLite database remains persistent inside the Docker named volume `school_inventory_app_data`.
-
----
-
-## v0.1.1 - Docker / server preparation
-
-### Added
-- Added Dockerfile for .NET 8 container builds.
-- Added `docker-compose.yml` for local school server deployment.
-- Added `.dockerignore` to keep build context clean.
-- Added `DEPLOYMENT.md` with server, Docker, firewall, update and safety instructions.
+- Added Excel import preview.
+- Added mapping workflow for unknown rooms/categories.
+- Added support for splitting bulk imported entries where needed.
+- Added CSV export.
+- Added improved printable inventory report.
+- Added About, Contact and Update Center pages.
 
 ### Changed
-- Moved default SQLite database path to `App_Data/school_inventory.db`.
-- Added automatic `App_Data/imports` folder creation on startup.
-- Added configuration switch for HTTPS redirection, disabled by default for school LAN / Docker testing.
+
+- Improved Excel import/export reliability.
+- Improved print/PDF report styling.
+- Improved responsive behavior for mobile/tablet use.
+- Improved database maintenance page.
 
 ---
 
-## v0.1.0 - Initial public school inventory MVP
+## v0.1.0 - Initial school inventory MVP
 
 ### Added
-- Added core school inventory management workflow.
-- Added equipment registration and editing.
-- Added rooms and categories.
-- Added school settings.
-- Added inventory print report.
-- Added Excel import workflow.
-- Added grouped inventory views for practical school use.
-- Added dark responsive UI for desktop, tablet and mobile use.
 
-### Notes
-- This version represents the first cleaned public baseline after the early internal development snapshots.
-
----
-
-# Legacy development milestones
-
-The following entries were created before the project adopted `v0.x.x` semantic versioning. They are preserved for historical reference.
+- Initial ASP.NET Core Razor Pages application.
+- SQLite database.
+- School settings.
+- Room management.
+- Inventory category management.
+- Inventory item management.
+- Dashboard with basic statistics.
+- Excel export.
+- Basic print report.
+- Docker / Portainer deployment support.
 
 ---
 
-## Legacy v13.1 - Home logo lockup fix
+## Development notes
 
-### Fixed
-- Replaced the full SVG-with-text logo in the home dashboard panel with a safer lockup: SVG icon plus real HTML text.
-- Prevented the word `Inventory` from being clipped as `Invento` on narrower panels or cached SVG scaling.
-- Kept the visual style, dark theme and responsive layout for PC, tablet and mobile.
+The project is under active development and school testing.
 
----
+Recommended before every release:
 
-## Legacy v13 - Home branding / logo fix
-
-### Fixed
-- Fixed the full home logo SVG viewBox so the text is no longer clipped.
-- Adjusted the dashboard brand panel so the logo scales cleanly on desktop, tablet and mobile.
-- Kept the compact mark in the top navigation and the full logo only in the home dashboard panel.
-
----
-
-## Legacy v12 - Database maintenance and automatic numbering
-
-### Added
-- Added **Συντήρηση βάσης** page for safe testing and cleanup.
-- Added option to clear only inventory items while keeping rooms, categories and school settings.
-- Added option for full database reset and reseeding of default school settings, rooms and categories.
-- Added confirmation text `ΚΑΘΑΡΙΣΜΟΣ` before destructive actions.
-- Added automatic `Α/Α` numbering in the Rooms list.
-- Added automatic `Α/Α` numbering in the grouped Equipment list and detail numbering inside expanded groups.
-- Added small UI styling for maintenance cards, confirmation input and row numbering.
-
-### Changed
-- Temporary uploaded Excel import files are cleaned during maintenance actions.
-- Removed manual `Σειρά εμφάνισης` field from the room form.
-- Room ordering is now assigned automatically when a new room is created.
-- Editing a room now preserves the internal automatic ordering value.
-
----
-
-## Legacy v11 - Practical inventory workflow
-
-### Added
-- Added import preview step before final Excel import.
-- Excel import now asks what to do with unknown rooms and categories:
-  - create a new room/category, or
-  - map it to an existing one.
-- Added category matching suggestions for common singular/plural differences such as `Tablet` / `Tablets`.
-- Added optional splitting of bulk entries for tracked equipment types such as Η/Υ, laptop, tablet and monitors.
-
-### Changed
-- Changed the default inventory manager title from hardcoded `Εκπαιδευτικός ΠΕ86` to generic `Υπεύθυνος/η απογραφής`.
-- Added helper text in School Settings so each school can enter the correct role/title.
-- Reworked **Χώροι** from card layout to a compact responsive table/list.
-- Reworked **Εξοπλισμός** from card layout to a grouped responsive table/list.
-- Equipment now appears grouped by room/category/item/condition, with expandable details per group.
-- Print report now groups detailed equipment records back into summarized official rows.
+```powershell
+dotnet build
+git status
+git add .
+git commit -m "Prepare vX.Y.Z release"
+git push origin main
+git tag -a vX.Y.Z -m "Release title"
+git push origin vX.Y.Z
+```

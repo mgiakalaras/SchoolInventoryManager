@@ -40,11 +40,30 @@ public class IndexModel : PageModel
             return Page();
         }
 
+        // Destruction records reference InventoryItems through DestructionBatchItems.
+        // Delete dependent destruction data first, otherwise SQLite blocks the inventory cleanup with FK constraint failed.
+        var deletedSparePartUsageLogs = await _db.SparePartUsageLogs.ExecuteDeleteAsync();
+        var deletedCommitteeMembers = await _db.SparePartUsageLogs.ExecuteDeleteAsync();
+        await _db.DestructionCommitteeMembers.ExecuteDeleteAsync();
+        var deletedDestructionItems = await _db.DestructionBatchItems.ExecuteDeleteAsync();
+        var deletedDestructionBatches = await _db.DestructionBatches.ExecuteDeleteAsync();
+
         var deletedItems = await _db.InventoryItems.ExecuteDeleteAsync();
-        await TryResetSqliteSequencesAsync("InventoryItems");
+
+        await TryResetSqliteSequencesAsync(
+            "DestructionCommitteeMembers",
+            "DestructionBatchItems",
+            "DestructionBatches",
+            "InventoryItems");
+
         CleanTemporaryImportFiles();
 
-        SuccessMessage = $"Έγινε εκκαθάριση εξοπλισμού. Διαγράφηκαν {deletedItems} εγγραφές. Οι χώροι, οι κατηγορίες και τα στοιχεία σχολείου έμειναν ανέπαφα.";
+        SuccessMessage =
+            $"Έγινε εκκαθάριση εξοπλισμού. Διαγράφηκαν {deletedItems} εγγραφές εξοπλισμού, " +
+            $"{deletedDestructionBatches} φάκελοι καταστροφής, {deletedDestructionItems} γραμμές φακέλων, " +
+            $"{deletedCommitteeMembers} μέλη επιτροπών και {deletedSparePartUsageLogs} κινήσεις ανταλλακτικών. " +
+            "Οι χώροι, οι κατηγορίες, το απόθεμα ανταλλακτικών και τα στοιχεία σχολείου έμειναν ανέπαφα.";
+
         ConfirmText = string.Empty;
         await LoadStatsAsync();
         return Page();
@@ -59,11 +78,28 @@ public class IndexModel : PageModel
             return Page();
         }
 
+        // Delete children/dependent records before parent tables to satisfy SQLite foreign keys.
+        await _db.DestructionCommitteeMembers.ExecuteDeleteAsync();
+        await _db.DestructionBatchItems.ExecuteDeleteAsync();
+        await _db.DestructionBatches.ExecuteDeleteAsync();
+
         await _db.InventoryItems.ExecuteDeleteAsync();
+        await _db.SparePartStocks.ExecuteDeleteAsync();
         await _db.Rooms.ExecuteDeleteAsync();
         await _db.InventoryCategories.ExecuteDeleteAsync();
         await _db.SchoolSettings.ExecuteDeleteAsync();
-        await TryResetSqliteSequencesAsync("InventoryItems", "Rooms", "InventoryCategories", "SchoolSettings");
+
+        await TryResetSqliteSequencesAsync(
+            "DestructionCommitteeMembers",
+            "DestructionBatchItems",
+            "DestructionBatches",
+            "SparePartUsageLogs",
+            "InventoryItems",
+            "SparePartStocks",
+            "Rooms",
+            "InventoryCategories",
+            "SchoolSettings");
+
         CleanTemporaryImportFiles();
 
         DbSeeder.Seed(_db);
@@ -92,7 +128,9 @@ public class IndexModel : PageModel
             CategoryCount = await _db.InventoryCategories.CountAsync(),
             ItemRowCount = activeItems.Count,
             TotalQuantity = activeItems.Sum(),
-            SettingsCount = await _db.SchoolSettings.CountAsync()
+            SettingsCount = await _db.SchoolSettings.CountAsync(),
+            DestructionBatchCount = await _db.DestructionBatches.CountAsync(),
+            DestroyedItemRowCount = await _db.InventoryItems.CountAsync(x => !x.IsActive)
         };
     }
 
@@ -151,5 +189,7 @@ public class IndexModel : PageModel
         public int ItemRowCount { get; set; }
         public int TotalQuantity { get; set; }
         public int SettingsCount { get; set; }
+        public int DestructionBatchCount { get; set; }
+        public int DestroyedItemRowCount { get; set; }
     }
 }

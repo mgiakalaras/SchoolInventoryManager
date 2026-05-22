@@ -191,6 +191,38 @@
                                                         <span>@item.Description</span>
                                                     }
 
+                                                    @if (item.TechnicalSpecs != null && item.TechnicalSpecs.HasAnyValue())
+                                                    {
+                                                        <div class="technical-specs-summary">
+                                                            <strong>Τεχνικά:</strong>
+
+                                                            @if (!string.IsNullOrWhiteSpace(item.TechnicalSpecs.Processor))
+                                                            {
+                                                                <span>CPU: @item.TechnicalSpecs.Processor</span>
+                                                            }
+
+                                                            @if (!string.IsNullOrWhiteSpace(item.TechnicalSpecs.MemoryRam))
+                                                            {
+                                                                <span>RAM: @item.TechnicalSpecs.MemoryRam</span>
+                                                            }
+
+                                                            @if (!string.IsNullOrWhiteSpace(item.TechnicalSpecs.Storage))
+                                                            {
+                                                                <span>Storage: @item.TechnicalSpecs.Storage</span>
+                                                            }
+
+                                                            @if (!string.IsNullOrWhiteSpace(item.TechnicalSpecs.OperatingSystem))
+                                                            {
+                                                                <span>OS: @item.TechnicalSpecs.OperatingSystem</span>
+                                                            }
+
+                                                            @if (!string.IsNullOrWhiteSpace(item.TechnicalSpecs.OpsModuleModel))
+                                                            {
+                                                                <span>OPS: @item.TechnicalSpecs.OpsModuleModel</span>
+                                                            }
+                                                        </div>
+                                                    }
+
                                                     @if (!string.IsNullOrWhiteSpace(item.Notes))
                                                     {
                                                         <span class="muted">@item.Notes</span>

@@ -70,6 +70,7 @@ public class IndexModel : PageModel
         var query = _db.InventoryItems
             .Include(x => x.Room)
             .Include(x => x.InventoryCategory)
+            .Include(x => x.TechnicalSpecs)
             .Where(x => x.IsActive)
             .AsQueryable();
 

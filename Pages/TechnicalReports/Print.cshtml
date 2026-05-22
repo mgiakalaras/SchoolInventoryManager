@@ -1,0 +1,165 @@
+@page
+@model SchoolInventoryManager.Pages.TechnicalReports.PrintModel
+
+@{
+    ViewData["Title"] = "Εκτύπωση τεχνικού ελέγχου";
+    Layout = "_Layout";
+}
+
+<div class="print-toolbar no-print">
+    <a asp-page="./Index"
+       asp-route-ramThresholdGb="@Model.RamThresholdGb"
+       asp-route-showOnlyIssues="@Model.ShowOnlyIssues"
+       asp-route-search="@Model.Search"
+       class="btn btn-secondary">
+        Πίσω στον τεχνικό έλεγχο
+    </a>
+
+    <button type="button" class="btn btn-primary" onclick="window.print()">
+        Εκτύπωση / PDF
+    </button>
+</div>
+
+<div class="technical-print-page">
+    <header class="technical-print-header">
+        <div>
+            <div class="technical-print-kicker">School Inventory Manager</div>
+            <h1>Αναφορά τεχνικού ελέγχου εξοπλισμού</h1>
+            <p>
+                Η/Υ, laptops, mini PCs, servers, OPS modules και διαδραστικοί πίνακες/οθόνες.
+            </p>
+        </div>
+
+        <div class="technical-print-meta">
+            <strong>Ημερομηνία</strong>
+            <span>@Model.PrintDateText</span>
+        </div>
+    </header>
+
+    <section class="technical-print-summary">
+        <div>
+            <span>Τεχνικές συσκευές</span>
+            <strong>@Model.CandidateCount</strong>
+        </div>
+
+        <div>
+            <span>Με θέματα</span>
+            <strong>@Model.IssueCount</strong>
+        </div>
+
+        <div>
+            <span>Λείπουν specs</span>
+            <strong>@Model.MissingSpecsCount</strong>
+        </div>
+
+        <div>
+            <span>RAM κάτω από @Model.RamThresholdGb GB</span>
+            <strong>@Model.LowRamCount</strong>
+        </div>
+
+        <div>
+            <span>HDD / άγνωστος δίσκος</span>
+            <strong>@Model.HddOrUnknownStorageCount</strong>
+        </div>
+
+        <div>
+            <span>Παλαιό OS</span>
+            <strong>@Model.OldOsCount</strong>
+        </div>
+    </section>
+
+    <section class="technical-print-filter-info">
+        <strong>Φίλτρα:</strong>
+        @(Model.ShowOnlyIssues ? "Μόνο εγγραφές με θέματα" : "Όλες οι τεχνικές συσκευές")
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <text> · Αναζήτηση: @Model.Search</text>
+        }
+    </section>
+
+    @if (Model.Rows.Count == 0)
+    {
+        <div class="technical-print-empty">
+            Δεν βρέθηκαν εγγραφές με τα τρέχοντα φίλτρα.
+        </div>
+    }
+    else
+    {
+        <table class="technical-print-table">
+            <thead>
+                <tr>
+                    <th>Α/Α</th>
+                    <th>Χώρος</th>
+                    <th>Συσκευή</th>
+                    <th>CPU</th>
+                    <th>RAM</th>
+                    <th>Δίσκος</th>
+                    <th>OS</th>
+                    <th>Θέματα / Παρατηρήσεις</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @{
+                    var counter = 1;
+                }
+
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td>@counter</td>
+                        <td>
+                            <strong>@row.RoomName</strong>
+                            <div>@row.CategoryName</div>
+                        </td>
+                        <td>
+                            <strong>@row.DisplayName</strong>
+
+                            @if (!string.IsNullOrWhiteSpace(row.SerialNumber))
+                            {
+                                <div>SN: @row.SerialNumber</div>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(row.OpsModuleModel))
+                            {
+                                <div>OPS: @row.OpsModuleModel</div>
+                            }
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(row.Processor) ? "-" : row.Processor)</td>
+                        <td>
+                            @(string.IsNullOrWhiteSpace(row.MemoryRam) ? "-" : row.MemoryRam)
+                            @if (!string.IsNullOrWhiteSpace(row.MemoryType))
+                            {
+                                <div>@row.MemoryType</div>
+                            }
+                        </td>
+                        <td>
+                            @(string.IsNullOrWhiteSpace(row.Storage) ? "-" : row.Storage)
+                            @if (!string.IsNullOrWhiteSpace(row.StorageType))
+                            {
+                                <div>@row.StorageType</div>
+                            }
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(row.OperatingSystem) ? "-" : row.OperatingSystem)</td>
+                        <td>
+                            @if (row.HasIssues)
+                            {
+                                @row.IssueText
+                            }
+                            else
+                            {
+                                <text>ΟΚ</text>
+                            }
+                        </td>
+                    </tr>
+
+                    counter++;
+                }
+            </tbody>
+        </table>
+    }
+
+    <footer class="technical-print-footer">
+        <span>Δημιουργήθηκε με το School Inventory Manager · Nyx Systems</span>
+    </footer>
+</div>

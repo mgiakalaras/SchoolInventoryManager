@@ -1,0 +1,385 @@
+@page
+@model SchoolInventoryManager.Pages.SpareParts.PrintModel
+@using SchoolInventoryManager.Models
+
+@{
+    ViewData["Title"] = "Εκτύπωση αποθέματος";
+    Layout = "_Layout";
+}
+
+<div class="print-toolbar no-print">
+    <a asp-page="./Index"
+       asp-route-typeFilter="@Model.TypeFilter"
+       asp-route-search="@Model.Search"
+       asp-route-lowStockOnly="@Model.LowStockOnly"
+       asp-route-showInactive="@Model.ShowInactive"
+       class="btn btn-secondary">
+        Πίσω στο απόθεμα
+    </a>
+
+    <button type="button" class="btn btn-primary" onclick="window.print()">
+        Εκτύπωση / PDF
+    </button>
+</div>
+
+<div class="spareparts-print-page">
+    <header class="spareparts-print-header">
+        <div>
+            <div class="spareparts-print-kicker">School Inventory Manager</div>
+            <h1>Αναφορά αποθέματος ανταλλακτικών / αναλώσιμων</h1>
+            <p>RAM, CPU, δίσκοι, τροφοδοτικά, φορτιστές, καλώδια, πληκτρολόγια, ποντίκια και λοιπά υλικά.</p>
+        </div>
+
+        <div class="spareparts-print-meta">
+            <strong>Ημερομηνία</strong>
+            <span>@Model.PrintDateText</span>
+        </div>
+    </header>
+
+    <section class="spareparts-print-summary">
+        <div>
+            <span>Ενεργές εγγραφές</span>
+            <strong>@Model.ActivePartRows</strong>
+        </div>
+
+        <div>
+            <span>Συνολική ποσότητα</span>
+            <strong>@Model.TotalQuantity</strong>
+        </div>
+
+        <div>
+            <span>Χαμηλό απόθεμα</span>
+            <strong>@Model.LowStockRows</strong>
+        </div>
+
+        <div>
+            <span>Αρχειοθετημένα</span>
+            <strong>@Model.InactiveRows</strong>
+        </div>
+    </section>
+
+    <section class="spareparts-print-filter-info">
+        <strong>Φίλτρα:</strong> @Model.FilterText
+    </section>
+
+    @if (Model.Parts.Count == 0)
+    {
+        <div class="spareparts-print-empty">
+            Δεν βρέθηκαν εγγραφές αποθέματος με τα τρέχοντα φίλτρα.
+        </div>
+    }
+    else
+    {
+        <table class="spareparts-print-table">
+            <thead>
+                <tr>
+                    <th>Α/Α</th>
+                    <th>Τύπος</th>
+                    <th>Ονομασία</th>
+                    <th>Προδιαγραφή</th>
+                    <th>Ποσ.</th>
+                    <th>Ελάχ.</th>
+                    <th>Κατάσταση</th>
+                    <th>Θέση</th>
+                    <th>Συμβατότητα / σημειώσεις</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @{
+                    var counter = 1;
+                }
+
+                @foreach (var part in Model.Parts)
+                {
+                    <tr class="@(part.IsLowStock ? "print-low-stock" : "")">
+                        <td>@counter</td>
+                        <td>@SparePartStock.GetPartTypeLabel(part.PartType)</td>
+                        <td>
+                            <strong>@part.Name</strong>
+                            @if (!string.IsNullOrWhiteSpace(part.Manufacturer) || !string.IsNullOrWhiteSpace(part.ModelName))
+                            {
+                                <div>@part.Manufacturer @part.ModelName</div>
+                            }
+                        </td>
+                        <td>@part.Specification</td>
+                        <td class="quantity-cell">@part.Quantity</td>
+                        <td class="quantity-cell">@part.MinimumStock</td>
+                        <td>
+                            @(part.IsActive ? part.Condition : "Αρχειοθετημένο")
+                            @if (part.IsLowStock)
+                            {
+                                <div><strong>Χαμηλό απόθεμα</strong></div>
+                            }
+                        </td>
+                        <td>@part.StorageLocation</td>
+                        <td>
+                            @part.CompatibleWith
+                            @if (!string.IsNullOrWhiteSpace(part.Notes))
+                            {
+                                <div>@part.Notes</div>
+                            }
+                        </td>
+                    </tr>
+
+                    counter++;
+                }
+            </tbody>
+        </table>
+    }
+
+    <footer class="spareparts-print-footer">
+        <span>Δημιουργήθηκε με το School Inventory Manager · Nyx Systems</span>
+    </footer>
+</div>
+
+<style>
+    .spareparts-print-page {
+        background: #ffffff;
+        color: #111827;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 34px 38px;
+        border-radius: 18px;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .spareparts-print-header {
+        display: grid;
+        grid-template-columns: 1fr 190px;
+        gap: 24px;
+        align-items: start;
+        border-bottom: 2px solid #111827;
+        padding-bottom: 16px;
+        margin-bottom: 18px;
+    }
+
+    .spareparts-print-kicker {
+        color: #0f766e;
+        font-weight: 900;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+
+    .spareparts-print-header h1 {
+        color: #111827;
+        font-size: 1.34rem;
+        margin: 0 0 6px;
+        font-weight: 900;
+    }
+
+    .spareparts-print-header p {
+        color: #374151;
+        margin: 0;
+        font-size: 0.92rem;
+    }
+
+    .spareparts-print-meta {
+        border: 1px solid #111827;
+        border-radius: 12px;
+        padding: 10px 12px;
+        text-align: center;
+        color: #111827;
+    }
+
+    .spareparts-print-meta strong,
+    .spareparts-print-meta span {
+        display: block;
+    }
+
+    .spareparts-print-meta strong {
+        font-size: 0.78rem;
+        color: #374151;
+    }
+
+    .spareparts-print-meta span {
+        font-weight: 800;
+        margin-top: 4px;
+        font-size: 0.86rem;
+    }
+
+    .spareparts-print-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 14px 0 16px;
+    }
+
+    .spareparts-print-summary div {
+        border: 1px solid #9ca3af;
+        border-radius: 10px;
+        padding: 8px 9px;
+        background: #f9fafb;
+    }
+
+    .spareparts-print-summary span {
+        display: block;
+        color: #4b5563;
+        font-size: 0.72rem;
+    }
+
+    .spareparts-print-summary strong {
+        display: block;
+        color: #111827;
+        font-size: 1.25rem;
+        line-height: 1;
+        margin-top: 4px;
+    }
+
+    .spareparts-print-filter-info {
+        color: #111827;
+        background: #f3f4f6;
+        border: 1px solid #9ca3af;
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-bottom: 14px;
+        font-size: 0.84rem;
+    }
+
+    .spareparts-print-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        color: #111827;
+        font-size: 0.74rem;
+    }
+
+    .spareparts-print-table th,
+    .spareparts-print-table td {
+        border: 1px solid #111827;
+        padding: 5px 6px;
+        vertical-align: top;
+        line-height: 1.25;
+        color: #111827;
+    }
+
+    .spareparts-print-table th {
+        background: #d1d5db;
+        text-align: center;
+        font-weight: 900;
+    }
+
+    .spareparts-print-table th:nth-child(1) { width: 4%; }
+    .spareparts-print-table th:nth-child(2) { width: 13%; }
+    .spareparts-print-table th:nth-child(3) { width: 18%; }
+    .spareparts-print-table th:nth-child(4) { width: 17%; }
+    .spareparts-print-table th:nth-child(5) { width: 6%; }
+    .spareparts-print-table th:nth-child(6) { width: 6%; }
+    .spareparts-print-table th:nth-child(7) { width: 12%; }
+    .spareparts-print-table th:nth-child(8) { width: 12%; }
+    .spareparts-print-table th:nth-child(9) { width: 12%; }
+
+    .quantity-cell {
+        text-align: center;
+        font-weight: 900;
+    }
+
+    .print-low-stock {
+        background: #fff7ed;
+    }
+
+    .spareparts-print-footer {
+        margin-top: 18px;
+        color: #6b7280;
+        font-size: 0.74rem;
+        font-style: italic;
+        text-align: left;
+    }
+
+    .spareparts-print-empty {
+        border: 1px solid #9ca3af;
+        padding: 18px;
+        border-radius: 12px;
+        color: #111827;
+        text-align: center;
+    }
+
+    @@media print {
+        .topbar,
+        .mobile-bottom-nav,
+        .footer,
+        .print-toolbar,
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 0 !important;
+        }
+
+        .container,
+        main {
+            max-width: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .spareparts-print-page {
+            max-width: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .spareparts-print-header {
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .spareparts-print-header h1 {
+            font-size: 1.05rem;
+        }
+
+        .spareparts-print-header p {
+            font-size: 0.76rem;
+        }
+
+        .spareparts-print-summary {
+            gap: 5px;
+            margin: 8px 0 10px;
+        }
+
+        .spareparts-print-summary div {
+            padding: 5px 6px;
+            border-radius: 6px;
+        }
+
+        .spareparts-print-table {
+            font-size: 0.62rem;
+        }
+
+        .spareparts-print-table th,
+        .spareparts-print-table td {
+            padding: 3px 4px;
+            line-height: 1.18;
+            color: #000000 !important;
+            border-color: #000000 !important;
+        }
+
+        .spareparts-print-table th {
+            background: #e5e7eb !important;
+        }
+
+        .spareparts-print-table tr {
+            page-break-inside: avoid;
+        }
+
+        .spareparts-print-table thead {
+            display: table-header-group;
+        }
+
+        @@page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+    }
+</style>

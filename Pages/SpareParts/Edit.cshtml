@@ -1,0 +1,103 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.SpareParts.EditModel
+@using SchoolInventoryManager.Models
+
+@{
+    ViewData["Title"] = "Επεξεργασία αποθέματος";
+}
+
+<section class="page-hero spareparts-hero">
+    <div>
+        <span class="eyebrow">Απόθεμα</span>
+        <h1>Επεξεργασία ανταλλακτικού / αναλώσιμου</h1>
+        <p>Ενημέρωση στοιχείων, ποσότητας, ελάχιστου αποθέματος και θέσης αποθήκευσης.</p>
+    </div>
+</section>
+
+<section class="panel spareparts-panel">
+    <form method="post">
+        <input type="hidden" asp-for="Part.Id" />
+
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <div class="form-grid">
+            <div class="form-row">
+                <label asp-for="Part.PartType"></label>
+                <select asp-for="Part.PartType">
+                    @foreach (var type in Model.PartTypes)
+                    {
+                        <option value="@type">@SparePartStock.GetPartTypeLabel(type)</option>
+                    }
+                </select>
+                <span asp-validation-for="Part.PartType"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.Name"></label>
+                <input asp-for="Part.Name" />
+                <span asp-validation-for="Part.Name"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.Manufacturer"></label>
+                <input asp-for="Part.Manufacturer" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.ModelName"></label>
+                <input asp-for="Part.ModelName" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.Quantity"></label>
+                <input asp-for="Part.Quantity" type="number" min="0" />
+                <span asp-validation-for="Part.Quantity"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.MinimumStock"></label>
+                <input asp-for="Part.MinimumStock" type="number" min="0" />
+                <span asp-validation-for="Part.MinimumStock"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.Condition"></label>
+                <input asp-for="Part.Condition" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="Part.StorageLocation"></label>
+                <input asp-for="Part.StorageLocation" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="Part.Specification"></label>
+                <input asp-for="Part.Specification" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="Part.CompatibleWith"></label>
+                <input asp-for="Part.CompatibleWith" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="Part.Notes"></label>
+                <textarea asp-for="Part.Notes"></textarea>
+            </div>
+
+            <label class="check-row">
+                <input asp-for="Part.IsActive" />
+                <span>Ενεργό στο απόθεμα</span>
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Αποθήκευση</button>
+            <a asp-page="./Index" class="btn btn-secondary">Πίσω στο απόθεμα</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

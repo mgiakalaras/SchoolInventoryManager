@@ -19,16 +19,29 @@ public class EditModel : PageModel
     [BindProperty]
     public InventoryItem Item { get; set; } = new();
 
+    [BindProperty]
+    public InventoryItemTechnicalSpecs Specs { get; set; } = new();
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        var item = await _db.InventoryItems.FindAsync(id);
+        var item = await _db.InventoryItems
+            .Include(x => x.TechnicalSpecs)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
         if (item == null)
         {
             return NotFound();
         }
 
         Item = item;
+        Specs = item.TechnicalSpecs ?? new InventoryItemTechnicalSpecs
+        {
+            InventoryItemId = item.Id
+        };
+
         await LoadListsAsync();
+        ViewData["TechnicalSpecs"] = Specs;
+
         return Page();
     }
 
@@ -37,6 +50,7 @@ public class EditModel : PageModel
         if (!ModelState.IsValid)
         {
             await LoadListsAsync();
+            ViewData["TechnicalSpecs"] = Specs;
             return Page();
         }
 
@@ -59,13 +73,72 @@ public class EditModel : PageModel
         existing.Notes = Item.Notes;
         existing.UpdatedAt = DateTime.Now;
 
+        var existingSpecs = await _db.InventoryItemTechnicalSpecs
+            .FirstOrDefaultAsync(x => x.InventoryItemId == existing.Id);
+
+        if (Specs.HasAnyValue())
+        {
+            if (existingSpecs == null)
+            {
+                existingSpecs = new InventoryItemTechnicalSpecs
+                {
+                    InventoryItemId = existing.Id,
+                    CreatedAt = DateTime.Now
+                };
+
+                _db.InventoryItemTechnicalSpecs.Add(existingSpecs);
+            }
+
+            existingSpecs.Processor = Specs.Processor;
+            existingSpecs.MemoryRam = Specs.MemoryRam;
+            existingSpecs.MemoryType = Specs.MemoryType;
+            existingSpecs.Storage = Specs.Storage;
+            existingSpecs.StorageType = Specs.StorageType;
+            existingSpecs.Graphics = Specs.Graphics;
+            existingSpecs.OperatingSystem = Specs.OperatingSystem;
+            existingSpecs.LicenseInfo = Specs.LicenseInfo;
+            existingSpecs.NetworkInfo = Specs.NetworkInfo;
+            existingSpecs.OpsModuleModel = Specs.OpsModuleModel;
+            existingSpecs.TechnicalNotes = Specs.TechnicalNotes;
+            existingSpecs.UpdatedAt = DateTime.Now;
+        }
+        else if (existingSpecs != null)
+        {
+            _db.InventoryItemTechnicalSpecs.Remove(existingSpecs);
+        }
+
         await _db.SaveChangesAsync();
         return RedirectToPage("Index", new { roomId = existing.RoomId });
     }
 
     private async Task LoadListsAsync()
     {
-        ViewData["Rooms"] = new SelectList(await _db.Rooms.OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync(), "Id", "Name");
-        ViewData["Categories"] = new SelectList(await _db.InventoryCategories.OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync(), "Id", "Name");
+        ViewData["Rooms"] = new SelectList(
+            await _db.Rooms.OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync(),
+            "Id",
+            "Name");
+
+        ViewData["Categories"] = new SelectList(
+            await _db.InventoryCategories.OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync(),
+            "Id",
+            "Name");
+
+        ViewData["ProcessorReferences"] = await LoadReferenceOptionsAsync("Processor");
+        ViewData["MemoryReferences"] = await LoadReferenceOptionsAsync("Memory");
+        ViewData["MemoryTypeReferences"] = await LoadReferenceOptionsAsync("MemoryType");
+        ViewData["StorageReferences"] = await LoadReferenceOptionsAsync("Storage");
+        ViewData["StorageTypeReferences"] = await LoadReferenceOptionsAsync("StorageType");
+        ViewData["GraphicsReferences"] = await LoadReferenceOptionsAsync("Graphics");
+        ViewData["OperatingSystemReferences"] = await LoadReferenceOptionsAsync("OperatingSystem");
+    }
+
+    private async Task<List<string>> LoadReferenceOptionsAsync(string referenceType)
+    {
+        return await _db.TechnicalReferences
+            .Where(x => x.ReferenceType == referenceType && x.IsActive)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.DisplayName)
+            .Select(x => x.DisplayName)
+            .ToListAsync();
     }
 }

@@ -37,11 +37,39 @@
         <h2>Αποτέλεσμα</h2>
         <div class="grid grid-5 compact-stats">
             <div><strong>@Model.Result.ImportedItems</strong><span>νέες εγγραφές</span></div>
+            <div><strong>@Model.Result.UpdatedItems</strong><span>ενημερώθηκαν</span></div>
             <div><strong>@Model.Result.SplitRowsCreated</strong><span>αναλυμένα τεμάχια</span></div>
             <div><strong>@Model.Result.CreatedRooms</strong><span>νέοι χώροι</span></div>
-            <div><strong>@Model.Result.CreatedCategories</strong><span>νέες κατηγορίες</span></div>
             <div><strong>@Model.Result.SkippedRows</strong><span>γραμμές αγνοήθηκαν</span></div>
         </div>
+
+        @if (Model.Result.DuplicateItemsSkipped > 0)
+        {
+            <div class="alert-warning import-errors">
+                <strong>@Model.Result.DuplicateItemsSkipped</strong> εγγραφές αγνοήθηκαν ως πιθανές διπλοεγγραφές.
+                @if (Model.Result.DuplicateRowsInFile > 0)
+                {
+                    <span> Βρέθηκαν και @Model.Result.DuplicateRowsInFile διπλές γραμμές μέσα στο ίδιο Excel.</span>
+                }
+            </div>
+        }
+
+        @if (Model.Result.HasWarnings)
+        {
+            <details class="import-errors" open>
+                <summary>Προειδοποιήσεις / διπλοεγγραφές</summary>
+                <ul>
+                    @foreach (var warning in Model.Result.Warnings.Take(40))
+                    {
+                        <li>@warning</li>
+                    }
+                </ul>
+                @if (Model.Result.Warnings.Count > 40)
+                {
+                    <p class="muted">Εμφανίζονται οι πρώτες 40 προειδοποιήσεις.</p>
+                }
+            </details>
+        }
 
         @if (Model.Result.HasErrors)
         {
@@ -79,6 +107,14 @@
                 <span>
                     Ανάλυση μαζικών εγγραφών για Η/Υ, laptop, tablet και οθόνες
                     <small>π.χ. ποσότητα 21 tablets → 21 ξεχωριστές εγγραφές ποσότητας 1, που μετά φαίνονται ομαδοποιημένες.</small>
+                </span>
+            </label>
+
+            <label class="check-row">
+                <input asp-for="SkipExistingItems" type="checkbox" />
+                <span>
+                    Παράλειψη πιθανών διπλοεγγραφών
+                    <small>Αν ανεβάσεις ξανά το ίδιο Excel, η εφαρμογή θα εντοπίσει πιθανές διπλοεγγραφές και στην προεπισκόπηση θα διαλέξεις: παράλειψη, εισαγωγή ως νέο ή ενημέρωση υπάρχουσας εγγραφής.</small>
                 </span>
             </label>
             <div class="actions">
@@ -120,10 +156,15 @@
             <div>
                 <h2>2. Προεπισκόπηση εισαγωγής</h2>
                 <p class="muted">
-                    Βρέθηκαν @Model.Preview.ValidRows έγκυρες γραμμές. Θα δημιουργηθούν περίπου @Model.Preview.EstimatedImportedItems εγγραφές.
+                    Βρέθηκαν @Model.Preview.ValidRows έγκυρες γραμμές.
+                    Εκτιμώμενες νέες εγγραφές: <strong>@Model.Preview.EstimatedNewItems</strong> από @Model.Preview.EstimatedImportedItems πιθανές εγγραφές.
                     @if (Model.Preview.SplitRowsEstimated > 0)
                     {
                         <span> Από αυτές, @Model.Preview.SplitRowsEstimated είναι επιπλέον αναλυτικές εγγραφές από μαζικές ποσότητες.</span>
+                    }
+                    @if (Model.Preview.DuplicateItemsEstimated > 0)
+                    {
+                        <span> Θα αγνοηθούν περίπου @Model.Preview.DuplicateItemsEstimated πιθανές διπλοεγγραφές.</span>
                     }
                 </p>
             </div>
@@ -146,9 +187,22 @@
             </div>
         }
 
+        @if (Model.Preview.DuplicateItemsEstimated > 0)
+        {
+            <div class="alert-warning import-errors">
+                <h3>Πιθανές διπλοεγγραφές</h3>
+                <p>
+                    Η εφαρμογή εντόπισε περίπου <strong>@Model.Preview.DuplicateItemsEstimated</strong> εγγραφές που φαίνεται να υπάρχουν ήδη
+                    ή να επαναλαμβάνονται μέσα στο ίδιο Excel. Για κάθε πιθανή διπλοεγγραφή μπορείς να επιλέξεις αν θα αγνοηθεί,
+                    αν θα εισαχθεί ως νέα εγγραφή ή αν θα ενημερώσει την υπάρχουσα. Αυτό βοηθά ειδικά όταν μια συσκευή είχε περαστεί χωρίς serial και μετά βρέθηκε το serial.
+                </p>
+            </div>
+        }
+
         <form method="post" asp-page-handler="ConfirmImport">
             <input type="hidden" name="ImportBatchId" value="@Model.Preview.BatchId" />
             <input type="hidden" name="SplitTrackedBulkItems" value="@(Model.SplitTrackedBulkItems ? "true" : "false")" />
+            <input type="hidden" name="SkipExistingItems" value="@(Model.SkipExistingItems ? "true" : "false")" />
 
             @if (Model.Preview.UnknownRooms.Any())
             {
@@ -244,8 +298,11 @@
                                 <th>Χώρος</th>
                                 <th>Κατηγορία</th>
                                 <th>Αντικείμενο</th>
+                                <th>Στοιχεία</th>
                                 <th>Ποσότητα</th>
                                 <th>Μετά την εισαγωγή</th>
+                                <th>Έλεγχος</th>
+                                <th>Ενέργεια</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -256,15 +313,66 @@
                                     <td>@row.RoomName</td>
                                     <td>@(row.CategoryName ?? "-")</td>
                                     <td>@row.ItemName</td>
+                                    <td>
+                                        <div class="muted">
+                                            @if (!string.IsNullOrWhiteSpace(row.Brand))
+                                            {
+                                                <span>@row.Brand</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(row.Model))
+                                            {
+                                                <span> @row.Model</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(row.SerialNumber))
+                                            {
+                                                <div>SN: @row.SerialNumber</div>
+                                            }
+                                        </div>
+                                    </td>
                                     <td>@row.Quantity</td>
                                     <td>
-                                        @if (row.WillSplit)
+                                        @if (row.WillSkipAsDuplicate)
+                                        {
+                                            <span class="badge badge-muted">αναμονή επιλογής</span>
+                                        }
+                                        else if (row.WillSplit)
                                         {
                                             <span class="badge badge-info">@row.OutputRows αναλυτικές εγγραφές</span>
                                         }
                                         else
                                         {
                                             <span class="badge badge-muted">1 εγγραφή</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (row.WillSkipAsDuplicate)
+                                        {
+                                            <span class="badge badge-warning">@row.DuplicateStatus</span>
+                                            @if (!string.IsNullOrWhiteSpace(row.ExistingItemSummary))
+                                            {
+                                                <div class="muted small-text">@row.ExistingItemSummary</div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-muted">Νέα εγγραφή</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (row.WillSkipAsDuplicate)
+                                        {
+                                            <select name="RowActions[@row.ExcelRow]" class="import-action-select">
+                                                <option value="@Model.DuplicateSkipValue" selected="@(row.SuggestedAction == Model.DuplicateSkipValue)">Παράλειψη</option>
+                                                @if (row.HasExistingConflict)
+                                                {
+                                                    <option value="@Model.DuplicateUpdateValue" selected="@(row.SuggestedAction == Model.DuplicateUpdateValue)">Ενημέρωση υπάρχουσας</option>
+                                                }
+                                                <option value="@Model.DuplicateNewValue" selected="@(row.SuggestedAction == Model.DuplicateNewValue)">Εισαγωγή ως νέα</option>
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-muted">Θα εισαχθεί</span>
                                         }
                                     </td>
                                 </tr>

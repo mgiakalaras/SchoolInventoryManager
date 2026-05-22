@@ -1,0 +1,470 @@
+@page
+@model SchoolInventoryManager.Pages.TechnicalReports.IndexModel
+
+@{
+    ViewData["Title"] = "Τεχνικός έλεγχος";
+}
+
+<section class="tech-audit-shell">
+    <div class="tech-audit-hero">
+        <div>
+            <span class="eyebrow">Αναφορές · Τεχνική εικόνα</span>
+            <h1>Τεχνικός έλεγχος εξοπλισμού</h1>
+            <p>
+                Εντοπισμός Η/Υ, laptops, mini PCs, servers, OPS modules και διαδραστικών που χρειάζονται
+                συμπλήρωση στοιχείων, αναβάθμιση RAM, αντικατάσταση HDD ή έλεγχο λειτουργικού.
+            </p>
+        </div>
+
+        <div class="tech-audit-quick-actions">
+            <a asp-page="./Print"
+               asp-route-ramThresholdGb="@Model.RamThresholdGb"
+               asp-route-showOnlyIssues="@Model.ShowOnlyIssues"
+               asp-route-search="@Model.Search"
+               class="btn btn-primary">
+                Εκτύπωση / PDF
+            </a>
+
+            <a asp-page-handler="Export"
+               asp-route-ramThresholdGb="@Model.RamThresholdGb"
+               asp-route-showOnlyIssues="@Model.ShowOnlyIssues"
+               asp-route-search="@Model.Search"
+               class="btn btn-secondary">
+                Εξαγωγή Excel
+            </a>
+        </div>
+    </div>
+
+    <section class="tech-audit-filters-card">
+        <div class="section-title-row">
+            <div>
+                <h2>Φίλτρα ελέγχου</h2>
+                <p>Ρύθμισε το όριο RAM και αν θέλεις να βλέπεις μόνο τις συσκευές με θέματα.</p>
+            </div>
+        </div>
+
+        <form method="get" class="tech-audit-filters">
+            <div class="form-row">
+                <label asp-for="RamThresholdGb">Όριο RAM σε GB</label>
+                <input asp-for="RamThresholdGb" type="number" min="1" max="128" />
+            </div>
+
+            <div class="form-row search-row">
+                <label asp-for="Search">Αναζήτηση</label>
+                <input asp-for="Search" placeholder="χώρος, συσκευή, CPU, RAM, δίσκος, θέμα..." />
+            </div>
+
+            <label class="check-row tech-check">
+                <input asp-for="ShowOnlyIssues" />
+                <span>Μόνο εγγραφές με θέματα</span>
+            </label>
+
+            <div class="tech-filter-actions">
+                <button type="submit" class="btn btn-primary">Εφαρμογή</button>
+                <a asp-page="./Index" class="btn btn-secondary">Καθαρισμός</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="tech-audit-stat-grid">
+        <article class="tech-stat-card">
+            <span>Τεχνικές συσκευές</span>
+            <strong>@Model.CandidateCount</strong>
+        </article>
+
+        <article class="tech-stat-card accent-warning">
+            <span>Με θέματα</span>
+            <strong>@Model.IssueCount</strong>
+        </article>
+
+        <article class="tech-stat-card">
+            <span>Λείπουν specs</span>
+            <strong>@Model.MissingSpecsCount</strong>
+        </article>
+
+        <article class="tech-stat-card">
+            <span>RAM κάτω από @Model.RamThresholdGb GB</span>
+            <strong>@Model.LowRamCount</strong>
+        </article>
+
+        <article class="tech-stat-card">
+            <span>HDD / άγνωστη αποθήκευση</span>
+            <strong>@Model.HddOrUnknownStorageCount</strong>
+        </article>
+
+        <article class="tech-stat-card">
+            <span>Παλαιό OS</span>
+            <strong>@Model.OldOsCount</strong>
+        </article>
+    </section>
+
+    <section class="tech-audit-results-card">
+        <div class="section-title-row">
+            <div>
+                <h2>Αποτελέσματα ελέγχου</h2>
+                <p>
+                    Οι εγγραφές με πορτοκαλί ένδειξη θέλουν έλεγχο ή συμπλήρωση στοιχείων.
+                </p>
+            </div>
+
+            <div class="result-count-pill">
+                @Model.Rows.Count εγγραφές
+            </div>
+        </div>
+
+        @if (Model.Rows.Count == 0)
+        {
+            <p class="muted">
+                Δεν βρέθηκαν εγγραφές με τα τρέχοντα φίλτρα.
+            </p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data-table technical-report-table polished-tech-table">
+                    <thead>
+                        <tr>
+                            <th>Χώρος</th>
+                            <th>Συσκευή</th>
+                            <th>CPU</th>
+                            <th>RAM</th>
+                            <th>Αποθήκευση</th>
+                            <th>OS</th>
+                            <th>Θέματα</th>
+                            <th>Ενέργειες</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr class="@(row.HasIssues ? "issue-row" : "")">
+                                <td>
+                                    <strong>@row.RoomName</strong>
+                                    <div class="table-subtext">@row.CategoryName</div>
+                                </td>
+
+                                <td>
+                                    <strong>@row.DisplayName</strong>
+
+                                    @if (!string.IsNullOrWhiteSpace(row.SerialNumber))
+                                    {
+                                        <div class="table-subtext">SN: @row.SerialNumber</div>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(row.OpsModuleModel))
+                                    {
+                                        <div class="table-subtext">OPS: @row.OpsModuleModel</div>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(row.Processor))
+                                    {
+                                        @row.Processor
+                                    }
+                                    else
+                                    {
+                                        <span class="muted">-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(row.MemoryRam))
+                                    {
+                                        <strong>@row.MemoryRam</strong>
+
+                                        @if (!string.IsNullOrWhiteSpace(row.MemoryType))
+                                        {
+                                            <div class="table-subtext">@row.MemoryType</div>
+                                        }
+
+                                        @if (row.IsLowRam)
+                                        {
+                                            <span class="badge badge-warning">Χαμηλή</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="muted">-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(row.Storage) || !string.IsNullOrWhiteSpace(row.StorageType))
+                                    {
+                                        <strong>@row.Storage</strong>
+                                        <div class="table-subtext">@row.StorageType</div>
+
+                                        @if (row.IsHddOrUnknownStorage)
+                                        {
+                                            <span class="badge badge-warning">Έλεγχος</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">Άγνωστο</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(row.OperatingSystem))
+                                    {
+                                        @row.OperatingSystem
+
+                                        @if (row.HasOldOs)
+                                        {
+                                            <div>
+                                                <span class="badge badge-warning">Παλαιό</span>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="muted">-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (row.HasIssues)
+                                    {
+                                        <div class="issue-tags">
+                                            @foreach (var issue in row.Issues)
+                                            {
+                                                <span class="badge badge-warning">@issue</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">ΟΚ</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a asp-page="/Items/Edit" asp-route-id="@row.InventoryItemId" class="btn btn-sm btn-secondary">
+                                        Επεξεργασία
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="tech-audit-help-card">
+        <h2>Πώς διαβάζεται η αναφορά</h2>
+        <div class="tech-help-grid">
+            <div>
+                <strong>Λείπουν specs</strong>
+                <span>Η συσκευή είναι τεχνικού τύπου αλλά δεν έχει συμπληρωμένη τεχνική ταυτότητα.</span>
+            </div>
+            <div>
+                <strong>Χαμηλή RAM</strong>
+                <span>Βοηθά να βρεις Η/Υ που πιθανόν θέλουν αναβάθμιση μνήμης.</span>
+            </div>
+            <div>
+                <strong>HDD / άγνωστο</strong>
+                <span>Εντοπίζει υποψήφιες συσκευές για SSD ή για συμπλήρωση στοιχείων.</span>
+            </div>
+            <div>
+                <strong>Παλαιό OS</strong>
+                <span>Εντοπίζει Windows XP/7/8/Vista ή 32-bit συστήματα.</span>
+            </div>
+        </div>
+    </section>
+</section>
+
+<style>
+    .tech-audit-shell {
+        display: grid;
+        gap: 18px;
+    }
+
+    .tech-audit-hero,
+    .tech-audit-filters-card,
+    .tech-audit-results-card,
+    .tech-audit-help-card {
+        border: 1px solid rgba(34, 211, 238, 0.20);
+        background:
+            radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 35%),
+            rgba(2, 6, 23, 0.74);
+        border-radius: 24px;
+        box-shadow: 0 18px 55px rgba(0, 0, 0, 0.25);
+    }
+
+    .tech-audit-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 22px;
+        align-items: center;
+        padding: 26px;
+    }
+
+    .tech-audit-hero h1 {
+        margin: 4px 0 8px;
+        font-size: clamp(1.7rem, 3vw, 2.35rem);
+    }
+
+    .tech-audit-hero p,
+    .section-title-row p,
+    .tech-help-grid span {
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    .tech-audit-quick-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .tech-audit-filters-card,
+    .tech-audit-results-card,
+    .tech-audit-help-card {
+        padding: 22px;
+    }
+
+    .section-title-row {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 16px;
+    }
+
+    .section-title-row h2 {
+        margin: 0 0 4px;
+        font-size: 1.15rem;
+    }
+
+    .tech-audit-filters {
+        display: grid;
+        grid-template-columns: 160px minmax(240px, 1fr) auto auto;
+        gap: 14px;
+        align-items: end;
+    }
+
+    .tech-filter-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .tech-check {
+        padding-bottom: 4px;
+    }
+
+    .tech-audit-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .tech-stat-card {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(15, 23, 42, 0.72);
+        border-radius: 20px;
+        padding: 16px;
+        min-height: 104px;
+    }
+
+    .tech-stat-card span {
+        color: #94a3b8;
+        font-size: 0.82rem;
+        min-height: 34px;
+        display: block;
+    }
+
+    .tech-stat-card strong {
+        color: #f8fafc;
+        display: block;
+        margin-top: 10px;
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .tech-stat-card.accent-warning {
+        border-color: rgba(245, 158, 11, 0.38);
+        background:
+            radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 40%),
+            rgba(15, 23, 42, 0.72);
+    }
+
+    .result-count-pill {
+        border: 1px solid rgba(34, 211, 238, 0.26);
+        background: rgba(34, 211, 238, 0.10);
+        color: #cffafe;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .polished-tech-table th {
+        background: rgba(15, 118, 110, 0.28);
+        color: #e0f2fe;
+        font-weight: 900;
+    }
+
+    .polished-tech-table td {
+        vertical-align: top;
+    }
+
+    .issue-row {
+        background:
+            linear-gradient(90deg, rgba(245, 158, 11, 0.10), transparent 55%),
+            rgba(15, 23, 42, 0.45);
+    }
+
+    .issue-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .tech-help-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .tech-help-grid div {
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.62);
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .tech-help-grid strong,
+    .tech-help-grid span {
+        display: block;
+    }
+
+    .tech-help-grid strong {
+        color: #f8fafc;
+        margin-bottom: 6px;
+    }
+
+    @@media (max-width: 1100px) {
+        .tech-audit-hero,
+        .tech-audit-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .tech-audit-quick-actions {
+            justify-content: flex-start;
+        }
+
+        .tech-audit-stat-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .tech-help-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

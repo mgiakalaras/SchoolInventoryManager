@@ -1,0 +1,278 @@
+@page
+@model SchoolInventoryManager.Pages.SpareParts.IndexModel
+@using SchoolInventoryManager.Models
+
+@{
+    ViewData["Title"] = "Ανταλλακτικά / Απόθεμα";
+}
+
+<section class="page-hero spareparts-hero">
+    <div>
+        <span class="eyebrow">Τεχνική διαχείριση</span>
+        <h1>Ανταλλακτικά / Απόθεμα</h1>
+        <p>
+            Καταγραφή διαθέσιμων αναλώσιμων και ανταλλακτικών, όπως RAM, SSD/HDD, επεξεργαστές,
+            τροφοδοτικά, καλώδια, ποντίκια, πληκτρολόγια και φορτιστές laptop.
+        </p>
+    </div>
+</section>
+
+<div class="page-actions spareparts-actions">
+    <a asp-page="./UsageHistory" class="btn btn-secondary">Ιστορικό χρήσης ανταλλακτικών</a>
+    <a asp-page="./Print"
+       asp-route-typeFilter="@Model.TypeFilter"
+       asp-route-search="@Model.Search"
+       asp-route-lowStockOnly="@Model.LowStockOnly"
+       asp-route-showInactive="@Model.ShowInactive"
+       class="btn btn-secondary">Εκτύπωση αποθέματος</a>
+    <a asp-page-handler="Export"
+       asp-route-typeFilter="@Model.TypeFilter"
+       asp-route-search="@Model.Search"
+       asp-route-lowStockOnly="@Model.LowStockOnly"
+       asp-route-showInactive="@Model.ShowInactive"
+       class="btn btn-secondary">Εξαγωγή Excel</a>
+</div>
+
+@if (TempData["SparePartMessage"] != null)
+{
+    <div class="alert success">@TempData["SparePartMessage"]</div>
+}
+
+<section class="stats-grid spareparts-stats">
+    <article class="stat-card">
+        <span>Ενεργές εγγραφές</span>
+        <strong>@Model.ActivePartRows</strong>
+    </article>
+    <article class="stat-card">
+        <span>Συνολική ποσότητα</span>
+        <strong>@Model.TotalQuantity</strong>
+    </article>
+    <article class="stat-card warning">
+        <span>Χαμηλό απόθεμα</span>
+        <strong>@Model.LowStockRows</strong>
+    </article>
+    <article class="stat-card muted-card">
+        <span>Αρχειοθετημένα</span>
+        <strong>@Model.InactiveRows</strong>
+    </article>
+</section>
+
+<section class="panel spareparts-panel">
+    <h2>Φίλτρα</h2>
+
+    <form method="get" class="filters-grid">
+        <div class="form-row">
+            <label asp-for="TypeFilter">Τύπος</label>
+            <select asp-for="TypeFilter">
+                <option value="">Όλοι οι τύποι</option>
+                @foreach (var type in Model.PartTypes)
+                {
+                    <option value="@type">@SparePartStock.GetPartTypeLabel(type)</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label asp-for="Search">Αναζήτηση</label>
+            <input asp-for="Search" placeholder="όνομα, μοντέλο, συμβατότητα, θέση..." />
+        </div>
+
+        <label class="check-row">
+            <input asp-for="LowStockOnly" />
+            <span>Μόνο χαμηλό απόθεμα</span>
+        </label>
+
+        <label class="check-row">
+            <input asp-for="ShowInactive" />
+            <span>Εμφάνιση αρχειοθετημένων</span>
+        </label>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Εφαρμογή φίλτρων</button>
+            <a asp-page="./Index" class="btn btn-secondary">Καθαρισμός</a>
+        </div>
+    </form>
+</section>
+
+<section class="panel spareparts-panel">
+    <h2>Νέα εγγραφή αποθέματος</h2>
+
+    <form method="post" asp-page-handler="Create" class="sparepart-create-form">
+        <div class="form-grid">
+            <div class="form-row">
+                <label asp-for="NewPart.PartType"></label>
+                <select asp-for="NewPart.PartType">
+                    @foreach (var type in Model.PartTypes)
+                    {
+                        <option value="@type">@SparePartStock.GetPartTypeLabel(type)</option>
+                    }
+                </select>
+                <span asp-validation-for="NewPart.PartType"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.Name"></label>
+                <input asp-for="NewPart.Name" placeholder="π.χ. RAM DDR4 8GB, SSD SATA 240GB, Ποντίκι USB" />
+                <span asp-validation-for="NewPart.Name"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.Manufacturer"></label>
+                <input asp-for="NewPart.Manufacturer" placeholder="π.χ. Kingston, Samsung, Dell" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.ModelName"></label>
+                <input asp-for="NewPart.ModelName" placeholder="μοντέλο / part number" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.Quantity"></label>
+                <input asp-for="NewPart.Quantity" type="number" min="0" />
+                <span asp-validation-for="NewPart.Quantity"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.MinimumStock"></label>
+                <input asp-for="NewPart.MinimumStock" type="number" min="0" />
+                <span asp-validation-for="NewPart.MinimumStock"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.Condition"></label>
+                <input asp-for="NewPart.Condition" placeholder="π.χ. Διαθέσιμο, Μεταχειρισμένο, Για έλεγχο" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewPart.StorageLocation"></label>
+                <input asp-for="NewPart.StorageLocation" placeholder="π.χ. Ερμάριο εργαστηρίου, Αποθήκη" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="NewPart.Specification"></label>
+                <input asp-for="NewPart.Specification" placeholder="π.χ. DDR4 2666MHz SODIMM, SATA 2.5, ATX 500W" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="NewPart.CompatibleWith"></label>
+                <input asp-for="NewPart.CompatibleWith" placeholder="π.χ. Dell OptiPlex, HP laptop 19V, διαδραστικός OPS" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="NewPart.Notes"></label>
+                <textarea asp-for="NewPart.Notes" placeholder="Προαιρετικές σημειώσεις"></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Προσθήκη στο απόθεμα</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel spareparts-panel">
+    <h2>Λίστα αποθέματος</h2>
+
+    @if (Model.Parts.Count == 0)
+    {
+        <p class="muted">Δεν υπάρχουν εγγραφές αποθέματος με τα τρέχοντα φίλτρα.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="data-table spareparts-table">
+                <thead>
+                    <tr>
+                        <th>Τύπος</th>
+                        <th>Ανταλλακτικό / αναλώσιμο</th>
+                        <th>Προδιαγραφή</th>
+                        <th>Ποσότητα</th>
+                        <th>Θέση</th>
+                        <th>Συμβατότητα</th>
+                        <th>Κατάσταση</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var part in Model.Parts)
+                    {
+                        <tr class="@(part.IsLowStock ? "low-stock-row" : "")">
+                            <td>
+                                <span class="badge badge-info">@SparePartStock.GetPartTypeLabel(part.PartType)</span>
+                            </td>
+                            <td>
+                                <strong>@part.Name</strong>
+                                <div class="table-subtext">
+                                    @part.Manufacturer @part.ModelName
+                                </div>
+                            </td>
+                            <td>@part.Specification</td>
+                            <td>
+                                <strong>@part.Quantity</strong>
+                                @if (part.MinimumStock > 0)
+                                {
+                                    <div class="table-subtext">
+                                        ελάχιστο: @part.MinimumStock
+                                    </div>
+                                }
+                                @if (part.IsLowStock)
+                                {
+                                    <span class="badge badge-warning">Χαμηλό</span>
+                                }
+                            </td>
+                            <td>@part.StorageLocation</td>
+                            <td>@part.CompatibleWith</td>
+                            <td>
+                                @if (part.IsActive)
+                                {
+                                    <span class="badge badge-success">@part.Condition</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-muted">Αρχειοθετημένο</span>
+                                }
+                            </td>
+                            <td class="actions-cell">
+                                <form method="post" asp-page-handler="Adjust" class="inline-form">
+                                    <input type="hidden" name="id" value="@part.Id" />
+                                    <input type="hidden" name="delta" value="-1" />
+                                    <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
+                                    <input type="hidden" name="search" value="@Model.Search" />
+                                    <input type="hidden" name="lowStockOnly" value="@Model.LowStockOnly" />
+                                    <input type="hidden" name="showInactive" value="@Model.ShowInactive" />
+                                    <button type="submit" class="icon-btn" title="Μείωση ποσότητας">−</button>
+                                </form>
+
+                                <form method="post" asp-page-handler="Adjust" class="inline-form">
+                                    <input type="hidden" name="id" value="@part.Id" />
+                                    <input type="hidden" name="delta" value="1" />
+                                    <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
+                                    <input type="hidden" name="search" value="@Model.Search" />
+                                    <input type="hidden" name="lowStockOnly" value="@Model.LowStockOnly" />
+                                    <input type="hidden" name="showInactive" value="@Model.ShowInactive" />
+                                    <button type="submit" class="icon-btn" title="Αύξηση ποσότητας">＋</button>
+                                </form>
+
+                                <a asp-page="./Use" asp-route-id="@part.Id" class="icon-btn" title="Χρήση σε συσκευή">↗</a>
+                                <a asp-page="./Edit" asp-route-id="@part.Id" class="icon-btn" title="Επεξεργασία">✎</a>
+
+                                <form method="post" asp-page-handler="Toggle" class="inline-form">
+                                    <input type="hidden" name="id" value="@part.Id" />
+                                    <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
+                                    <input type="hidden" name="search" value="@Model.Search" />
+                                    <input type="hidden" name="lowStockOnly" value="@Model.LowStockOnly" />
+                                    <input type="hidden" name="showInactive" value="@Model.ShowInactive" />
+                                    <button type="submit" class="icon-btn" title="Ενεργό/Αρχειοθέτηση">@(part.IsActive ? "⏸" : "▶")</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

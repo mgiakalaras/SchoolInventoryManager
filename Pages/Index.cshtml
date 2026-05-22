@@ -6,102 +6,80 @@
     string Pct(double value) => value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 }
 
-<section class="hero-card">
-    <div class="hero-content">
-        <span class="hero-kicker">Σχολική απογραφή ψηφιακού εξοπλισμού</span>
+<section class="sim-dashboard-hero">
+    <div>
+        <span class="hero-kicker">Ψηφιακή απογραφή σχολικού εξοπλισμού</span>
         <h1>@Model.Settings.SchoolName</h1>
         <p>
             @Model.Settings.SchoolType · Σχολικό έτος @Model.Settings.SchoolYear ·
             Ημερομηνία απογραφής @Model.Settings.InventoryDate.ToString("dd/MM/yyyy")
         </p>
-        <div class="actions hero-actions">
-            <a class="btn" asp-page="/Items/Create">+ Νέο αντικείμενο</a>
-            <a class="btn secondary" asp-page="/ImportExport/Index">Import / Export</a>
-            <a class="btn secondary" asp-page="/Reports/Print">Προβολή αναφοράς</a>
-        </div>
     </div>
 
-    <aside class="hero-side" aria-label="Σύνοψη απογραφής">
-        <div class="hero-logo-panel">
-            <div class="hero-brand-lockup" aria-label="School Inventory Manager">
-                <img class="hero-brand-mark" src="~/assets/brand/sim-mark.svg" alt="" aria-hidden="true" />
-                <div class="hero-brand-text">
-                    <strong>School Inventory</strong>
-                    <span>Manager</span>
-                </div>
-            </div>
-            <div class="hero-logo-note">
-                <span>Field-ready απογραφή</span>
-                <strong>PC · Tablet · Mobile</strong>
-            </div>
-        </div>
-
-        <div class="hero-metrics">
-            <div>
-                <strong>@Model.TotalQuantity</strong>
-                <span>τεμάχια</span>
-            </div>
-            <div>
-                <strong>@Model.WorkingPercent.ToString("0.#")%</strong>
-                <span>λειτουργικά</span>
-            </div>
-        </div>
-    </aside>
-</section>
-
-<section class="dashboard-stats">
-    <div class="stat-card accent-blue">
-        <span class="stat-icon">🏫</span>
-        <div>
-            <span class="label">Χώροι</span>
-            <span class="value">@Model.RoomsCount</span>
-            <span class="stat-subtitle">αίθουσες / γραφεία</span>
-        </div>
-    </div>
-    <div class="stat-card accent-cyan">
-        <span class="stat-icon">📦</span>
-        <div>
-            <span class="label">Εγγραφές</span>
-            <span class="value">@Model.ItemsCount</span>
-            <span class="stat-subtitle">γραμμές απογραφής</span>
-        </div>
-    </div>
-    <div class="stat-card accent-green">
-        <span class="stat-icon">✅</span>
-        <div>
-            <span class="label">Λειτουργικά</span>
-            <span class="value">@Model.WorkingQuantity</span>
-            <span class="stat-subtitle">@Model.WorkingPercent.ToString("0.#")% του συνόλου</span>
-        </div>
-    </div>
-    <div class="stat-card accent-red">
-        <span class="stat-icon">⚠️</span>
-        <div>
-            <span class="label">Θέλουν προσοχή</span>
-            <span class="value">@(Model.BrokenQuantity + Model.NeedsCheckQuantity + Model.ToWithdrawQuantity + Model.UnknownQuantity)</span>
-            <span class="stat-subtitle">@Model.ProblemPercent.ToString("0.#")% του συνόλου</span>
-        </div>
+    <div class="sim-dashboard-hero-actions">
+        <a class="btn" asp-page="/Items/Create">+ Νέο αντικείμενο</a>
+        <a class="btn secondary" asp-page="/ImportExport/Index">Import / Export</a>
+        <a class="btn secondary" asp-page="/Reports/Print">Προβολή αναφοράς</a>
     </div>
 </section>
 
-<section class="dashboard-layout">
-    <div class="card donut-card">
-        <div class="section-title-row">
+<section class="sim-kpi-grid">
+    <article class="sim-kpi-card">
+        <span>Σύνολο τεμαχίων</span>
+        <strong>@Model.TotalQuantity</strong>
+        <small>@Model.ItemsCount εγγραφές απογραφής</small>
+    </article>
+
+    <article class="sim-kpi-card success">
+        <span>Λειτουργικά</span>
+        <strong>@Model.WorkingQuantity</strong>
+        <small>@Model.WorkingPercent.ToString("0.#")% του ενεργού συνόλου</small>
+    </article>
+
+    <article class="sim-kpi-card warning">
+        <span>Θέλουν προσοχή</span>
+        <strong>@(Model.BrokenQuantity + Model.NeedsCheckQuantity + Model.ToWithdrawQuantity + Model.UnknownQuantity)</strong>
+        <small>@Model.ProblemPercent.ToString("0.#")% του ενεργού συνόλου</small>
+    </article>
+
+    <article class="sim-kpi-card">
+        <span>Χώροι</span>
+        <strong>@Model.RoomsCount</strong>
+        <small>αίθουσες / γραφεία / εργαστήρια</small>
+    </article>
+
+    <article class="sim-kpi-card cyan">
+        <span>Απόθεμα ανταλλακτικών</span>
+        <strong>@Model.SparePartTotalQuantity</strong>
+        <small>@Model.LowStockSparePartRowsCount χαμηλό απόθεμα</small>
+    </article>
+
+    <article class="sim-kpi-card amber">
+        <span>Τεχνικά θέματα</span>
+        <strong>@Model.TechnicalIssueCount</strong>
+        <small>@Model.TechnicalDeviceCount τεχνικές συσκευές</small>
+    </article>
+</section>
+
+<section class="sim-mosaic-dashboard">
+    <article class="sim-widget sim-widget-status span-5">
+        <div class="sim-widget-header">
             <div>
                 <h2>Κατάσταση εξοπλισμού</h2>
-                <p class="muted">Ποσοστιαία εικόνα με βάση την ποσότητα τεμαχίων, μαζί με όσα έχουν καταστραφεί.</p>
+                <p>Ποσοστιαία εικόνα με βάση την ποσότητα τεμαχίων.</p>
             </div>
+            <a class="btn small secondary" asp-page="/Reports/Index">Αναφορές</a>
         </div>
 
-        <div class="donut-wrap">
-            <div class="donut-chart" style="@Model.ConditionPieStyle">
-                <div class="donut-hole">
+        <div class="sim-status-layout">
+            <div class="sim-donut" style="@Model.ConditionPieStyle">
+                <div class="sim-donut-hole">
                     <strong>@Model.ConditionPieTotalQuantity</strong>
-                    <span>σύνολο με καταστροφές</span>
+                    <span>σύνολο</span>
                 </div>
             </div>
 
-            <div class="legend-list">
+            <div class="sim-legend-list">
                 @if (!Model.ConditionSummaries.Any())
                 {
                     <div class="empty compact">Δεν υπάρχουν ακόμα δεδομένα.</div>
@@ -110,58 +88,106 @@
                 {
                     @foreach (var row in Model.ConditionSummaries)
                     {
-                        <div class="legend-row">
+                        <div class="sim-legend-row">
                             <span class="legend-dot @row.DotClass"></span>
-                            <span class="legend-name">@row.Name</span>
+                            <span>@row.Name</span>
                             <strong>@row.Quantity</strong>
-                            <span class="muted">@row.Percent.ToString("0.#")%</span>
+                            <em>@row.Percent.ToString("0.#")%</em>
                         </div>
                     }
                 }
             </div>
         </div>
-    </div>
+    </article>
 
-    <div class="card quick-actions-card">
-        <h2>Γρήγορες ενέργειες</h2>
-        <p class="muted">Τα βασικά κουμπιά για να μη σκάβεις στα μενού.</p>
-        <div class="quick-actions-grid">
-            <a class="quick-action" asp-page="/Rooms/Create">
-                <strong>Νέος χώρος</strong>
-                <span>Προσθήκη αίθουσας ή γραφείου</span>
-            </a>
-            <a class="quick-action" asp-page="/Items/Create">
+    <article class="sim-widget span-3">
+        <div class="sim-widget-header">
+            <div>
+                <h2>Γρήγορες ενέργειες</h2>
+                <p>Οι πιο συχνές εργασίες.</p>
+            </div>
+        </div>
+
+        <div class="sim-action-list">
+            <a asp-page="/Items/Create">
                 <strong>Νέο αντικείμενο</strong>
                 <span>Καταχώριση εξοπλισμού</span>
             </a>
-            <a class="quick-action" asp-page="/Settings/Index">
-                <strong>Στοιχεία σχολείου</strong>
-                <span>Λογότυπο, έτος, υπεύθυνος</span>
+            <a asp-page="/ImportExport/Index">
+                <strong>Import / Export</strong>
+                <span>Excel και CSV</span>
             </a>
-            <a class="quick-action" asp-page="/Reports/Index">
-                <strong>Αναφορές</strong>
-                <span>Εκτύπωση και PDF</span>
+            <a asp-page="/Rooms/Create">
+                <strong>Νέος χώρος</strong>
+                <span>Αίθουσα ή γραφείο</span>
+            </a>
+            <a asp-page="/Settings/Index">
+                <strong>Στοιχεία σχολείου</strong>
+                <span>Ρυθμίσεις απογραφής</span>
             </a>
         </div>
-    </div>
-</section>
+    </article>
 
-<section class="grid grid-2" style="margin-top:1rem;">
-    <div class="card">
-        <div class="section-title-row">
+    <article class="sim-widget span-4">
+        <div class="sim-widget-header">
+            <div>
+                <h2>Τεχνικός έλεγχος</h2>
+                <p>Υποψήφιες αναβαθμίσεις και ελλείψεις στοιχείων.</p>
+            </div>
+            <a class="btn small secondary" asp-page="/TechnicalReports/Index">Άνοιγμα</a>
+        </div>
+
+        <div class="sim-mini-metrics">
+            <div>
+                <strong>@Model.MissingTechnicalSpecsCount</strong>
+                <span>χωρίς specs</span>
+            </div>
+            <div>
+                <strong>@Model.LowRamTechnicalCount</strong>
+                <span>χαμηλή RAM</span>
+            </div>
+            <div>
+                <strong>@Model.StorageUpgradeCandidateCount</strong>
+                <span>δίσκοι</span>
+            </div>
+        </div>
+
+        @if (!Model.TechnicalIssueItems.Any())
+        {
+            <div class="sim-empty">Δεν υπάρχουν εμφανή τεχνικά θέματα.</div>
+        }
+        else
+        {
+            <div class="sim-list">
+                @foreach (var item in Model.TechnicalIssueItems.Take(4))
+                {
+                    <a class="sim-list-row" asp-page="/Items/Edit" asp-route-id="@item.Id">
+                        <span>
+                            <strong>@item.DisplayName</strong>
+                            <small>@item.RoomName · @string.Join(", ", item.Issues)</small>
+                        </span>
+                        <b>!</b>
+                    </a>
+                }
+            </div>
+        }
+    </article>
+
+    <article class="sim-widget span-4">
+        <div class="sim-widget-header">
             <div>
                 <h2>Σύνολα ανά κατηγορία</h2>
-                <p class="muted">Top 8 κατηγορίες εξοπλισμού.</p>
+                <p>Top 8 κατηγορίες εξοπλισμού.</p>
             </div>
         </div>
 
         @if (!Model.CategorySummaries.Any())
         {
-            <div class="empty">Δεν υπάρχουν ακόμα αντικείμενα.</div>
+            <div class="sim-empty">Δεν υπάρχουν ακόμα αντικείμενα.</div>
         }
         else
         {
-            <div class="progress-list">
+            <div class="progress-list sim-progress-list">
                 @foreach (var row in Model.CategorySummaries)
                 {
                     <div class="progress-row">
@@ -176,77 +202,554 @@
                 }
             </div>
         }
-    </div>
+    </article>
 
-    <div class="card">
-        <div class="section-title-row">
+    <article class="sim-widget span-4">
+        <div class="sim-widget-header">
             <div>
                 <h2>Σύνολα ανά χώρο</h2>
-                <p class="muted">Οι χώροι με τον περισσότερο καταγεγραμμένο εξοπλισμό.</p>
+                <p>Χώροι με περισσότερο εξοπλισμό.</p>
             </div>
         </div>
 
         @if (!Model.RoomSummaries.Any())
         {
-            <div class="empty">Δεν υπάρχουν ακόμα αντικείμενα.</div>
+            <div class="sim-empty">Δεν υπάρχουν ακόμα αντικείμενα.</div>
         }
         else
         {
-            <div class="mini-list">
+            <div class="sim-list compact">
                 @foreach (var row in Model.RoomSummaries)
                 {
-                    <div class="mini-list-row">
-                        <div>
+                    <div class="sim-list-row static">
+                        <span>
                             <strong>@row.Room</strong>
-                            <span>@row.Percent.ToString("0.#")% του συνόλου</span>
-                        </div>
+                            <small>@row.Percent.ToString("0.#")% του συνόλου</small>
+                        </span>
                         <b>@row.Quantity</b>
                     </div>
                 }
             </div>
         }
-    </div>
-</section>
+    </article>
 
-<section class="card" style="margin-top:1rem;">
-    <div class="section-title-row">
-        <div>
-            <h2>Τελευταίες εγγραφές</h2>
-            <p class="muted">Οι πιο πρόσφατες αλλαγές στην απογραφή.</p>
+    <article class="sim-widget span-4">
+        <div class="sim-widget-header">
+            <div>
+                <h2>Ανταλλακτικά / αναλώσιμα</h2>
+                <p>Χαμηλό απόθεμα και ελλείψεις.</p>
+            </div>
+            <a class="btn small secondary" asp-page="/SpareParts/Index">Άνοιγμα</a>
         </div>
-        <a class="btn small secondary" asp-page="/Items/Index">Όλος ο εξοπλισμός</a>
-    </div>
 
-    @if (!Model.RecentItems.Any())
-    {
-        <div class="empty">Πέρνα το πρώτο αντικείμενο απογραφής για να ξεκινήσει η εφαρμογή.</div>
-    }
-    else
-    {
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Αντικείμενο</th>
-                        <th>Χώρος</th>
-                        <th>Ποσότητα</th>
-                        <th>Κατάσταση</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach (var item in Model.RecentItems)
+        <div class="sim-mini-metrics two">
+            <div>
+                <strong>@Model.SparePartRowsCount</strong>
+                <span>εγγραφές</span>
+            </div>
+            <div>
+                <strong>@Model.LowStockSparePartRowsCount</strong>
+                <span>χαμηλό απόθεμα</span>
+            </div>
+        </div>
+
+        @if (!Model.LowStockParts.Any())
+        {
+            <div class="sim-empty">Δεν υπάρχουν ανταλλακτικά κάτω από το ελάχιστο απόθεμα.</div>
+        }
+        else
+        {
+            <div class="sim-list">
+                @foreach (var part in Model.LowStockParts.Take(4))
                 {
-                    <tr>
-                        <td><strong>@item.Name</strong><br /><span class="muted">@item.InventoryCategory?.Name</span></td>
-                        <td>@item.Room?.Name</td>
-                        <td>@item.Quantity</td>
-                        <td><span class="@item.Condition.CssClass()">@item.Condition.GetDisplayName()</span></td>
-                        <td><a class="btn small secondary" asp-page="/Items/Edit" asp-route-id="@item.Id">Άνοιγμα</a></td>
-                    </tr>
+                    <a class="sim-list-row" asp-page="/SpareParts/Edit" asp-route-id="@part.Id">
+                        <span>
+                            <strong>@part.Name</strong>
+                            <small>@part.TypeLabel · ελάχιστο @part.MinimumStock</small>
+                        </span>
+                        <b>@part.Quantity</b>
+                    </a>
                 }
-                </tbody>
-            </table>
+            </div>
+        }
+    </article>
+
+    <article class="sim-widget span-4">
+        <div class="sim-widget-header">
+            <div>
+                <h2>Έγγραφα / ροές</h2>
+                <p>Γρήγορη πρόσβαση σε ειδικές ενέργειες.</p>
+            </div>
         </div>
-    }
+
+        <div class="sim-action-list two-col">
+            <a asp-page="/Destructions/Index">
+                <strong>Καταστροφή υλικού</strong>
+                <span>Πράξη και πρωτόκολλο</span>
+            </a>
+            <a asp-page="/SpareParts/UsageHistory">
+                <strong>Ιστορικό ανταλλακτικών</strong>
+                <span>Πού χρησιμοποιήθηκαν υλικά</span>
+            </a>
+            <a asp-page="/TechnicalReferences/Index">
+                <strong>Τεχνικές αναφορές</strong>
+                <span>CPU, RAM, δίσκοι, OS</span>
+            </a>
+            <a asp-page="/Reports/Index">
+                <strong>Αναφορές</strong>
+                <span>Εκτύπωση και PDF</span>
+            </a>
+        </div>
+    </article>
+
+    <article class="sim-widget span-8">
+        <div class="sim-widget-header">
+            <div>
+                <h2>Τελευταίες εγγραφές</h2>
+                <p>Οι πιο πρόσφατες αλλαγές στην απογραφή.</p>
+            </div>
+            <a class="btn small secondary" asp-page="/Items/Index">Όλος ο εξοπλισμός</a>
+        </div>
+
+        @if (!Model.RecentItems.Any())
+        {
+            <div class="sim-empty">Πέρνα το πρώτο αντικείμενο απογραφής για να ξεκινήσει η εφαρμογή.</div>
+        }
+        else
+        {
+            <div class="table-wrap sim-recent-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Αντικείμενο</th>
+                            <th>Χώρος</th>
+                            <th>Ποσότητα</th>
+                            <th>Κατάσταση</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.RecentItems)
+                    {
+                        <tr>
+                            <td><strong>@item.Name</strong><br /><span class="muted">@item.InventoryCategory?.Name</span></td>
+                            <td>@item.Room?.Name</td>
+                            <td>@item.Quantity</td>
+                            <td><span class="@item.Condition.CssClass()">@item.Condition.GetDisplayName()</span></td>
+                            <td><a class="btn small secondary" asp-page="/Items/Edit" asp-route-id="@item.Id">Άνοιγμα</a></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </article>
 </section>
+
+<style>
+    .container {
+        width: min(1540px, calc(100% - 2rem)) !important;
+    }
+
+    .sim-dashboard-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1rem;
+        padding: 1.25rem;
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 36%),
+            linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.84));
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+    }
+
+    .sim-dashboard-hero h1 {
+        margin: 0.25rem 0 0.35rem;
+        color: #f8fafc;
+        font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+    }
+
+    .sim-dashboard-hero p {
+        margin: 0;
+        color: #94a3b8;
+    }
+
+    .sim-dashboard-hero-actions {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .sim-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .sim-kpi-card {
+        padding: 0.95rem 1rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.72);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .sim-kpi-card.success {
+        border-color: rgba(34, 197, 94, 0.24);
+        background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.10), rgba(15, 23, 42, 0.72));
+    }
+
+    .sim-kpi-card.warning,
+    .sim-kpi-card.amber {
+        border-color: rgba(245, 158, 11, 0.26);
+        background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.10), rgba(15, 23, 42, 0.72));
+    }
+
+    .sim-kpi-card.cyan {
+        border-color: rgba(34, 211, 238, 0.26);
+        background: radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), rgba(15, 23, 42, 0.72));
+    }
+
+    .sim-kpi-card span,
+    .sim-kpi-card strong,
+    .sim-kpi-card small {
+        display: block;
+    }
+
+    .sim-kpi-card span {
+        color: #94a3b8;
+        font-size: 0.76rem;
+        font-weight: 850;
+    }
+
+    .sim-kpi-card strong {
+        color: #f8fafc;
+        font-size: 1.65rem;
+        line-height: 1;
+        margin: 0.35rem 0;
+    }
+
+    .sim-kpi-card small {
+        color: #94a3b8;
+        font-size: 0.72rem;
+    }
+
+    .sim-mosaic-dashboard {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 0.85rem;
+        align-items: start;
+    }
+
+    .sim-widget {
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 22px;
+        padding: 1rem;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, 0.07), transparent 36%),
+            rgba(15, 23, 42, 0.70);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.20);
+        min-height: 100%;
+    }
+
+    .sim-widget-status {
+        border-color: rgba(34, 211, 238, 0.22);
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-8 { grid-column: span 8; }
+
+    .sim-widget-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: flex-start;
+        margin-bottom: 0.8rem;
+    }
+
+    .sim-widget-header h2 {
+        margin: 0 0 0.2rem;
+        color: #f8fafc;
+        font-size: 1.05rem;
+    }
+
+    .sim-widget-header p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 0.82rem;
+    }
+
+    .sim-status-layout {
+        display: grid;
+        grid-template-columns: minmax(190px, 230px) minmax(0, 1fr);
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .sim-donut {
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        margin: 0 auto;
+        box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.18);
+    }
+
+    .sim-donut-hole {
+        width: 48%;
+        height: 48%;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background: #111827;
+        box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.15);
+    }
+
+    .sim-donut-hole strong,
+    .sim-donut-hole span {
+        display: block;
+    }
+
+    .sim-donut-hole strong {
+        color: #f8fafc;
+        font-size: 1.35rem;
+        line-height: 1;
+        align-self: end;
+    }
+
+    .sim-donut-hole span {
+        color: #94a3b8;
+        font-size: 0.72rem;
+        font-weight: 800;
+        align-self: start;
+        margin-top: 0.1rem;
+    }
+
+    .sim-legend-list {
+        display: grid;
+        gap: 0.45rem;
+        min-width: 0;
+    }
+
+    .sim-legend-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.5rem 0.6rem;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.32);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .sim-legend-row span:nth-child(2) {
+        color: #e5e7eb;
+        overflow-wrap: anywhere;
+    }
+
+    .sim-legend-row strong {
+        color: #f8fafc;
+    }
+
+    .sim-legend-row em {
+        color: #94a3b8;
+        font-style: normal;
+        font-size: 0.8rem;
+    }
+
+    .sim-mini-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.6rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .sim-mini-metrics.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sim-mini-metrics div {
+        padding: 0.7rem;
+        border-radius: 16px;
+        background: rgba(2, 6, 23, 0.36);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .sim-mini-metrics strong,
+    .sim-mini-metrics span {
+        display: block;
+    }
+
+    .sim-mini-metrics strong {
+        color: #f8fafc;
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+
+    .sim-mini-metrics span {
+        color: #94a3b8;
+        font-size: 0.72rem;
+        margin-top: 0.35rem;
+    }
+
+    .sim-list {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .sim-list-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        padding: 0.65rem 0.75rem;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(2, 6, 23, 0.32);
+    }
+
+    .sim-list-row:not(.static):hover {
+        border-color: rgba(34, 211, 238, 0.30);
+        background: rgba(15, 23, 42, 0.86);
+    }
+
+    .sim-list-row strong,
+    .sim-list-row small {
+        display: block;
+    }
+
+    .sim-list-row strong {
+        color: #f8fafc;
+        font-size: 0.88rem;
+    }
+
+    .sim-list-row small {
+        color: #94a3b8;
+        font-size: 0.74rem;
+        margin-top: 0.12rem;
+    }
+
+    .sim-list-row b {
+        color: #f8fafc;
+        min-width: 30px;
+        height: 30px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, 0.12);
+        border: 1px solid rgba(34, 211, 238, 0.22);
+    }
+
+    .sim-action-list {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .sim-action-list.two-col {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sim-action-list a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        padding: 0.75rem;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(2, 6, 23, 0.32);
+    }
+
+    .sim-action-list a:hover {
+        border-color: rgba(34, 211, 238, 0.30);
+        background: rgba(15, 23, 42, 0.86);
+    }
+
+    .sim-action-list strong,
+    .sim-action-list span {
+        display: block;
+    }
+
+    .sim-action-list strong {
+        color: #f8fafc;
+        font-size: 0.88rem;
+    }
+
+    .sim-action-list span {
+        color: #94a3b8;
+        font-size: 0.74rem;
+        margin-top: 0.15rem;
+    }
+
+    .sim-progress-list .progress-row {
+        margin-bottom: 0.65rem;
+    }
+
+    .sim-empty {
+        color: #94a3b8;
+        border: 1px dashed rgba(148, 163, 184, 0.18);
+        border-radius: 16px;
+        padding: 0.9rem;
+        background: rgba(2, 6, 23, 0.22);
+    }
+
+    .sim-recent-table table {
+        margin-bottom: 0;
+    }
+
+    @@media (max-width: 1280px) {
+        .sim-kpi-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .span-3,
+        .span-4,
+        .span-5,
+        .span-8 {
+            grid-column: span 6;
+        }
+    }
+
+    @@media (max-width: 820px) {
+        .container {
+            width: min(1180px, calc(100% - 1rem)) !important;
+        }
+
+        .sim-dashboard-hero,
+        .sim-kpi-grid,
+        .sim-mosaic-dashboard,
+        .sim-status-layout,
+        .sim-mini-metrics,
+        .sim-mini-metrics.two,
+        .sim-action-list.two-col {
+            grid-template-columns: 1fr;
+        }
+
+        .sim-dashboard-hero-actions {
+            justify-content: flex-start;
+        }
+
+        .span-3,
+        .span-4,
+        .span-5,
+        .span-8 {
+            grid-column: span 1;
+        }
+
+        .sim-donut {
+            width: 210px;
+            height: 210px;
+        }
+    }
+</style>

@@ -1,5 +1,19 @@
+@using SchoolInventoryManager.Models
 @model SchoolInventoryManager.Models.InventoryItem
+
+@{
+    var technicalSpecs = ViewData["TechnicalSpecs"] as InventoryItemTechnicalSpecs ?? new InventoryItemTechnicalSpecs();
+    var processorReferences = ViewData["ProcessorReferences"] as List<string> ?? new List<string>();
+    var memoryReferences = ViewData["MemoryReferences"] as List<string> ?? new List<string>();
+    var memoryTypeReferences = ViewData["MemoryTypeReferences"] as List<string> ?? new List<string>();
+    var storageReferences = ViewData["StorageReferences"] as List<string> ?? new List<string>();
+    var storageTypeReferences = ViewData["StorageTypeReferences"] as List<string> ?? new List<string>();
+    var graphicsReferences = ViewData["GraphicsReferences"] as List<string> ?? new List<string>();
+    var operatingSystemReferences = ViewData["OperatingSystemReferences"] as List<string> ?? new List<string>();
+}
+
 <div asp-validation-summary="ModelOnly"></div>
+
 <div class="form-grid">
     <div class="form-row">
         <label asp-for="RoomId"></label>
@@ -8,6 +22,7 @@
         </select>
         <span asp-validation-for="RoomId"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="InventoryCategoryId"></label>
         <select asp-for="InventoryCategoryId" asp-items="ViewBag.Categories">
@@ -15,49 +30,281 @@
         </select>
         <span asp-validation-for="InventoryCategoryId"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="Name"></label>
-        <input asp-for="Name" placeholder="π.χ. Η/Υ, Οθόνη LG 19'', Βιντεοπροβολέας Epson" />
+        <input asp-for="Name" placeholder="π.χ. Η/Υ, Laptop, Διαδραστικός πίνακας, Βιντεοπροβολέας Epson" />
         <span asp-validation-for="Name"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="Quantity"></label>
         <input asp-for="Quantity" type="number" min="1" />
         <span asp-validation-for="Quantity"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="Brand"></label>
         <input asp-for="Brand" />
         <span asp-validation-for="Brand"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="Model"></label>
         <input asp-for="Model" />
         <span asp-validation-for="Model"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="SerialNumber"></label>
         <input asp-for="SerialNumber" />
         <span asp-validation-for="SerialNumber"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="InventoryBookPage"></label>
         <input asp-for="InventoryBookPage" placeholder="π.χ. σελ. 12" />
         <span asp-validation-for="InventoryBookPage"></span>
     </div>
+
     <div class="form-row">
         <label asp-for="Condition"></label>
         <select asp-for="Condition" asp-items="Html.GetEnumSelectList<EquipmentCondition>()"></select>
         <span asp-validation-for="Condition"></span>
     </div>
+
     <div class="form-row full">
         <label asp-for="Description"></label>
-        <textarea asp-for="Description" placeholder="CPU/RAM/δίσκος/λειτουργικό ή γενική περιγραφή"></textarea>
+        <textarea asp-for="Description" placeholder="Γενική περιγραφή υλικού"></textarea>
         <span asp-validation-for="Description"></span>
     </div>
+
     <div class="form-row full">
         <label asp-for="Notes"></label>
         <textarea asp-for="Notes"></textarea>
         <span asp-validation-for="Notes"></span>
     </div>
 </div>
+
+<section class="technical-specs-panel" id="technicalSpecsPanel">
+    <div class="technical-specs-header">
+        <div>
+            <span class="section-kicker">Τεχνική ταυτότητα</span>
+            <h2>Τεχνικά χαρακτηριστικά</h2>
+            <p>
+                Προαιρετικά πεδία για Η/Υ, laptop, mini PC, server και διαδραστικούς πίνακες/οθόνες με ενσωματωμένο OPS ή mini υπολογιστή.
+            </p>
+        </div>
+        <span class="badge badge-info">Προαιρετικό</span>
+    </div>
+
+    <div class="form-grid">
+        <div class="form-row">
+            <label for="Specs_Processor">Επεξεργαστής</label>
+            <input id="Specs_Processor"
+                   name="Specs.Processor"
+                   list="processorReferenceOptions"
+                   value="@technicalSpecs.Processor"
+                   placeholder="π.χ. Intel Core i5-6500, Ryzen 5 2600" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_MemoryRam">Μνήμη RAM</label>
+            <input id="Specs_MemoryRam"
+                   name="Specs.MemoryRam"
+                   list="memoryReferenceOptions"
+                   value="@technicalSpecs.MemoryRam"
+                   placeholder="π.χ. 8GB, 16GB" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_MemoryType">Τύπος μνήμης</label>
+            <input id="Specs_MemoryType"
+                   name="Specs.MemoryType"
+                   list="memoryTypeReferenceOptions"
+                   value="@technicalSpecs.MemoryType"
+                   placeholder="π.χ. DDR3, DDR4, DDR5, SODIMM" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_Storage">Δίσκος / αποθήκευση</label>
+            <input id="Specs_Storage"
+                   name="Specs.Storage"
+                   list="storageReferenceOptions"
+                   value="@technicalSpecs.Storage"
+                   placeholder="π.χ. SSD 240GB, NVMe 512GB, HDD 1TB" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_StorageType">Τύπος δίσκου</label>
+            <input id="Specs_StorageType"
+                   name="Specs.StorageType"
+                   list="storageTypeReferenceOptions"
+                   value="@technicalSpecs.StorageType"
+                   placeholder="π.χ. HDD, SATA SSD, NVMe" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_Graphics">Κάρτα γραφικών</label>
+            <input id="Specs_Graphics"
+                   name="Specs.Graphics"
+                   list="graphicsReferenceOptions"
+                   value="@technicalSpecs.Graphics"
+                   placeholder="π.χ. Intel HD, GT 1030, RTX..." />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_OperatingSystem">Λειτουργικό σύστημα</label>
+            <input id="Specs_OperatingSystem"
+                   name="Specs.OperatingSystem"
+                   list="operatingSystemReferenceOptions"
+                   value="@technicalSpecs.OperatingSystem"
+                   placeholder="π.χ. Windows 10 Pro, Windows 11, Linux" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_LicenseInfo">Άδεια / COA</label>
+            <input id="Specs_LicenseInfo"
+                   name="Specs.LicenseInfo"
+                   value="@technicalSpecs.LicenseInfo"
+                   placeholder="π.χ. Windows COA, ψηφιακή άδεια" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_NetworkInfo">Δίκτυο</label>
+            <input id="Specs_NetworkInfo"
+                   name="Specs.NetworkInfo"
+                   value="@technicalSpecs.NetworkInfo"
+                   placeholder="π.χ. Gigabit LAN, Wi-Fi, MAC address" />
+        </div>
+
+        <div class="form-row">
+            <label for="Specs_OpsModuleModel">OPS / Mini PC module</label>
+            <input id="Specs_OpsModuleModel"
+                   name="Specs.OpsModuleModel"
+                   value="@technicalSpecs.OpsModuleModel"
+                   placeholder="Για διαδραστικούς με ενσωματωμένο mini PC" />
+        </div>
+
+        <div class="form-row full">
+            <label for="Specs_TechnicalNotes">Τεχνικές σημειώσεις</label>
+            <textarea id="Specs_TechnicalNotes"
+                      name="Specs.TechnicalNotes"
+                      placeholder="π.χ. χρειάζεται SSD, δεν σηκώνει Windows 11, θέλει μπαταρία CMOS">@technicalSpecs.TechnicalNotes</textarea>
+        </div>
+    </div>
+</section>
+
+
+<datalist id="processorReferenceOptions">
+    @foreach (var option in processorReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<datalist id="memoryReferenceOptions">
+    @foreach (var option in memoryReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<datalist id="memoryTypeReferenceOptions">
+    @foreach (var option in memoryTypeReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<datalist id="storageReferenceOptions">
+    @foreach (var option in storageReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<datalist id="storageTypeReferenceOptions">
+    @foreach (var option in storageTypeReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<datalist id="graphicsReferenceOptions">
+    @foreach (var option in graphicsReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<datalist id="operatingSystemReferenceOptions">
+    @foreach (var option in operatingSystemReferences)
+    {
+        <option value="@option"></option>
+    }
+</datalist>
+
+<script>
+    (function () {
+        const panel = document.getElementById("technicalSpecsPanel");
+        const categorySelect = document.querySelector('[name="Item.InventoryCategoryId"]');
+        const nameInput = document.querySelector('[name="Item.Name"]');
+
+        if (!panel) {
+            return;
+        }
+
+        const keywords = [
+            "η/υ",
+            "ηυ",
+            "υπολογισ",
+            "computer",
+            "pc",
+            "laptop",
+            "notebook",
+            "mini pc",
+            "server",
+            "διαδρασ",
+            "interactive",
+            "ops"
+        ];
+
+        function normalize(value) {
+            return (value || "")
+                .toString()
+                .toLocaleLowerCase("el-GR")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function hasSpecValues() {
+            return Array.from(panel.querySelectorAll("input, textarea"))
+                .some(input => (input.value || "").trim().length > 0);
+        }
+
+        function shouldShow() {
+            const selectedText = categorySelect && categorySelect.selectedIndex >= 0
+                ? categorySelect.options[categorySelect.selectedIndex].text
+                : "";
+
+            const combined = normalize(selectedText + " " + (nameInput ? nameInput.value : ""));
+
+            return hasSpecValues() || keywords.some(keyword => combined.includes(normalize(keyword)));
+        }
+
+        function updateVisibility() {
+            panel.classList.toggle("is-visible", shouldShow());
+        }
+
+        if (categorySelect) {
+            categorySelect.addEventListener("change", updateVisibility);
+        }
+
+        if (nameInput) {
+            nameInput.addEventListener("input", updateVisibility);
+        }
+
+        updateVisibility();
+    })();
+</script>

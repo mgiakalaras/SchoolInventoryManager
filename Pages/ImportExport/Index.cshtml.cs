@@ -14,6 +14,9 @@ namespace SchoolInventoryManager.Pages.ImportExport;
 public class IndexModel : PageModel
 {
     private const string CreateValue = "__create__";
+    private const string DuplicateActionSkip = "skip";
+    private const string DuplicateActionNew = "new";
+    private const string DuplicateActionUpdate = "update";
 
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _environment;
@@ -34,10 +37,16 @@ public class IndexModel : PageModel
     public bool SplitTrackedBulkItems { get; set; } = true;
 
     [BindProperty]
+    public bool SkipExistingItems { get; set; } = true;
+
+    [BindProperty]
     public Dictionary<string, string> RoomDecisions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     [BindProperty]
     public Dictionary<string, string> CategoryDecisions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    [BindProperty]
+    public Dictionary<string, string> RowActions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     public ImportResult? Result { get; set; }
     public ImportPreview? Preview { get; set; }
@@ -147,6 +156,14 @@ public class IndexModel : PageModel
             var nextRoomSortOrder = rooms.Any() ? rooms.Max(x => x.SortOrder) + 10 : 10;
             var nextCategorySortOrder = categories.Any() ? categories.Max(x => x.SortOrder) + 10 : 10;
 
+            var existingItems = await _db.InventoryItems
+                .Include(x => x.Room)
+                .Include(x => x.InventoryCategory)
+                .ToListAsync();
+
+            var existingDuplicateCandidates = BuildExistingDuplicateCandidates(existingItems);
+            var importedRowKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var row in parse.Rows)
             {
                 var normalizedRoom = NormalizeLookup(row.RoomName);
@@ -219,6 +236,46 @@ public class IndexModel : PageModel
 
                 var shouldSplit = SplitTrackedBulkItems && ShouldSplitTrackedItem(row) && row.Quantity > 1 && string.IsNullOrWhiteSpace(row.SerialNumber);
                 var copies = shouldSplit ? row.Quantity : 1;
+                var importedQuantity = shouldSplit ? 1 : row.Quantity;
+
+                var rowDuplicateKey = BuildImportRowDuplicateKey(row, room.Name, category?.Name);
+                var isDuplicateInsideFile = !importedRowKeys.Add(rowDuplicateKey);
+                var itemDuplicateKeys = BuildImportDuplicateKeys(row, room.Name, category?.Name, importedQuantity).ToList();
+                var existingConflict = FindImportConflict(itemDuplicateKeys, existingDuplicateCandidates);
+
+                if (SkipExistingItems && (isDuplicateInsideFile || existingConflict != null))
+                {
+                    var rowActionKey = row.ExcelRow.ToString(CultureInfo.InvariantCulture);
+                    var selectedAction = RowActions.TryGetValue(rowActionKey, out var action)
+                        ? action
+                        : DuplicateActionSkip;
+
+                    if (selectedAction == DuplicateActionUpdate && existingConflict?.Item != null)
+                    {
+                        UpdateInventoryItemFromImport(existingConflict.Item, row, room, category, importedQuantity);
+                        result.UpdatedItems++;
+                        result.Warnings.Add($"Γραμμή {row.ExcelRow}: ενημερώθηκε υπάρχουσα εγγραφή ({BuildItemSummary(existingConflict.Item)}).");
+                        continue;
+                    }
+
+                    if (selectedAction != DuplicateActionNew)
+                    {
+                        result.SkippedRows++;
+                        result.DuplicateItemsSkipped += copies;
+
+                        if (isDuplicateInsideFile)
+                        {
+                            result.DuplicateRowsInFile++;
+                            result.Warnings.Add($"Γραμμή {row.ExcelRow}: αγνοήθηκε γιατί υπάρχει ήδη ίδια γραμμή μέσα στο Excel.");
+                        }
+                        else if (existingConflict != null)
+                        {
+                            result.Warnings.Add($"Γραμμή {row.ExcelRow}: αγνοήθηκε γιατί ταιριάζει με υπάρχουσα εγγραφή ({BuildItemSummary(existingConflict.Item)}).");
+                        }
+
+                        continue;
+                    }
+                }
 
                 for (var copy = 1; copy <= copies; copy++)
                 {
@@ -227,7 +284,7 @@ public class IndexModel : PageModel
                         Room = room,
                         InventoryCategory = category,
                         Name = row.ItemName.Trim(),
-                        Quantity = shouldSplit ? 1 : row.Quantity,
+                        Quantity = importedQuantity,
                         Brand = NullIfWhiteSpace(row.Brand),
                         Model = NullIfWhiteSpace(row.Model),
                         SerialNumber = NullIfWhiteSpace(row.SerialNumber),
@@ -246,6 +303,14 @@ public class IndexModel : PageModel
                     if (shouldSplit)
                     {
                         result.SplitRowsCreated++;
+                    }
+                }
+
+                foreach (var duplicateKey in itemDuplicateKeys)
+                {
+                    if (!existingDuplicateCandidates.ContainsKey(duplicateKey))
+                    {
+                        existingDuplicateCandidates[duplicateKey] = new ImportDuplicateCandidate(duplicateKey, null, "Εγγραφή που δημιουργήθηκε στην τρέχουσα εισαγωγή");
                     }
                 }
             }
@@ -410,23 +475,85 @@ public class IndexModel : PageModel
             item.SuggestedId = string.Empty;
         }
 
-        var previewRows = rows
-            .Take(80)
-            .Select(x =>
-            {
-                var willSplit = splitTracked && ShouldSplitTrackedItem(x) && x.Quantity > 1 && string.IsNullOrWhiteSpace(x.SerialNumber);
-                return new ImportPreviewRow(
-                    x.ExcelRow,
-                    x.RoomName,
-                    x.CategoryName,
-                    x.ItemName,
-                    x.Quantity,
-                    willSplit,
-                    willSplit ? x.Quantity : 1);
-            })
-            .ToList();
+        var existingItems = await _db.InventoryItems
+            .Include(x => x.Room)
+            .Include(x => x.InventoryCategory)
+            .AsNoTracking()
+            .ToListAsync();
 
-        var estimatedImportedItems = rows.Sum(x => splitTracked && ShouldSplitTrackedItem(x) && x.Quantity > 1 && string.IsNullOrWhiteSpace(x.SerialNumber) ? x.Quantity : 1);
+        var existingDuplicateCandidates = BuildExistingDuplicateCandidates(existingItems);
+        var previewRowKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var previewRows = new List<ImportPreviewRow>();
+        var estimatedImportedItems = 0;
+        var estimatedNewItems = 0;
+        var duplicateItemsEstimated = 0;
+        var duplicateRowsInFile = 0;
+        var potentialDuplicateRows = 0;
+
+        foreach (var row in rows)
+        {
+            var willSplit = splitTracked && ShouldSplitTrackedItem(row) && row.Quantity > 1 && string.IsNullOrWhiteSpace(row.SerialNumber);
+            var outputRows = willSplit ? row.Quantity : 1;
+            var importedQuantity = willSplit ? 1 : row.Quantity;
+            estimatedImportedItems += outputRows;
+
+            var rowDuplicateKey = BuildImportRowDuplicateKey(row, row.RoomName, row.CategoryName);
+            var isDuplicateInsideFile = !previewRowKeys.Add(rowDuplicateKey);
+            var duplicateKeys = BuildImportDuplicateKeys(row, row.RoomName, row.CategoryName, importedQuantity).ToList();
+            var existingConflict = FindImportConflict(duplicateKeys, existingDuplicateCandidates);
+            var isExistingDuplicate = existingConflict != null;
+
+            var willSkipAsDuplicate = SkipExistingItems && (isDuplicateInsideFile || isExistingDuplicate);
+            var duplicateStatus = string.Empty;
+            var existingSummary = string.Empty;
+            int? existingItemId = null;
+            var suggestedAction = DuplicateActionNew;
+
+            if (willSkipAsDuplicate)
+            {
+                duplicateItemsEstimated += outputRows;
+                suggestedAction = DuplicateActionSkip;
+
+                if (isDuplicateInsideFile)
+                {
+                    duplicateRowsInFile++;
+                    duplicateStatus = "Διπλή γραμμή στο Excel";
+                }
+                else if (existingConflict != null)
+                {
+                    potentialDuplicateRows++;
+                    duplicateStatus = existingConflict.MatchDescription;
+                    existingSummary = BuildItemSummary(existingConflict.Item);
+                    existingItemId = existingConflict.Item?.Id;
+                }
+            }
+            else
+            {
+                estimatedNewItems += outputRows;
+            }
+
+            if (previewRows.Count < 1000)
+            {
+                previewRows.Add(new ImportPreviewRow(
+                    row.ExcelRow,
+                    row.RoomName,
+                    row.CategoryName,
+                    row.ItemName,
+                    row.Quantity,
+                    row.Brand,
+                    row.Model,
+                    row.SerialNumber,
+                    willSplit,
+                    outputRows,
+                    willSkipAsDuplicate,
+                    duplicateStatus,
+                    isExistingDuplicate,
+                    existingItemId,
+                    existingSummary,
+                    suggestedAction));
+            }
+        }
 
         return new ImportPreview
         {
@@ -434,6 +561,10 @@ public class IndexModel : PageModel
             TotalRows = rows.Count + parseErrors.Count,
             ValidRows = rows.Count,
             EstimatedImportedItems = estimatedImportedItems,
+            EstimatedNewItems = estimatedNewItems,
+            DuplicateItemsEstimated = duplicateItemsEstimated,
+            PotentialDuplicateRows = potentialDuplicateRows,
+            DuplicateRowsInFile = duplicateRowsInFile,
             SplitRowsEstimated = estimatedImportedItems - rows.Count,
             Errors = parseErrors.ToList(),
             UnknownRooms = unknownRooms,
@@ -735,6 +866,245 @@ public class IndexModel : PageModel
         return value;
     }
 
+    private static Dictionary<string, ImportDuplicateCandidate> BuildExistingDuplicateCandidates(IEnumerable<InventoryItem> items)
+    {
+        var candidates = new Dictionary<string, ImportDuplicateCandidate>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var item in items)
+        {
+            foreach (var candidate in BuildExistingDuplicateCandidates(item))
+            {
+                if (!candidates.ContainsKey(candidate.Key))
+                {
+                    candidates[candidate.Key] = candidate;
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    private static IEnumerable<ImportDuplicateCandidate> BuildExistingDuplicateCandidates(InventoryItem item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+        {
+            yield return new ImportDuplicateCandidate(
+                BuildSerialDuplicateKey(item.SerialNumber),
+                item,
+                "Ίδιο serial number");
+        }
+
+        yield return new ImportDuplicateCandidate(
+            BuildDuplicateDetailKey(
+                item.Room?.Name,
+                item.InventoryCategory?.Name,
+                item.Name,
+                item.Brand,
+                item.Model,
+                item.SerialNumber,
+                item.Condition,
+                item.Description,
+                item.Quantity),
+            item,
+            "Ίδια αναλυτικά στοιχεία");
+
+        yield return new ImportDuplicateCandidate(
+            BuildLooseDuplicateKey(
+                item.Room?.Name,
+                item.InventoryCategory?.Name,
+                item.Name,
+                item.Brand,
+                item.Model),
+            item,
+            "Ίδιος χώρος / κατηγορία / αντικείμενο / μάρκα / μοντέλο");
+    }
+
+    private static ImportDuplicateCandidate? FindImportConflict(
+        IEnumerable<string> duplicateKeys,
+        IReadOnlyDictionary<string, ImportDuplicateCandidate> existingDuplicateCandidates)
+    {
+        foreach (var key in duplicateKeys)
+        {
+            if (existingDuplicateCandidates.TryGetValue(key, out var candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static void UpdateInventoryItemFromImport(
+        InventoryItem existingItem,
+        ImportRowData row,
+        Room room,
+        InventoryCategory? category,
+        int importedQuantity)
+    {
+        existingItem.Room = room;
+        existingItem.RoomId = room.Id;
+
+        if (category != null)
+        {
+            existingItem.InventoryCategory = category;
+            existingItem.InventoryCategoryId = category.Id;
+        }
+
+        existingItem.Name = row.ItemName.Trim();
+        existingItem.Quantity = importedQuantity;
+        existingItem.Condition = row.Condition;
+
+        existingItem.Brand = NullIfWhiteSpace(row.Brand) ?? existingItem.Brand;
+        existingItem.Model = NullIfWhiteSpace(row.Model) ?? existingItem.Model;
+        existingItem.SerialNumber = NullIfWhiteSpace(row.SerialNumber) ?? existingItem.SerialNumber;
+        existingItem.Description = NullIfWhiteSpace(row.Description) ?? existingItem.Description;
+        existingItem.Notes = MergeNotes(existingItem.Notes, row.Notes);
+        existingItem.UpdatedAt = DateTime.Now;
+    }
+
+    private static string BuildItemSummary(InventoryItem? item)
+    {
+        if (item == null)
+        {
+            return "εγγραφή από την τρέχουσα εισαγωγή";
+        }
+
+        var parts = new[]
+        {
+            item.Room?.Name,
+            item.InventoryCategory?.Name,
+            item.Name,
+            item.Brand,
+            item.Model,
+            string.IsNullOrWhiteSpace(item.SerialNumber) ? null : $"SN: {item.SerialNumber}",
+            item.IsActive ? null : "ανενεργό/ιστορικό"
+        };
+
+        return string.Join(" · ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
+    }
+
+    private static string? MergeNotes(string? existingNotes, string? incomingNotes)
+    {
+        var incoming = NullIfWhiteSpace(incomingNotes);
+        if (incoming == null)
+        {
+            return existingNotes;
+        }
+
+        if (string.IsNullOrWhiteSpace(existingNotes))
+        {
+            return incoming;
+        }
+
+        if (existingNotes.Contains(incoming, StringComparison.OrdinalIgnoreCase))
+        {
+            return existingNotes;
+        }
+
+        return $"{existingNotes.Trim()} | Import update: {incoming}";
+    }
+
+    private static IEnumerable<string> BuildImportDuplicateKeys(
+        ImportRowData row,
+        string? roomName,
+        string? categoryName,
+        int importedQuantity)
+    {
+        // 1) Serial number: strongest match when it exists.
+        if (!string.IsNullOrWhiteSpace(row.SerialNumber))
+        {
+            yield return BuildSerialDuplicateKey(row.SerialNumber);
+        }
+
+        // 2) Full detail fingerprint: catches exact re-imports.
+        yield return BuildDuplicateDetailKey(
+            roomName,
+            categoryName,
+            row.ItemName,
+            row.Brand,
+            row.Model,
+            row.SerialNumber,
+            row.Condition,
+            row.Description,
+            importedQuantity);
+
+        // 3) Loose fingerprint: catches devices that were previously imported
+        // without serial and later re-imported with extra details.
+        yield return BuildLooseDuplicateKey(
+            roomName,
+            categoryName,
+            row.ItemName,
+            row.Brand,
+            row.Model);
+    }
+
+    private static string BuildImportRowDuplicateKey(ImportRowData row, string? roomName, string? categoryName)
+    {
+        return BuildDuplicateDetailKey(
+            roomName,
+            categoryName,
+            row.ItemName,
+            row.Brand,
+            row.Model,
+            row.SerialNumber,
+            row.Condition,
+            row.Description,
+            row.Quantity);
+    }
+
+    private static string BuildSerialDuplicateKey(string? serialNumber)
+    {
+        return $"SERIAL|{NormalizeHeader(serialNumber)}";
+    }
+
+    private static string BuildLooseDuplicateKey(
+        string? roomName,
+        string? categoryName,
+        string itemName,
+        string? brand,
+        string? model)
+    {
+        var parts = new[]
+        {
+            "LOOSE",
+            NormalizeHeader(roomName),
+            NormalizeHeader(categoryName),
+            NormalizeHeader(itemName),
+            NormalizeHeader(brand),
+            NormalizeHeader(model)
+        };
+
+        return string.Join("|", parts);
+    }
+
+    private static string BuildDuplicateDetailKey(
+        string? roomName,
+        string? categoryName,
+        string itemName,
+        string? brand,
+        string? model,
+        string? serialNumber,
+        EquipmentCondition condition,
+        string? description,
+        int quantity)
+    {
+        var parts = new[]
+        {
+            "DETAIL",
+            NormalizeHeader(roomName),
+            NormalizeHeader(categoryName),
+            NormalizeHeader(itemName),
+            NormalizeHeader(brand),
+            NormalizeHeader(model),
+            NormalizeHeader(serialNumber),
+            ((int)condition).ToString(CultureInfo.InvariantCulture),
+            NormalizeHeader(description),
+            quantity.ToString(CultureInfo.InvariantCulture)
+        };
+
+        return string.Join("|", parts);
+    }
+
     private string GetImportBatchPath(string batchId)
     {
         var safeBatchId = new string(batchId.Where(char.IsLetterOrDigit).ToArray());
@@ -818,6 +1188,9 @@ public class IndexModel : PageModel
     }
 
     public string CreateDecisionValue => CreateValue;
+    public string DuplicateSkipValue => DuplicateActionSkip;
+    public string DuplicateNewValue => DuplicateActionNew;
+    public string DuplicateUpdateValue => DuplicateActionUpdate;
 }
 
 public class ImportResult
@@ -826,11 +1199,16 @@ public class ImportResult
     public int CreatedRooms { get; set; }
     public int CreatedCategories { get; set; }
     public int SplitRowsCreated { get; set; }
+    public int UpdatedItems { get; set; }
     public int SkippedRows { get; set; }
+    public int DuplicateItemsSkipped { get; set; }
+    public int DuplicateRowsInFile { get; set; }
+    public List<string> Warnings { get; set; } = new();
     public List<string> Errors { get; set; } = new();
 
     public bool IsSuccess => !Errors.Any() || ImportedItems > 0;
     public bool HasErrors => Errors.Any();
+    public bool HasWarnings => Warnings.Any();
 
     public static ImportResult Failed(string message)
     {
@@ -847,6 +1225,10 @@ public class ImportPreview
     public int TotalRows { get; set; }
     public int ValidRows { get; set; }
     public int EstimatedImportedItems { get; set; }
+    public int EstimatedNewItems { get; set; }
+    public int DuplicateItemsEstimated { get; set; }
+    public int PotentialDuplicateRows { get; set; }
+    public int DuplicateRowsInFile { get; set; }
     public int SplitRowsEstimated { get; set; }
     public List<string> Errors { get; set; } = new();
     public List<UnknownImportValue> UnknownRooms { get; set; } = new();
@@ -875,8 +1257,22 @@ public record ImportPreviewRow(
     string? CategoryName,
     string ItemName,
     int Quantity,
+    string? Brand,
+    string? Model,
+    string? SerialNumber,
     bool WillSplit,
-    int OutputRows);
+    int OutputRows,
+    bool WillSkipAsDuplicate,
+    string DuplicateStatus,
+    bool HasExistingConflict,
+    int? ExistingItemId,
+    string ExistingItemSummary,
+    string SuggestedAction);
+
+public record ImportDuplicateCandidate(
+    string Key,
+    InventoryItem? Item,
+    string MatchDescription);
 
 public record ImportParseResult(IReadOnlyList<ImportRowData> Rows, IReadOnlyList<string> Errors);
 

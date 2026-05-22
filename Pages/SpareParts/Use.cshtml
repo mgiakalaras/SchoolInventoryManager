@@ -1,0 +1,105 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.SpareParts.UseModel
+@using SchoolInventoryManager.Models
+
+@{
+    ViewData["Title"] = "Χρήση ανταλλακτικού";
+}
+
+<section class="page-hero spareparts-hero">
+    <div>
+        <span class="eyebrow">Απόθεμα</span>
+        <h1>Χρήση ανταλλακτικού / αναλώσιμου</h1>
+        <p>
+            Καταχώριση χρήσης ανταλλακτικού σε συγκεκριμένη συσκευή και αυτόματη μείωση αποθέματος.
+        </p>
+    </div>
+</section>
+
+@if (Model.Part != null)
+{
+    <section class="panel spareparts-panel">
+        <h2>@Model.Part.Name</h2>
+        <p class="muted">
+            @SparePartStock.GetPartTypeLabel(Model.Part.PartType)
+            @if (!string.IsNullOrWhiteSpace(Model.Part.Manufacturer) || !string.IsNullOrWhiteSpace(Model.Part.ModelName))
+            {
+                <text> · @Model.Part.Manufacturer @Model.Part.ModelName</text>
+            }
+        </p>
+
+        <div class="usage-stock-summary">
+            <span>Διαθέσιμη ποσότητα</span>
+            <strong>@Model.Part.Quantity</strong>
+        </div>
+
+        @if (Model.Part.Quantity <= 0)
+        {
+            <div class="alert warning">
+                Δεν υπάρχει διαθέσιμη ποσότητα. Μπορείς να δεις το ιστορικό, αλλά δεν μπορεί να καταχωριστεί νέα χρήση μέχρι να αυξηθεί το απόθεμα.
+            </div>
+        }
+    </section>
+
+    <section class="panel spareparts-panel">
+        <form method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly"></div>
+
+            <div class="form-grid">
+                <div class="form-row">
+                    <label asp-for="Input.QuantityUsed">Ποσότητα χρήσης</label>
+                    <input asp-for="Input.QuantityUsed" type="number" min="1" max="@Model.Part.Quantity" />
+                    <span asp-validation-for="Input.QuantityUsed"></span>
+                </div>
+
+                <div class="form-row">
+                    <label asp-for="Input.UsedAt">Ημερομηνία χρήσης</label>
+                    <input asp-for="Input.UsedAt" type="datetime-local" />
+                    <span asp-validation-for="Input.UsedAt"></span>
+                </div>
+
+                <div class="form-row">
+                    <label asp-for="Input.UsedBy">Χρήστης / τεχνικός</label>
+                    <input asp-for="Input.UsedBy" placeholder="π.χ. Μάριος Γιακαλάρας" />
+                </div>
+
+                <div class="form-row full">
+                    <label asp-for="Input.InventoryItemId">Σύνδεση με συσκευή / υλικό</label>
+                    <select asp-for="Input.InventoryItemId" asp-items="Model.InventoryItemOptions">
+                        <option value="">-- Χωρίς σύνδεση με συγκεκριμένη συσκευή --</option>
+                    </select>
+                    <span asp-validation-for="Input.InventoryItemId"></span>
+                    <small class="field-hint">
+                        Αν επιλέξεις συσκευή, το ιστορικό θα κρατήσει snapshot της συσκευής όπως είναι τώρα.
+                    </small>
+                </div>
+
+                <div class="form-row full">
+                    <label asp-for="Input.TargetDescription">Περιγραφή χρήσης χωρίς σύνδεση</label>
+                    <input asp-for="Input.TargetDescription" placeholder="π.χ. χρησιμοποιήθηκε σε άγνωστο PC ή δόθηκε ως αναλώσιμο" />
+                </div>
+
+                <div class="form-row full">
+                    <label asp-for="Input.Notes">Σημειώσεις</label>
+                    <textarea asp-for="Input.Notes" placeholder="π.χ. αντικατάσταση δίσκου, αναβάθμιση RAM, αλλαγή τροφοδοτικού"></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@(Model.Part.Quantity <= 0)">
+                    Καταχώριση χρήσης
+                </button>
+                <a asp-page="./Index" class="btn btn-secondary">Πίσω στο απόθεμα</a>
+                <a asp-page="./UsageHistory" asp-route-sparePartStockId="@Model.Part.Id" class="btn btn-secondary">
+                    Ιστορικό
+                </a>
+            </div>
+        </form>
+    </section>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

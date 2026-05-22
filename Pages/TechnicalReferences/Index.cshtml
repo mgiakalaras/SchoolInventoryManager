@@ -1,0 +1,189 @@
+@page
+@model SchoolInventoryManager.Pages.TechnicalReferences.IndexModel
+
+@{
+    ViewData["Title"] = "Τεχνικές αναφορές";
+}
+
+<section class="page-hero">
+    <div>
+        <span class="eyebrow">Τεχνική ταυτότητα</span>
+        <h1>Τεχνικές αναφορές</h1>
+        <p>
+            Βάση προτεινόμενων επιλογών για επεξεργαστές, μνήμες, δίσκους, λειτουργικά και άλλα τεχνικά χαρακτηριστικά.
+            Οι λίστες λειτουργούν ως προτάσεις στην καταχώριση υλικού· μπορείς πάντα να πληκτρολογήσεις χειροκίνητα κάτι που λείπει.
+        </p>
+    </div>
+</section>
+
+@if (TempData["TechnicalReferenceMessage"] != null)
+{
+    <div class="alert success">@TempData["TechnicalReferenceMessage"]</div>
+}
+
+<section class="panel technical-reference-panel">
+    <h2>Προβολή λίστας</h2>
+
+    <div class="technical-reference-tabs">
+        @foreach (var type in Model.ReferenceTypes)
+        {
+            <a class="@(string.Equals(Model.TypeFilter, type, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               asp-page="./Index"
+               asp-route-typeFilter="@type">
+                @GetTypeLabel(type)
+            </a>
+        }
+    </div>
+</section>
+
+<section class="panel technical-reference-panel">
+    <h2>Προσθήκη χειροκίνητης αναφοράς</h2>
+
+    <form method="post" asp-page-handler="Create" class="technical-reference-form">
+        <div class="form-grid">
+            <div class="form-row">
+                <label asp-for="NewReference.ReferenceType"></label>
+                <select asp-for="NewReference.ReferenceType">
+                    @foreach (var type in Model.ReferenceTypes)
+                    {
+                        <option value="@type" selected="@(string.Equals(Model.TypeFilter, type, StringComparison.OrdinalIgnoreCase))">
+                            @GetTypeLabel(type)
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="NewReference.ReferenceType"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewReference.DisplayName"></label>
+                <input asp-for="NewReference.DisplayName" placeholder="π.χ. Intel Core i5-6500 ή DDR4 8GB DIMM" />
+                <span asp-validation-for="NewReference.DisplayName"></span>
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewReference.Manufacturer"></label>
+                <input asp-for="NewReference.Manufacturer" placeholder="π.χ. Intel, AMD, Kingston" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewReference.Series"></label>
+                <input asp-for="NewReference.Series" placeholder="π.χ. Core i5, DDR4, SSD" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewReference.ModelName"></label>
+                <input asp-for="NewReference.ModelName" placeholder="π.χ. i5-6500, 8GB DIMM" />
+            </div>
+
+            <div class="form-row">
+                <label asp-for="NewReference.ApproxYear"></label>
+                <input asp-for="NewReference.ApproxYear" type="number" min="2010" max="2100" placeholder="π.χ. 2015" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="NewReference.Detail"></label>
+                <input asp-for="NewReference.Detail" placeholder="Σύντομη τεχνική περιγραφή" />
+            </div>
+
+            <div class="form-row full">
+                <label asp-for="NewReference.Notes"></label>
+                <textarea asp-for="NewReference.Notes" placeholder="Προαιρετικές σημειώσεις"></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Προσθήκη αναφοράς</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel technical-reference-panel">
+    <h2>Εγγραφές</h2>
+
+    @if (Model.References.Count == 0)
+    {
+        <p class="muted">Δεν υπάρχουν εγγραφές για αυτόν τον τύπο.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="data-table technical-reference-table">
+                <thead>
+                    <tr>
+                        <th>Ονομασία</th>
+                        <th>Κατασκευαστής</th>
+                        <th>Σειρά / Μοντέλο</th>
+                        <th>Έτος</th>
+                        <th>Λεπτομέρειες</th>
+                        <th>Πηγή</th>
+                        <th>Κατάσταση</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reference in Model.References)
+                    {
+                        <tr>
+                            <td><strong>@reference.DisplayName</strong></td>
+                            <td>@reference.Manufacturer</td>
+                            <td>@reference.Series @reference.ModelName</td>
+                            <td>@reference.ApproxYear</td>
+                            <td>@reference.Detail</td>
+                            <td>
+                                @if (reference.IsBuiltIn)
+                                {
+                                    <span class="badge badge-info">Built-in</span>
+                                }
+                                else
+                                {
+                                    <span class="badge">Χειροκίνητη</span>
+                                }
+                            </td>
+                            <td>
+                                @if (reference.IsActive)
+                                {
+                                    <span class="badge badge-success">Ενεργό</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-muted">Ανενεργό</span>
+                                }
+                            </td>
+                            <td>
+                                <form method="post" asp-page-handler="Toggle" class="inline-form">
+                                    <input type="hidden" name="id" value="@reference.Id" />
+                                    <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
+                                    <button type="submit" class="btn btn-small btn-secondary">
+                                        @(reference.IsActive ? "Απενεργοποίηση" : "Ενεργοποίηση")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@functions {
+    private static string GetTypeLabel(string type)
+    {
+        return type switch
+        {
+            "Processor" => "Επεξεργαστές",
+            "Memory" => "Μνήμες RAM",
+            "MemoryType" => "Τύποι RAM",
+            "Storage" => "Δίσκοι",
+            "StorageType" => "Τύποι δίσκων",
+            "Graphics" => "Γραφικά",
+            "OperatingSystem" => "Λειτουργικά",
+            "PowerSupply" => "Τροφοδοτικά",
+            _ => type
+        };
+    }
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

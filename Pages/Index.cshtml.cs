@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SchoolInventoryManager.Data;
@@ -37,6 +38,18 @@ public class IndexModel : PageModel
     public List<CategorySummary> CategorySummaries { get; set; } = new();
     public List<RoomSummary> RoomSummaries { get; set; } = new();
     public List<InventoryItem> RecentItems { get; set; } = new();
+
+    public int SparePartRowsCount { get; set; }
+    public int SparePartTotalQuantity { get; set; }
+    public int LowStockSparePartRowsCount { get; set; }
+    public List<DashboardLowStockPart> LowStockParts { get; set; } = new();
+
+    public int TechnicalDeviceCount { get; set; }
+    public int TechnicalIssueCount { get; set; }
+    public int MissingTechnicalSpecsCount { get; set; }
+    public int LowRamTechnicalCount { get; set; }
+    public int StorageUpgradeCandidateCount { get; set; }
+    public List<DashboardTechnicalIssueItem> TechnicalIssueItems { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -121,6 +134,237 @@ public class IndexModel : PageModel
             .OrderByDescending(x => x.UpdatedAt)
             .Take(8)
             .ToList();
+
+        var activeSpareParts = await _db.SparePartStocks
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.PartType)
+            .ThenBy(x => x.Name)
+            .ToListAsync();
+
+        SparePartRowsCount = activeSpareParts.Count;
+        SparePartTotalQuantity = activeSpareParts.Sum(x => x.Quantity);
+        LowStockSparePartRowsCount = activeSpareParts.Count(x => x.IsLowStock);
+
+        LowStockParts = activeSpareParts
+            .Where(x => x.IsLowStock)
+            .OrderBy(x => x.Quantity)
+            .ThenBy(x => x.Name)
+            .Take(5)
+            .Select(x => new DashboardLowStockPart(
+                x.Id,
+                SparePartStock.GetPartTypeLabel(x.PartType),
+                x.Name,
+                x.Quantity,
+                x.MinimumStock))
+            .ToList();
+
+        var technicalItems = await _db.InventoryItems
+            .Where(x => x.IsActive)
+            .Include(x => x.Room)
+            .Include(x => x.InventoryCategory)
+            .Include(x => x.TechnicalSpecs)
+            .ToListAsync();
+
+        var technicalDashboardRows = technicalItems
+            .Where(x => IsTechnicalCandidate(x.Name, x.InventoryCategory?.Name))
+            .Select(BuildTechnicalDashboardIssue)
+            .ToList();
+
+        TechnicalDeviceCount = technicalDashboardRows.Count;
+        TechnicalIssueCount = technicalDashboardRows.Count(x => x.HasIssues);
+        MissingTechnicalSpecsCount = technicalDashboardRows.Count(x => x.IsMissingSpecs);
+        LowRamTechnicalCount = technicalDashboardRows.Count(x => x.IsLowRam);
+        StorageUpgradeCandidateCount = technicalDashboardRows.Count(x => x.IsStorageUpgradeCandidate);
+
+        TechnicalIssueItems = technicalDashboardRows
+            .Where(x => x.HasIssues)
+            .OrderByDescending(x => x.Score)
+            .ThenBy(x => x.RoomName)
+            .ThenBy(x => x.DisplayName)
+            .Take(5)
+            .ToList();
+    }
+
+
+    private static DashboardTechnicalIssueItem BuildTechnicalDashboardIssue(InventoryItem item)
+    {
+        var specs = item.TechnicalSpecs;
+        var hasSpecs = specs != null && specs.HasAnyValue();
+        var ramGb = ExtractRamGb(specs?.MemoryRam);
+        var isLowRam = ramGb.HasValue && ramGb.Value < 8;
+
+        var storageText = string.Join(" ",
+            specs?.Storage ?? string.Empty,
+            specs?.StorageType ?? string.Empty).Trim();
+
+        var isUnknownStorage = string.IsNullOrWhiteSpace(storageText);
+        var isHdd = LooksLikeHdd(storageText);
+        var isStorageUpgradeCandidate = isUnknownStorage || isHdd;
+        var isOldOs = LooksLikeOldOperatingSystem(specs?.OperatingSystem);
+        var isInteractive = IsInteractiveItem(item.Name, item.InventoryCategory?.Name);
+        var isInteractiveWithoutOps = isInteractive && string.IsNullOrWhiteSpace(specs?.OpsModuleModel) && !hasSpecs;
+
+        var issues = new List<string>();
+
+        if (!hasSpecs)
+        {
+            issues.Add("Λείπουν specs");
+        }
+
+        if (isLowRam)
+        {
+            issues.Add("RAM < 8GB");
+        }
+
+        if (isUnknownStorage)
+        {
+            issues.Add("Άγνωστος δίσκος");
+        }
+        else if (isHdd)
+        {
+            issues.Add("HDD");
+        }
+
+        if (isOldOs)
+        {
+            issues.Add("Παλαιό OS");
+        }
+
+        if (isInteractiveWithoutOps)
+        {
+            issues.Add("Χωρίς OPS specs");
+        }
+
+        var displayParts = new List<string> { item.Name };
+
+        if (!string.IsNullOrWhiteSpace(item.Brand))
+        {
+            displayParts.Add(item.Brand);
+        }
+
+        if (!string.IsNullOrWhiteSpace(item.Model))
+        {
+            displayParts.Add(item.Model);
+        }
+
+        return new DashboardTechnicalIssueItem(
+            item.Id,
+            item.Room?.Name ?? "Χωρίς χώρο",
+            string.Join(" · ", displayParts),
+            issues,
+            IsMissingSpecs: !hasSpecs,
+            isLowRam,
+            isStorageUpgradeCandidate,
+            isOldOs);
+    }
+
+    private static bool IsTechnicalCandidate(string? itemName, string? categoryName)
+    {
+        var text = NormalizeForSearch(itemName + " " + categoryName);
+
+        return text.Contains("Η/Υ")
+            || text.Contains("ΥΠΟΛΟΓΙΣ")
+            || text.Contains("PC")
+            || text.Contains("LAPTOP")
+            || text.Contains("NOTEBOOK")
+            || text.Contains("MINI")
+            || text.Contains("SERVER")
+            || text.Contains("OPS")
+            || text.Contains("ΔΙΑΔΡΑΣ")
+            || text.Contains("INTERACTIVE");
+    }
+
+    private static bool IsInteractiveItem(string? itemName, string? categoryName)
+    {
+        var text = NormalizeForSearch(itemName + " " + categoryName);
+
+        return text.Contains("ΔΙΑΔΡΑΣ")
+            || text.Contains("INTERACTIVE")
+            || text.Contains("OPS");
+    }
+
+    private static bool LooksLikeHdd(string? value)
+    {
+        var text = NormalizeForSearch(value);
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        if (text.Contains("SSD") || text.Contains("NVME") || text.Contains("M.2"))
+        {
+            return false;
+        }
+
+        return text.Contains("HDD")
+            || text.Contains("ΣΚΛΗΡ")
+            || text.Contains("5400")
+            || text.Contains("7200");
+    }
+
+    private static bool LooksLikeOldOperatingSystem(string? value)
+    {
+        var text = NormalizeForSearch(value);
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        return text.Contains("WINDOWS XP")
+            || text.Contains("WINDOWS 7")
+            || text.Contains("WINDOWS 8")
+            || text.Contains("VISTA")
+            || text.Contains("32BIT")
+            || text.Contains("32-BIT");
+    }
+
+    private static decimal? ExtractRamGb(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var text = value.ToUpperInvariant().Replace(",", ".");
+
+        var gbMatch = Regex.Match(text, @"(\d+(?:\.\d+)?)\s*GB");
+        if (gbMatch.Success &&
+            decimal.TryParse(gbMatch.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var gb))
+        {
+            return gb;
+        }
+
+        var numberOnly = Regex.Match(text, @"^\s*(\d+(?:\.\d+)?)\s*$");
+        if (numberOnly.Success &&
+            decimal.TryParse(numberOnly.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var rawGb))
+        {
+            return rawGb;
+        }
+
+        var mbMatch = Regex.Match(text, @"(\d+(?:\.\d+)?)\s*MB");
+        if (mbMatch.Success &&
+            decimal.TryParse(mbMatch.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var mb))
+        {
+            return Math.Round(mb / 1024m, 2);
+        }
+
+        return null;
+    }
+
+    private static string NormalizeForSearch(string? value)
+    {
+        return (value ?? string.Empty)
+            .Trim()
+            .ToUpperInvariant()
+            .Replace("Ά", "Α")
+            .Replace("Έ", "Ε")
+            .Replace("Ή", "Η")
+            .Replace("Ί", "Ι")
+            .Replace("Ό", "Ο")
+            .Replace("Ύ", "Υ")
+            .Replace("Ώ", "Ω");
     }
 
     private ConditionSummary BuildConditionSummary(EquipmentCondition condition, int quantity, string dotClass)
@@ -173,3 +417,22 @@ public class IndexModel : PageModel
 public record ConditionSummary(string Name, int Quantity, double Percent, string BadgeClass, string DotClass);
 public record CategorySummary(string Category, int Quantity, double Percent);
 public record RoomSummary(string Room, int Quantity, double Percent);
+public record DashboardLowStockPart(int Id, string TypeLabel, string Name, int Quantity, int MinimumStock);
+public record DashboardTechnicalIssueItem(
+    int Id,
+    string RoomName,
+    string DisplayName,
+    List<string> Issues,
+    bool IsMissingSpecs,
+    bool IsLowRam,
+    bool IsStorageUpgradeCandidate,
+    bool HasOldOs)
+{
+    public bool HasIssues => Issues.Count > 0;
+
+    public int Score =>
+        (IsMissingSpecs ? 3 : 0) +
+        (IsLowRam ? 2 : 0) +
+        (IsStorageUpgradeCandidate ? 2 : 0) +
+        (HasOldOs ? 1 : 0);
+}

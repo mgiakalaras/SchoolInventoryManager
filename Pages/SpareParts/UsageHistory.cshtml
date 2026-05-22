@@ -1,0 +1,116 @@
+@page
+@model SchoolInventoryManager.Pages.SpareParts.UsageHistoryModel
+
+@{
+    ViewData["Title"] = "Ιστορικό ανταλλακτικών";
+}
+
+<section class="page-hero spareparts-hero">
+    <div>
+        <span class="eyebrow">Απόθεμα</span>
+        <h1>Ιστορικό χρήσης ανταλλακτικών</h1>
+        <p>
+            Πού χρησιμοποιήθηκαν ανταλλακτικά και αναλώσιμα, πότε, από ποιον και σε ποια συσκευή.
+        </p>
+    </div>
+</section>
+
+@if (TempData["SparePartMessage"] != null)
+{
+    <div class="alert success">@TempData["SparePartMessage"]</div>
+}
+
+<section class="panel spareparts-panel">
+    <form method="get" class="filters-grid usage-history-filters">
+        <input type="hidden" asp-for="SparePartStockId" />
+
+        <div class="form-row">
+            <label asp-for="Search">Αναζήτηση</label>
+            <input asp-for="Search" placeholder="ανταλλακτικό, συσκευή, χρήστης, σημειώσεις..." />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Αναζήτηση</button>
+            <a asp-page="./UsageHistory" class="btn btn-secondary">Όλο το ιστορικό</a>
+            <a asp-page="./Index" class="btn btn-secondary">Πίσω στο απόθεμα</a>
+        </div>
+    </form>
+</section>
+
+@if (Model.SelectedPart != null)
+{
+    <section class="panel spareparts-panel">
+        <h2>@Model.SelectedPart.Name</h2>
+        <p class="muted">
+            Εμφανίζεται ιστορικό μόνο για αυτό το ανταλλακτικό.
+            Διαθέσιμη ποσότητα τώρα: <strong>@Model.SelectedPart.Quantity</strong>
+        </p>
+    </section>
+}
+
+<section class="stats-grid spareparts-stats">
+    <article class="stat-card">
+        <span>Εγγραφές ιστορικού</span>
+        <strong>@Model.Logs.Count</strong>
+    </article>
+    <article class="stat-card">
+        <span>Σύνολο χρησιμοποιημένης ποσότητας</span>
+        <strong>@Model.TotalQuantityUsed</strong>
+    </article>
+</section>
+
+<section class="panel spareparts-panel">
+    <h2>Καταγραφές χρήσης</h2>
+
+    @if (Model.Logs.Count == 0)
+    {
+        <p class="muted">Δεν βρέθηκαν καταγραφές χρήσης.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="data-table spareparts-table">
+                <thead>
+                    <tr>
+                        <th>Ημερομηνία</th>
+                        <th>Ανταλλακτικό</th>
+                        <th>Ποσότητα</th>
+                        <th>Χρησιμοποιήθηκε σε</th>
+                        <th>Χρήστης</th>
+                        <th>Σημειώσεις</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.Logs)
+                    {
+                        <tr>
+                            <td>@log.UsedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <strong>@log.SparePartSnapshot</strong>
+                                @if (log.SparePartStock != null)
+                                {
+                                    <div class="table-subtext">
+                                        τρέχον απόθεμα: @log.SparePartStock.Quantity
+                                    </div>
+                                }
+                            </td>
+                            <td><strong>@log.QuantityUsed</strong></td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(log.TargetDescriptionSnapshot))
+                                {
+                                    @log.TargetDescriptionSnapshot
+                                }
+                                else
+                                {
+                                    <span class="muted">Χωρίς σύνδεση</span>
+                                }
+                            </td>
+                            <td>@log.UsedBy</td>
+                            <td>@log.Notes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -55,6 +55,8 @@ public class InventoryItem
     public int? DestructionBatchId { get; set; }
     public DestructionBatch? DestructionBatch { get; set; }
 
+    public InventoryItemTechnicalSpecs? TechnicalSpecs { get; set; }
+
     public DateTime? DestroyedAt { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
