@@ -8,8 +8,8 @@ public static class SchemaUpgrade
 {
     public static void Apply(AppDbContext db)
     {
+        // PATCH34D_SAFE_ORDER: SchoolType AddColumn runs only after InventoryAuditFolders exists.
         AddColumnIfMissing(db, "SchoolSettings", "ApplicationBaseUrl", "TEXT NULL");
-        AddColumnIfMissing(db, "InventoryAuditFolders", "SchoolType", "TEXT NULL");
 
         AddColumnIfMissing(db, "InventoryItems", "InventoryBookPage", "TEXT NULL");
         AddColumnIfMissing(db, "InventoryItems", "DestructionBatchId", "INTEGER NULL");
@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS InventoryAuditFolders (
 );");
 
         db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_InventoryAuditFolders_AuditDate_IsFinalized ON InventoryAuditFolders (AuditDate, IsFinalized);");
+        AddColumnIfMissing(db, "InventoryAuditFolders", "SchoolType", "TEXT NULL");
 
         db.Database.ExecuteSqlRaw(@"
 CREATE TABLE IF NOT EXISTS InventoryAuditRoomSessions (
@@ -370,44 +371,26 @@ VALUES
 
     private static void AddColumnIfMissing(AppDbContext db, string tableName, string columnName, string columnDefinition)
     {
-        var connection = db.Database.GetDbConnection();
-        var shouldClose = connection.State == System.Data.ConnectionState.Closed;
+        var escapedTableName = tableName.Replace("'", "''");
 
-        if (shouldClose)
+        var tableExists = db.Database
+            .SqlQueryRaw<int>($"SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = '{escapedTableName}'")
+            .AsEnumerable()
+            .FirstOrDefault();
+
+        if (tableExists == 0)
         {
-            connection.Open();
+            return;
         }
 
-        try
+        var existingColumns = db.Database
+            .SqlQueryRaw<string>($"SELECT name AS Value FROM pragma_table_info('{escapedTableName}')")
+            .AsEnumerable()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!existingColumns.Contains(columnName))
         {
-            var exists = false;
-
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = $"PRAGMA table_info({tableName});";
-                using var reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        exists = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!exists)
-            {
-                db.Database.ExecuteSqlRaw($"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};");
-            }
-        }
-        finally
-        {
-            if (shouldClose)
-            {
-                connection.Close();
-            }
+            db.Database.ExecuteSqlRaw($"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};");
         }
     }
 }
