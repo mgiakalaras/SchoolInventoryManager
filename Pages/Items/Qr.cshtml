@@ -1,0 +1,445 @@
+@page "{code}"
+@model SchoolInventoryManager.Pages.Items.QrModel
+@using SchoolInventoryManager.Models
+
+@{
+    ViewData["Title"] = $"QR καρτέλα - {Model.DisplayCode}";
+    var specs = Model.Item.TechnicalSpecs;
+}
+
+<section class="qr-item-page">
+    <div class="qr-item-toolbar no-print">
+        <a asp-page="/Index" class="btn secondary">Αρχική</a>
+        <a asp-page="/Items/Edit" asp-route-id="@Model.Item.Id" class="btn">Επεξεργασία</a>
+        <button type="button" class="btn secondary" onclick="window.print()">Εκτύπωση καρτέλας</button>
+    </div>
+
+    <article class="qr-item-card">
+        <header class="qr-item-header">
+            <div>
+                <span class="qr-kicker">School Inventory Manager</span>
+                <h1>@Model.Item.Name</h1>
+                <p>
+                    Κωδικός απογραφής:
+                    <strong>@Model.DisplayCode</strong>
+                </p>
+            </div>
+
+            <div class="qr-status-box">
+                <span>Κατάσταση</span>
+                <strong>@Model.Item.Condition.GetDisplayName()</strong>
+            </div>
+        </header>
+
+        <section class="qr-info-grid">
+            <div>
+                <span>Χώρος</span>
+                <strong>@(Model.Item.Room?.Name ?? "Δεν έχει οριστεί")</strong>
+            </div>
+
+            <div>
+                <span>Κατηγορία</span>
+                <strong>@(Model.Item.InventoryCategory?.Name ?? "Χωρίς κατηγορία")</strong>
+            </div>
+
+            <div>
+                <span>Ποσότητα</span>
+                <strong>@Model.Item.Quantity</strong>
+            </div>
+
+            <div>
+                <span>Ενεργό στην απογραφή</span>
+                <strong>@(Model.Item.IsActive ? "Ναι" : "Όχι")</strong>
+            </div>
+        </section>
+
+        <section class="qr-detail-section">
+            <h2>Στοιχεία αντικειμένου</h2>
+
+            <dl class="qr-detail-list">
+                <div>
+                    <dt>Μάρκα</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(Model.Item.Brand) ? "-" : Model.Item.Brand)</dd>
+                </div>
+
+                <div>
+                    <dt>Μοντέλο</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(Model.Item.Model) ? "-" : Model.Item.Model)</dd>
+                </div>
+
+                <div>
+                    <dt>Serial number</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(Model.Item.SerialNumber) ? "-" : Model.Item.SerialNumber)</dd>
+                </div>
+
+                <div>
+                    <dt>Βιβλίο / σελίδα απογραφής</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(Model.Item.InventoryBookPage) ? "-" : Model.Item.InventoryBookPage)</dd>
+                </div>
+
+                <div>
+                    <dt>Τελευταία ενημέρωση</dt>
+                    <dd>@Model.Item.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                </div>
+
+                <div>
+                    <dt>Δημιουργία εγγραφής</dt>
+                    <dd>@Model.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                </div>
+            </dl>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Item.Description))
+            {
+                <div class="qr-notes-box">
+                    <strong>Περιγραφή</strong>
+                    <p>@Model.Item.Description</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.Item.Notes))
+            {
+                <div class="qr-notes-box">
+                    <strong>Σημειώσεις</strong>
+                    <p>@Model.Item.Notes</p>
+                </div>
+            }
+        </section>
+
+        @if (specs != null && specs.HasAnyValue())
+        {
+            <section class="qr-detail-section">
+                <h2>Τεχνικά χαρακτηριστικά</h2>
+
+                <dl class="qr-detail-list">
+                    <div>
+                        <dt>Επεξεργαστής</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.Processor) ? "-" : specs.Processor)</dd>
+                    </div>
+
+                    <div>
+                        <dt>RAM</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.MemoryRam) ? "-" : specs.MemoryRam)</dd>
+                    </div>
+
+                    <div>
+                        <dt>Τύπος μνήμης</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.MemoryType) ? "-" : specs.MemoryType)</dd>
+                    </div>
+
+                    <div>
+                        <dt>Δίσκος / αποθήκευση</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.Storage) ? "-" : specs.Storage)</dd>
+                    </div>
+
+                    <div>
+                        <dt>Τύπος δίσκου</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.StorageType) ? "-" : specs.StorageType)</dd>
+                    </div>
+
+                    <div>
+                        <dt>GPU</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.Graphics) ? "-" : specs.Graphics)</dd>
+                    </div>
+
+                    <div>
+                        <dt>Λειτουργικό</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.OperatingSystem) ? "-" : specs.OperatingSystem)</dd>
+                    </div>
+
+                    <div>
+                        <dt>OPS / Mini PC</dt>
+                        <dd>@(string.IsNullOrWhiteSpace(specs.OpsModuleModel) ? "-" : specs.OpsModuleModel)</dd>
+                    </div>
+                </dl>
+
+                @if (!string.IsNullOrWhiteSpace(specs.TechnicalNotes))
+                {
+                    <div class="qr-notes-box">
+                        <strong>Τεχνικές σημειώσεις</strong>
+                        <p>@specs.TechnicalNotes</p>
+                    </div>
+                }
+            </section>
+        }
+
+        <footer class="qr-item-footer">
+            <div>
+                <span>URL καρτέλας</span>
+                <strong>@Model.QrUrl</strong>
+            </div>
+            <p>Η καρτέλα ανοίγει από το QR code του αντικειμένου.</p>
+        </footer>
+    </article>
+</section>
+
+<style>
+    .qr-item-page {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .qr-item-toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-bottom: 14px;
+    }
+
+    .qr-item-card {
+        border: 1px solid rgba(34, 211, 238, 0.24);
+        border-radius: 26px;
+        padding: 24px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 34%),
+            rgba(15, 23, 42, 0.82);
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    .qr-item-header {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 18px;
+        align-items: start;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        padding-bottom: 18px;
+        margin-bottom: 18px;
+    }
+
+    .qr-kicker {
+        color: #67e8f9;
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .qr-item-header h1 {
+        margin: 6px 0 8px;
+        color: #f8fafc;
+        font-size: clamp(1.7rem, 3vw, 2.35rem);
+    }
+
+    .qr-item-header p {
+        color: #cbd5e1;
+        margin: 0;
+    }
+
+    .qr-status-box {
+        border: 1px solid rgba(34, 197, 94, 0.28);
+        border-radius: 18px;
+        padding: 14px;
+        background: rgba(2, 6, 23, 0.42);
+    }
+
+    .qr-status-box span,
+    .qr-status-box strong {
+        display: block;
+    }
+
+    .qr-status-box span {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+
+    .qr-status-box strong {
+        color: #bbf7d0;
+        font-size: 1.15rem;
+        margin-top: 5px;
+    }
+
+    .qr-info-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .qr-info-grid div {
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 18px;
+        padding: 14px;
+        background: rgba(2, 6, 23, 0.34);
+    }
+
+    .qr-info-grid span,
+    .qr-info-grid strong {
+        display: block;
+    }
+
+    .qr-info-grid span {
+        color: #94a3b8;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .qr-info-grid strong {
+        color: #f8fafc;
+        margin-top: 5px;
+        overflow-wrap: anywhere;
+    }
+
+    .qr-detail-section {
+        border-top: 1px solid rgba(148, 163, 184, 0.16);
+        padding-top: 18px;
+        margin-top: 18px;
+    }
+
+    .qr-detail-section h2 {
+        color: #f8fafc;
+        margin: 0 0 12px;
+        font-size: 1.1rem;
+    }
+
+    .qr-detail-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 0;
+    }
+
+    .qr-detail-list div {
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(2, 6, 23, 0.28);
+    }
+
+    .qr-detail-list dt {
+        color: #94a3b8;
+        font-size: 0.76rem;
+        font-weight: 850;
+        margin-bottom: 4px;
+    }
+
+    .qr-detail-list dd {
+        margin: 0;
+        color: #f8fafc;
+        overflow-wrap: anywhere;
+    }
+
+    .qr-notes-box {
+        margin-top: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(2, 6, 23, 0.28);
+    }
+
+    .qr-notes-box strong {
+        color: #f8fafc;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .qr-notes-box p {
+        color: #cbd5e1;
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .qr-item-footer {
+        margin-top: 18px;
+        border-top: 1px solid rgba(148, 163, 184, 0.16);
+        padding-top: 14px;
+        color: #94a3b8;
+        font-size: 0.82rem;
+    }
+
+    .qr-item-footer span,
+    .qr-item-footer strong {
+        display: block;
+    }
+
+    .qr-item-footer strong {
+        color: #cbd5e1;
+        overflow-wrap: anywhere;
+        margin-top: 3px;
+    }
+
+    .form-mini-actions {
+        margin-top: 8px;
+    }
+
+    @@media (max-width: 760px) {
+        .qr-item-header,
+        .qr-info-grid,
+        .qr-detail-list {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media print {
+        .topbar,
+        .footer,
+        .mobile-bottom-nav,
+        .qr-item-toolbar,
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .container,
+        main {
+            max-width: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .qr-item-page {
+            max-width: none !important;
+        }
+
+        .qr-item-card {
+            background: #ffffff !important;
+            color: #111827 !important;
+            box-shadow: none !important;
+            border: 1px solid #111827 !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+        }
+
+        .qr-item-header,
+        .qr-detail-section,
+        .qr-item-footer {
+            border-color: #111827 !important;
+        }
+
+        .qr-item-header h1,
+        .qr-detail-section h2,
+        .qr-info-grid strong,
+        .qr-detail-list dd,
+        .qr-notes-box strong,
+        .qr-item-footer strong {
+            color: #111827 !important;
+        }
+
+        .qr-item-header p,
+        .qr-info-grid span,
+        .qr-detail-list dt,
+        .qr-notes-box p,
+        .qr-item-footer,
+        .qr-status-box span {
+            color: #374151 !important;
+        }
+
+        .qr-status-box,
+        .qr-info-grid div,
+        .qr-detail-list div,
+        .qr-notes-box {
+            background: #ffffff !important;
+            border-color: #111827 !important;
+        }
+
+        @@page {
+            size: A4 portrait;
+            margin: 12mm;
+        }
+    }
+</style>

@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using SchoolInventoryManager.Utilities;
 
 namespace SchoolInventoryManager.Data;
 
@@ -7,9 +8,85 @@ public static class SchemaUpgrade
 {
     public static void Apply(AppDbContext db)
     {
+        AddColumnIfMissing(db, "SchoolSettings", "ApplicationBaseUrl", "TEXT NULL");
+        AddColumnIfMissing(db, "InventoryAuditFolders", "SchoolType", "TEXT NULL");
+
         AddColumnIfMissing(db, "InventoryItems", "InventoryBookPage", "TEXT NULL");
         AddColumnIfMissing(db, "InventoryItems", "DestructionBatchId", "INTEGER NULL");
         AddColumnIfMissing(db, "InventoryItems", "DestroyedAt", "TEXT NULL");
+        AddColumnIfMissing(db, "InventoryItems", "AssetCode", "TEXT NULL");
+        AddColumnIfMissing(db, "InventoryItems", "QrToken", "TEXT NULL");
+
+        BackfillInventoryQrIdentity(db);
+
+        db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_InventoryItems_AssetCode ON InventoryItems (AssetCode);");
+        db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_InventoryItems_QrToken ON InventoryItems (QrToken);");
+
+
+        db.Database.ExecuteSqlRaw(@"
+CREATE TABLE IF NOT EXISTS InventoryAuditFolders (
+    Id INTEGER NOT NULL CONSTRAINT PK_InventoryAuditFolders PRIMARY KEY AUTOINCREMENT,
+    Title TEXT NOT NULL,
+    AuditDate TEXT NOT NULL,
+    SchoolYear TEXT NULL,
+    SchoolName TEXT NOT NULL,
+    SchoolType TEXT NULL,
+    ResponsibleName TEXT NULL,
+    Notes TEXT NULL,
+    IsFinalized INTEGER NOT NULL DEFAULT 0,
+    FinalizedAt TEXT NULL,
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT NOT NULL
+);");
+
+        db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_InventoryAuditFolders_AuditDate_IsFinalized ON InventoryAuditFolders (AuditDate, IsFinalized);");
+
+        db.Database.ExecuteSqlRaw(@"
+CREATE TABLE IF NOT EXISTS InventoryAuditRoomSessions (
+    Id INTEGER NOT NULL CONSTRAINT PK_InventoryAuditRoomSessions PRIMARY KEY AUTOINCREMENT,
+    InventoryAuditFolderId INTEGER NOT NULL,
+    RoomId INTEGER NULL,
+    RoomNameSnapshot TEXT NOT NULL,
+    ExpectedItemsCount INTEGER NOT NULL DEFAULT 0,
+    FoundItemsCount INTEGER NOT NULL DEFAULT 0,
+    MissingItemsCount INTEGER NOT NULL DEFAULT 0,
+    WrongRoomItemsCount INTEGER NOT NULL DEFAULT 0,
+    UnknownItemsCount INTEGER NOT NULL DEFAULT 0,
+    IsFinalized INTEGER NOT NULL DEFAULT 0,
+    StartedAt TEXT NULL,
+    CompletedAt TEXT NULL,
+    Notes TEXT NULL,
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT NOT NULL,
+    CONSTRAINT FK_InventoryAuditRoomSessions_InventoryAuditFolders_InventoryAuditFolderId FOREIGN KEY (InventoryAuditFolderId) REFERENCES InventoryAuditFolders (Id) ON DELETE CASCADE,
+    CONSTRAINT FK_InventoryAuditRoomSessions_Rooms_RoomId FOREIGN KEY (RoomId) REFERENCES Rooms (Id) ON DELETE SET NULL
+);");
+
+        db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_InventoryAuditRoomSessions_Folder_Room ON InventoryAuditRoomSessions (InventoryAuditFolderId, RoomId);");
+
+        db.Database.ExecuteSqlRaw(@"
+CREATE TABLE IF NOT EXISTS InventoryAuditScanLogs (
+    Id INTEGER NOT NULL CONSTRAINT PK_InventoryAuditScanLogs PRIMARY KEY AUTOINCREMENT,
+    InventoryAuditRoomSessionId INTEGER NOT NULL,
+    InventoryItemId INTEGER NULL,
+    ScannedCode TEXT NOT NULL,
+    Status TEXT NOT NULL,
+    ItemNameSnapshot TEXT NULL,
+    ExpectedRoomSnapshot TEXT NULL,
+    ActualRoomSnapshot TEXT NULL,
+    CategorySnapshot TEXT NULL,
+    SerialNumberSnapshot TEXT NULL,
+    ScannedAt TEXT NOT NULL,
+    Notes TEXT NULL,
+    CONSTRAINT FK_InventoryAuditScanLogs_InventoryAuditRoomSessions_InventoryAuditRoomSessionId FOREIGN KEY (InventoryAuditRoomSessionId) REFERENCES InventoryAuditRoomSessions (Id) ON DELETE CASCADE,
+    CONSTRAINT FK_InventoryAuditScanLogs_InventoryItems_InventoryItemId FOREIGN KEY (InventoryItemId) REFERENCES InventoryItems (Id) ON DELETE SET NULL
+);");
+
+        db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_InventoryAuditScanLogs_Session_Status ON InventoryAuditScanLogs (InventoryAuditRoomSessionId, Status);");
+        db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_InventoryAuditScanLogs_Session_Item ON InventoryAuditScanLogs (InventoryAuditRoomSessionId, InventoryItemId);");
+        db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_InventoryAuditScanLogs_Session_Code ON InventoryAuditScanLogs (InventoryAuditRoomSessionId, ScannedCode);");
+
+
 
 
         db.Database.ExecuteSqlRaw(@"
@@ -155,6 +232,35 @@ CREATE TABLE IF NOT EXISTS DestructionCommitteeMembers (
         db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_DestructionBatchItems_DestructionBatchId ON DestructionBatchItems (DestructionBatchId);");
         db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_DestructionBatchItems_InventoryItemId ON DestructionBatchItems (InventoryItemId);");
         db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_DestructionCommitteeMembers_DestructionBatchId ON DestructionCommitteeMembers (DestructionBatchId);");
+    }
+
+
+
+    private static void BackfillInventoryQrIdentity(AppDbContext db)
+    {
+        var items = db.InventoryItems
+            .Where(x => string.IsNullOrWhiteSpace(x.AssetCode) || string.IsNullOrWhiteSpace(x.QrToken))
+            .ToList();
+
+        if (items.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var item in items)
+        {
+            if (string.IsNullOrWhiteSpace(item.AssetCode))
+            {
+                item.AssetCode = AssetCodeGenerator.CreateAssetCode(item.Id, item.CreatedAt);
+            }
+
+            if (string.IsNullOrWhiteSpace(item.QrToken))
+            {
+                item.QrToken = AssetCodeGenerator.CreateQrToken();
+            }
+        }
+
+        db.SaveChanges();
     }
 
 

@@ -6,6 +6,15 @@ public class InventoryItem
 {
     public int Id { get; set; }
 
+    [Display(Name = "Κωδικός απογραφής")]
+    [StringLength(40)]
+    public string? AssetCode { get; set; }
+
+    [Display(Name = "QR Token")]
+    [StringLength(64)]
+    public string? QrToken { get; set; }
+
+
     [Display(Name = "Χώρος")]
     [Required]
     public int RoomId { get; set; }

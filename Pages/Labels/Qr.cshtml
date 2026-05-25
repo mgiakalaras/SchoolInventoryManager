@@ -1,0 +1,649 @@
+@page
+@model SchoolInventoryManager.Pages.Labels.QrModel
+
+@{
+    ViewData["Title"] = "QR ετικέτες";
+    var labelPages = Model.Items
+        .Select((item, index) => new { item, index })
+        .GroupBy(x => x.index / 21)
+        .Select(g => g.Select(x => x.item).ToList())
+        .ToList();
+}
+
+<section class="page-header qr-labels-hero no-print">
+    <div>
+        <span class="hero-kicker">QR απογραφής</span>
+        <h1>QR ετικέτες αντικειμένων</h1>
+        <p>
+            Προβολή, επιλογή και εκτύπωση QR ανά αντικείμενο απογραφής.
+        </p>
+    </div>
+
+    <div class="actions">
+        <button type="button" class="btn" onclick="printSelectedQrLabels()">Εκτύπωση επιλεγμένων</button>
+        <button type="button" class="btn secondary" onclick="selectAllQrLabels(true)">Επιλογή όλων στη σελίδα</button>
+        <button type="button" class="btn secondary" onclick="selectAllQrLabels(false)">Καμία επιλογή</button>
+    </div>
+</section>
+
+<section class="card qr-base-url-card no-print">
+    <div>
+        <strong>Βάση QR URL</strong>
+        <span>@Model.BaseUrl</span>
+    </div>
+    <p class="muted">
+        Τα QR χρησιμοποιούν σύντομο URL τύπου <strong>/q/ΚΩΔΙΚΟΣ</strong>.
+        Η εκτύπωση είναι ρυθμισμένη για <strong>Typotrust TL2111</strong>:
+        21 ετικέτες ανά A4, 3 στήλες x 7 σειρές, 70mm x 42.3mm.
+        Η εκτύπωση γεμίζει πρώτα την 1η στήλη, μετά τη 2η και μετά την 3η.
+        <strong>Top offset εκτύπωσης:</strong> -18mm.
+        Αν εδώ βλέπεις localhost ή λάθος IP, πήγαινε στα Settings και όρισε τη σωστή διεύθυνση εφαρμογής στο τοπικό δίκτυο.
+    </p>
+</section>
+
+<form method="get" class="card filters qr-label-filters no-print">
+    <div class="form-row search-row">
+        <label asp-for="Search">Αναζήτηση</label>
+        <input asp-for="Search" placeholder="κωδικός, αντικείμενο, χώρος, serial, μάρκα..." />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="RoomId">Χώρος</label>
+        <select asp-for="RoomId" asp-items="Model.Rooms">
+            <option value="">Όλοι οι χώροι</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="CategoryId">Κατηγορία</label>
+        <select asp-for="CategoryId" asp-items="Model.Categories">
+            <option value="">Όλες οι κατηγορίες</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="PageSize">Ανά σελίδα</label>
+        <select asp-for="PageSize">
+            @foreach (var size in Model.PageSizeOptions)
+            {
+                <option value="@size">@size αντικείμενα</option>
+            }
+        </select>
+    </div>
+
+    <label class="check-row qr-check-row">
+        <input asp-for="IncludeInactive" />
+        <span>Να εμφανιστούν και ανενεργά / κατεστραμμένα</span>
+    </label>
+
+    <input type="hidden" name="PageNumber" value="1" />
+
+    <div class="actions filter-actions">
+        <button class="btn" type="submit">Φίλτρο</button>
+        <a class="btn secondary" asp-page="./Qr">Καθαρισμός</a>
+    </div>
+</form>
+
+<section class="card qr-selection-card no-print">
+    <div class="section-title-row">
+        <div>
+            <h2>Αντικείμενα για QR</h2>
+            <p class="muted">
+                Εμφανίζονται @Model.PageStart-@Model.PageEnd από @Model.TotalRows αντικείμενα.
+                Τσέκαρε όσα θέλεις και πάτα “Εκτύπωση επιλεγμένων”.
+            </p>
+        </div>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="empty-state">
+            <h3>Δεν βρέθηκαν αντικείμενα</h3>
+            <p>Δοκίμασε να καθαρίσεις τα φίλτρα.</p>
+        </div>
+    }
+    else
+    {
+        <div class="qr-pagination">
+            @if (Model.PreviousPageUrl != null)
+            {
+                <a class="btn small secondary" href="@Model.PreviousPageUrl">← Προηγούμενη</a>
+            }
+
+            <span>Σελίδα @Model.PageNumber από @Model.TotalPages</span>
+
+            @if (Model.NextPageUrl != null)
+            {
+                <a class="btn small secondary" href="@Model.NextPageUrl">Επόμενη →</a>
+            }
+        </div>
+
+        <div class="table-wrap">
+            <table class="qr-item-table">
+                <thead>
+                    <tr>
+                        <th class="qr-select-column">
+                            <input type="checkbox" id="selectAllQrTop" onchange="selectAllQrLabels(this.checked)" checked />
+                        </th>
+                        <th>QR</th>
+                        <th>Κωδικός / αντικείμενο</th>
+                        <th>Χώρος</th>
+                        <th>Κατηγορία</th>
+                        <th>Serial</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <input class="qr-print-checkbox"
+                                       type="checkbox"
+                                       data-label-id="label-@item.Id"
+                                       checked />
+                            </td>
+                            <td>
+                                <div class="qr-thumb">
+                                    <img src="@item.QrImageDataUrl" alt="QR @item.AssetCode" />
+                                </div>
+                            </td>
+                            <td>
+                                <strong>@item.AssetCode</strong>
+                                <span>@item.Name</span>
+                                @if (!string.IsNullOrWhiteSpace(item.BrandModel))
+                                {
+                                    <small>@item.BrandModel</small>
+                                }
+                            </td>
+                            <td>@item.RoomName</td>
+                            <td>@item.CategoryName</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+                                {
+                                    @item.SerialNumber
+                                }
+                                else
+                                {
+                                    <span class="muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="actions compact-actions">
+                                    <a class="btn small secondary"
+                                       asp-page="/Items/Qr"
+                                       asp-route-code="@item.AssetCode"
+                                       target="_blank">
+                                        Προβολή
+                                    </a>
+                                    <a class="btn small secondary"
+                                       asp-page="/Items/Edit"
+                                       asp-route-id="@item.Id">
+                                        Επεξεργασία
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="qr-pagination bottom">
+            @if (Model.PreviousPageUrl != null)
+            {
+                <a class="btn small secondary" href="@Model.PreviousPageUrl">← Προηγούμενη</a>
+            }
+
+            <span>Σελίδα @Model.PageNumber από @Model.TotalPages</span>
+
+            @if (Model.NextPageUrl != null)
+            {
+                <a class="btn small secondary" href="@Model.NextPageUrl">Επόμενη →</a>
+            }
+        </div>
+    }
+</section>
+
+<section class="qr-print-root" aria-label="Εκτύπωση QR ετικετών">
+    @foreach (var pageItems in labelPages)
+    {
+        <section class="qr-label-page">
+            @foreach (var item in pageItems)
+            {
+                <article class="qr-print-label" id="label-@item.Id">
+                    <div class="qr-print-image-box">
+                        <img src="@item.QrImageDataUrl" alt="QR @item.AssetCode" />
+                    </div>
+
+                    <div class="qr-print-text">
+                        <strong>@item.AssetCode</strong>
+                        <span class="label-item-name">@item.Name</span>
+                        <span>@item.RoomName</span>
+                        <span>Απογραφή: @item.InventoryDateText</span>
+
+                        @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+                        {
+                            <span>SN: @item.SerialNumber</span>
+                        }
+                    </div>
+                </article>
+            }
+        </section>
+    }
+</section>
+
+<style>
+    .qr-labels-hero {
+        align-items: end;
+    }
+
+    .qr-base-url-card {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 14px;
+        border-color: rgba(34, 211, 238, 0.22);
+    }
+
+    .qr-base-url-card strong,
+    .qr-base-url-card span {
+        display: block;
+    }
+
+    .qr-base-url-card span {
+        color: #67e8f9;
+        overflow-wrap: anywhere;
+        margin-top: 3px;
+    }
+
+    .qr-label-filters {
+        display: grid;
+        grid-template-columns: minmax(280px, 1.4fr) minmax(170px, 0.75fr) minmax(170px, 0.75fr) 150px minmax(220px, 0.9fr) auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .qr-check-row {
+        min-height: 42px;
+        align-items: center;
+    }
+
+    .qr-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0 14px;
+        color: #94a3b8;
+        font-weight: 800;
+    }
+
+    .qr-pagination.bottom {
+        margin: 14px 0 0;
+    }
+
+    .qr-item-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .qr-item-table th,
+    .qr-item-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .qr-item-table th {
+        color: #cbd5e1;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .qr-select-column {
+        width: 42px;
+    }
+
+    .qr-item-table td:nth-child(3) strong,
+    .qr-item-table td:nth-child(3) span,
+    .qr-item-table td:nth-child(3) small {
+        display: block;
+    }
+
+    .qr-item-table td:nth-child(3) strong {
+        color: #67e8f9;
+    }
+
+    .qr-item-table td:nth-child(3) span {
+        color: #f8fafc;
+        margin-top: 2px;
+    }
+
+    .qr-item-table td:nth-child(3) small {
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    .qr-thumb {
+        width: 68px;
+        height: 68px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+        padding: 4px;
+    }
+
+    .qr-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        image-rendering: pixelated;
+    }
+
+    .compact-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .qr-print-root {
+        margin-top: 18px;
+    }
+
+    .qr-label-page {
+        display: grid;
+        grid-template-columns: repeat(3, 70mm);
+        grid-template-rows: repeat(7, 42.3mm);
+        grid-auto-flow: column;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto 14px;
+        padding: 0;
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-sizing: border-box;
+    }
+
+    .qr-print-label {
+        width: 70mm;
+        height: 42.3mm;
+        border: 1px dashed rgba(148, 163, 184, 0.35);
+        border-radius: 0;
+        background: #ffffff;
+        color: #111827;
+        display: grid;
+        grid-template-columns: 32mm minmax(0, 1fr);
+        gap: 2mm;
+        align-items: center;
+        padding: 2.2mm;
+        box-sizing: border-box;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .qr-print-image-box {
+        width: 30mm;
+        height: 30mm;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        align-self: center;
+        overflow: hidden;
+        flex: 0 0 auto;
+    }
+
+    .qr-print-image-box img {
+        width: 30mm !important;
+        height: 30mm !important;
+        max-width: 30mm !important;
+        max-height: 30mm !important;
+        object-fit: contain;
+        display: block;
+        background: #ffffff;
+        image-rendering: pixelated;
+    }
+
+    .qr-print-text {
+        min-width: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        background: #ffffff;
+    }
+
+    .qr-print-text strong,
+    .qr-print-text span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .qr-print-text strong {
+        font-size: 8.5pt;
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 1mm;
+        white-space: nowrap;
+    }
+
+    .qr-print-text span {
+        font-size: 7pt;
+        line-height: 1.12;
+        color: #111827;
+    }
+
+    .qr-print-text .label-item-name {
+        font-weight: 800;
+        font-size: 7.6pt;
+        max-height: 16pt;
+    }
+
+    @@media print {
+        .topbar,
+        .footer,
+        .mobile-bottom-nav,
+        .no-print {
+            display: none !important;
+        }
+
+        html,
+        body,
+        body.sim-ops-theme {
+            width: 210mm !important;
+            min-width: 210mm !important;
+            max-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            display: block !important;
+            min-height: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        body.sim-ops-theme main.container,
+        body.sim-ops-theme .container,
+        .container,
+        main {
+            width: 210mm !important;
+            max-width: 210mm !important;
+            min-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            display: block !important;
+        }
+
+        .qr-print-root {
+            /* Typotrust TL2111 calibration.
+               Your PDF preview started too low, so the sheet is lifted by 18mm.
+               If your printer needs fine tuning later, change only these two values. */
+            --label-offset-x: 0mm;
+            --label-offset-y: -18mm;
+            width: 210mm !important;
+            max-width: 210mm !important;
+            min-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            transform: translate(var(--label-offset-x), var(--label-offset-y)) !important;
+            line-height: 1 !important;
+            font-size: 0 !important;
+        }
+
+        .qr-label-page {
+            display: grid !important;
+            grid-template-columns: repeat(3, 70mm) !important;
+            grid-template-rows: repeat(7, 42.3mm) !important;
+            grid-auto-flow: column !important;
+            width: 210mm !important;
+            min-width: 210mm !important;
+            max-width: 210mm !important;
+            height: 297mm !important;
+            min-height: 297mm !important;
+            max-height: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-sizing: border-box !important;
+            background: #ffffff !important;
+            overflow: hidden !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .qr-label-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        .qr-label-page.is-print-hidden {
+            display: none !important;
+        }
+
+        .qr-print-label {
+            width: 70mm !important;
+            height: 42.3mm !important;
+            border: none !important;
+            border-radius: 0 !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+
+        .qr-print-label.is-print-hidden {
+            display: none !important;
+        }
+
+        .qr-print-image-box {
+            width: 30mm !important;
+            height: 30mm !important;
+            overflow: hidden !important;
+        }
+
+        .qr-print-image-box img {
+            width: 30mm !important;
+            height: 30mm !important;
+            max-width: 30mm !important;
+            max-height: 30mm !important;
+        }
+
+        @@page {
+            size: 210mm 297mm;
+            margin: 0;
+        }
+    }
+
+    @@media screen and (max-width: 1100px) {
+        .qr-label-filters {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .qr-label-page {
+            width: 140mm;
+            grid-template-columns: repeat(2, 70mm);
+        }
+    }
+
+    @@media screen and (max-width: 760px) {
+        .qr-label-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .qr-label-page {
+            width: 70mm;
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    function selectAllQrLabels(checked) {
+        document.querySelectorAll(".qr-print-checkbox").forEach(function (checkbox) {
+            checkbox.checked = checked;
+        });
+
+        const top = document.getElementById("selectAllQrTop");
+        if (top) {
+            top.checked = checked;
+        }
+
+        syncQrLabelVisibility();
+    }
+
+    function syncQrLabelVisibility() {
+        document.querySelectorAll(".qr-print-checkbox").forEach(function (checkbox) {
+            const labelId = checkbox.getAttribute("data-label-id");
+            const label = document.getElementById(labelId);
+
+            if (!label) {
+                return;
+            }
+
+            label.classList.toggle("is-print-hidden", !checkbox.checked);
+        });
+
+        document.querySelectorAll(".qr-label-page").forEach(function (page) {
+            const visibleLabels = Array.from(page.querySelectorAll(".qr-print-label"))
+                .filter(function (label) { return !label.classList.contains("is-print-hidden"); });
+
+            page.classList.toggle("is-print-hidden", visibleLabels.length === 0);
+        });
+    }
+
+    function printSelectedQrLabels() {
+        syncQrLabelVisibility();
+
+        const selectedCount = Array.from(document.querySelectorAll(".qr-print-checkbox"))
+            .filter(function (checkbox) { return checkbox.checked; })
+            .length;
+
+        if (selectedCount === 0) {
+            alert("Δεν έχεις επιλέξει κανένα αντικείμενο για εκτύπωση QR.");
+            return;
+        }
+
+        window.print();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".qr-print-checkbox").forEach(function (checkbox) {
+            checkbox.addEventListener("change", syncQrLabelVisibility);
+        });
+
+        syncQrLabelVisibility();
+    });
+</script>

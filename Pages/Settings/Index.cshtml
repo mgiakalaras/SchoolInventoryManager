@@ -40,6 +40,17 @@
             <input asp-for="Settings.Address" />
             <span asp-validation-for="Settings.Address"></span>
         </div>
+
+        <div class="form-row full qr-base-url-row">
+            <label asp-for="Settings.ApplicationBaseUrl"></label>
+            <input asp-for="Settings.ApplicationBaseUrl"
+                   placeholder="π.χ. http://192.168.1.80:5148" />
+            <span asp-validation-for="Settings.ApplicationBaseUrl"></span>
+            <small class="muted">
+                Χρησιμοποιείται για τα QR codes. Αν το αφήσεις κενό, η εφαρμογή θα χρησιμοποιεί τη διεύθυνση από την οποία άνοιξες τη σελίδα.
+                Τρέχουσα διεύθυνση: <strong>@Model.CurrentRequestBaseUrl</strong>
+            </small>
+        </div>
         <div class="form-row">
             <label asp-for="Settings.SchoolYear"></label>
             <input asp-for="Settings.SchoolYear" />
@@ -84,6 +95,12 @@
 
     <div class="actions" style="margin-top:1rem;">
         <button class="btn" type="submit">Αποθήκευση</button>
+        <button class="btn secondary"
+                type="submit"
+                asp-page-handler="UseCurrentBaseUrl"
+                formnovalidate>
+            Χρήση τρέχουσας διεύθυνσης για QR
+        </button>
         <a class="btn secondary" asp-page="/Reports/Print">Προεπισκόπηση αναφοράς</a>
     </div>
 </form>

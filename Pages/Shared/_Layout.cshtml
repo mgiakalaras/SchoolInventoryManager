@@ -31,12 +31,32 @@
             <a class="nav-link-single" asp-page="/Index">Κέντρο ελέγχου</a>
 
             <div class="nav-group">
-                <span class="nav-group-title">Δεδομένα</span>
+                <span class="nav-group-title">Βασικά</span>
                 <div class="nav-group-menu">
-                    <a asp-page="/Settings/Index">Σχολείο</a>
+                    <a asp-page="/Settings/Index">Σχολείο / Ρυθμίσεις</a>
                     <a asp-page="/Rooms/Index">Χώροι</a>
                     <a asp-page="/Items/Index">Εξοπλισμός</a>
                     <a asp-page="/Items/Create">Νέο υλικό</a>
+                    <a asp-page="/ImportExport/Index">Import / Export</a>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Απογραφή QR</span>
+                <div class="nav-group-menu">
+                    <a asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+                    <a asp-page="/InventoryAudits/Create">Νέος φάκελος</a>
+                    <a asp-page="/Audit/Room">Απογραφή χώρου QR</a>
+                    <a asp-page="/Audit/Scan">Σάρωση QR</a>
+                    <a asp-page="/Labels/Qr">QR ετικέτες</a>
+                    <a asp-page="/Reports/Index">Αναφορές απογραφής</a>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Τεχνικά / Απόθεμα</span>
+                <div class="nav-group-menu">
+                    <a asp-page="/TechnicalReports/Index">Τεχνικός έλεγχος</a>
                     <a asp-page="/TechnicalReferences/Index">Τεχνικές αναφορές</a>
                     <a asp-page="/SpareParts/Index">Ανταλλακτικά / Απόθεμα</a>
                     <a asp-page="/SpareParts/UsageHistory">Ιστορικό ανταλλακτικών</a>
@@ -44,21 +64,12 @@
             </div>
 
             <div class="nav-group">
-                <span class="nav-group-title">Εργασίες</span>
+                <span class="nav-group-title">Διαχείριση</span>
                 <div class="nav-group-menu">
-                    <a asp-page="/ImportExport/Index">Import / Export</a>
-                    <a asp-page="/Maintenance/Index">Συντήρηση</a>
-                    <a asp-page="/Update/Index">Update</a>
-                </div>
-            </div>
-
-            <div class="nav-group">
-                <span class="nav-group-title">Αναφορές</span>
-                <div class="nav-group-menu">
-                    <a asp-page="/Reports/Index">Αναφορές απογραφής</a>
-                    <a asp-page="/TechnicalReports/Index">Τεχνικός έλεγχος</a>
                     <a asp-page="/Destructions/Index">Καταστροφή υλικού</a>
                     <a asp-page="/Destructions/DestroyedItems">Κατεστραμμένα υλικά</a>
+                    <a asp-page="/Maintenance/Index">Συντήρηση βάσης</a>
+                    <a asp-page="/Update/Index">Update Center</a>
                 </div>
             </div>
 
@@ -83,6 +94,7 @@
         <a asp-page="/Rooms/Index"><span>🏫</span><strong>Χώροι</strong></a>
         <a class="mobile-primary-action" asp-page="/Items/Create"><span>＋</span><strong>Νέο</strong></a>
         <a asp-page="/Items/Index"><span>📦</span><strong>Εξοπλ.</strong></a>
+        <a asp-page="/InventoryAudits/Index"><span>▣</span><strong>Απογρ.</strong></a>
         <a asp-page="/Destructions/Index"><span>🧾</span><strong>Καταστ.</strong></a>
     </nav>
 

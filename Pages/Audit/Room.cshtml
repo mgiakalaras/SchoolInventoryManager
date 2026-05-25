@@ -1,0 +1,945 @@
+@page
+@model SchoolInventoryManager.Pages.Audit.RoomModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Απογραφή χώρου με QR";
+
+    var expectedJson = JsonSerializer.Serialize(
+        Model.ExpectedItems,
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+    var savedJson = JsonSerializer.Serialize(
+        Model.SavedScans,
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+}
+
+<section class="page-header room-audit-hero">
+    <div>
+        <span class="hero-kicker">QR απογραφής</span>
+        <h1>Απογραφή χώρου με QR</h1>
+        <p>
+            @(Model.IsFolderMode ? $"{Model.Folder!.Title} · {Model.SelectedRoomName}" : "Live έλεγχος χώρου χωρίς αποθήκευση φακέλου")
+        </p>
+    </div>
+
+    <div class="actions">
+        @if (Model.IsFolderMode)
+        {
+            <a class="btn secondary" asp-page="/InventoryAudits/Details" asp-route-id="@Model.FolderId">Πίσω στον φάκελο</a>
+        }
+        <a class="btn secondary" asp-page="/Audit/Scan">Σάρωση QR</a>
+        <a class="btn secondary" asp-page="/Labels/Qr">QR ετικέτες</a>
+    </div>
+</section>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert success">@message</div>
+}
+
+@if (TempData["Warning"] is string warning)
+{
+    <div class="alert warning">@warning</div>
+}
+
+<form method="get" class="card room-audit-picker no-print">
+    @if (Model.FolderId.HasValue)
+    {
+        <input type="hidden" name="FolderId" value="@Model.FolderId" />
+    }
+
+    <div class="form-row">
+        <label asp-for="RoomId">Χώρος απογραφής</label>
+        <select asp-for="RoomId" asp-items="Model.Rooms" disabled="@(Model.RoomSessionId.HasValue)">
+            <option value="">-- επίλεξε χώρο --</option>
+        </select>
+        @if (Model.RoomSessionId.HasValue)
+        {
+            <input type="hidden" name="RoomId" value="@Model.RoomId" />
+            <input type="hidden" name="RoomSessionId" value="@Model.RoomSessionId" />
+        }
+    </div>
+
+    <div class="actions">
+        <button class="btn" type="submit">Φόρτωση χώρου</button>
+    </div>
+</form>
+
+@if (!Model.RoomId.HasValue)
+{
+    <section class="card empty-state">
+        <h2>Επίλεξε χώρο για να ξεκινήσεις</h2>
+        <p>
+            Για αποθήκευση προόδου, άνοιξε τον χώρο μέσα από έναν φάκελο απογραφής.
+        </p>
+    </section>
+}
+else
+{
+    @if (Model.IsFolderMode)
+    {
+        <section class="card room-audit-folder-banner">
+            <div>
+                <strong>@Model.Folder!.Title</strong>
+                <span>
+                    Κατάσταση χώρου:
+                    @(Model.RoomSession!.IsFinalized ? "Οριστικοποιημένος" : "Πρόχειρος")
+                    · Σαρώσεις αποθηκευμένες: @Model.SavedScans.Count
+                </span>
+            </div>
+
+            <div class="actions">
+                @if (!Model.RoomSession!.IsFinalized && !Model.Folder!.IsFinalized)
+                {
+                    <form method="post" asp-page-handler="FinalizeRoom" asp-route-roomSessionId="@Model.RoomSession.Id"
+                          onsubmit="return confirm('Οριστικοποίηση απογραφής χώρου; Μετά θα κλειδώσει.');">
+                        <button class="btn" type="submit">Οριστικοποίηση χώρου</button>
+                    </form>
+
+                    <form method="post" asp-page-handler="ClearRoomScans" asp-route-roomSessionId="@Model.RoomSession.Id"
+                          onsubmit="return confirm('Να καθαριστούν όλες οι σαρώσεις αυτού του χώρου;');">
+                        <button class="btn secondary" type="submit">Καθαρισμός σαρώσεων</button>
+                    </form>
+                }
+                else if (Model.RoomSession!.IsFinalized && !Model.Folder!.IsFinalized)
+                {
+                    <form method="post" asp-page-handler="ReopenRoom" asp-route-roomSessionId="@Model.RoomSession.Id"
+                          onsubmit="return confirm('Άνοιγμα χώρου ξανά για διορθώσεις;');">
+                        <button class="btn secondary" type="submit">Άνοιγμα για διορθώσεις</button>
+                    </form>
+                }
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="alert warning">
+            Live λειτουργία χωρίς φάκελο. Οι σαρώσεις δεν θα αποθηκευτούν στη βάση. Για επίσημη απογραφή άνοιξε χώρο μέσα από φάκελο απογραφής.
+        </div>
+    }
+
+    @if (Model.IsLocked)
+    {
+        <div class="alert warning">
+            Ο χώρος ή ο φάκελος είναι οριστικοποιημένος. Η σάρωση είναι κλειδωμένη.
+        </div>
+    }
+
+    <section class="room-audit-summary-grid">
+        <article class="card room-audit-stat">
+            <span>Χώρος</span>
+            <strong>@Model.SelectedRoomName</strong>
+        </article>
+
+        <article class="card room-audit-stat">
+            <span>Αναμενόμενα</span>
+            <strong id="expectedCount">@Model.ExpectedItems.Count</strong>
+        </article>
+
+        <article class="card room-audit-stat success">
+            <span>Βρέθηκαν</span>
+            <strong id="foundCount">@Model.RoomSession?.FoundItemsCount ?? 0</strong>
+        </article>
+
+        <article class="card room-audit-stat warning">
+            <span>Λείπουν</span>
+            <strong id="missingCount">@(Model.RoomSession?.MissingItemsCount ?? Model.ExpectedItems.Count)</strong>
+        </article>
+
+        <article class="card room-audit-stat danger">
+            <span>Άλλου χώρου / άγνωστα</span>
+            <strong id="wrongCount">@((Model.RoomSession?.WrongRoomItemsCount ?? 0) + (Model.RoomSession?.UnknownItemsCount ?? 0))</strong>
+        </article>
+    </section>
+
+    <section class="room-audit-grid">
+        <article class="card room-audit-scan-card no-print">
+            <div class="section-title-row">
+                <div>
+                    <h2>Σάρωση</h2>
+                    <p class="muted">
+                        Σκάναρε QR ή γράψε AssetCode / URL.
+                        @(Model.IsFolderMode ? "Η πρόοδος αποθηκεύεται στον φάκελο." : "Live λειτουργία χωρίς αποθήκευση.")
+                    </p>
+                </div>
+            </div>
+
+            <div class="room-audit-camera-box">
+                <video id="qrVideo" playsinline muted></video>
+                <div id="qrCameraPlaceholder" class="room-audit-camera-placeholder">
+                    <strong>Η κάμερα δεν έχει ξεκινήσει</strong>
+                    <span>Η χειροκίνητη αναζήτηση δουλεύει πάντα. Η κάμερα μπορεί να απαιτεί HTTPS σε κινητά.</span>
+                </div>
+            </div>
+
+            <div class="actions room-audit-camera-actions">
+                <button type="button" class="btn" id="startCameraBtn" @(Model.IsLocked ? "disabled" : "")>Έναρξη κάμερας</button>
+                <button type="button" class="btn secondary" id="stopCameraBtn" disabled>Διακοπή</button>
+            </div>
+
+            <div class="form-row room-audit-manual">
+                <label for="manualCode">Χειροκίνητος κωδικός / QR URL</label>
+                <input id="manualCode" placeholder="π.χ. SIM-2026-000123 ή /q/SIM-2026-000123" @(Model.IsLocked ? "disabled" : "") />
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn" id="manualLookupBtn" @(Model.IsLocked ? "disabled" : "")>Έλεγχος</button>
+                <button type="button" class="btn secondary" id="resetAuditBtn" @(Model.IsLocked ? "disabled" : "")>Μηδενισμός οθόνης</button>
+                <button type="button" class="btn secondary" onclick="window.print()">Εκτύπωση αποτελέσματος</button>
+            </div>
+
+            <div id="scannerStatus" class="room-audit-status muted">
+                Έτοιμο για σάρωση.
+            </div>
+
+            <div id="lastScanResult" class="room-audit-last-result">
+                Περιμένω QR.
+            </div>
+        </article>
+
+        <article class="card room-audit-list-card">
+            <div class="section-title-row">
+                <div>
+                    <h2>Αναμενόμενα αντικείμενα</h2>
+                    <p class="muted">Τα αντικείμενα που είναι δηλωμένα στον χώρο.</p>
+                </div>
+            </div>
+
+            @if (!Model.ExpectedItems.Any())
+            {
+                <div class="empty-state compact">
+                    <h3>Δεν υπάρχουν αντικείμενα για αυτόν τον χώρο</h3>
+                    <p>Ίσως ο χώρος είναι κενός ή δεν έχει γίνει ακόμα καταχώριση.</p>
+                </div>
+            }
+            else
+            {
+                <div class="room-audit-expected-list" id="expectedList">
+                    @foreach (var item in Model.ExpectedItems)
+                    {
+                        <div class="room-audit-row pending" data-item-id="@item.Id">
+                            <div>
+                                <strong>@item.Name</strong>
+                                <span>@item.AssetCode · @item.CategoryName</span>
+                                @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+                                {
+                                    <small>SN: @item.SerialNumber</small>
+                                }
+                            </div>
+                            <b class="status-pill">Λείπει</b>
+                        </div>
+                    }
+                </div>
+            }
+        </article>
+    </section>
+
+    <section class="room-audit-results-grid">
+        <article class="card">
+            <div class="section-title-row">
+                <div>
+                    <h2>Βρέθηκαν στον χώρο</h2>
+                    <p class="muted">Σκαναρισμένα αντικείμενα που ανήκουν εδώ.</p>
+                </div>
+            </div>
+            <div id="foundList" class="room-audit-result-list">
+                <span class="muted">Δεν έχει βρεθεί ακόμα αντικείμενο.</span>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="section-title-row">
+                <div>
+                    <h2>Εκτός χώρου / άγνωστα</h2>
+                    <p class="muted">Αντικείμενα που βρέθηκαν εδώ αλλά είναι δηλωμένα αλλού ή δεν αναγνωρίστηκαν.</p>
+                </div>
+            </div>
+            <div id="wrongList" class="room-audit-result-list">
+                <span class="muted">Δεν υπάρχουν τέτοιες σαρώσεις.</span>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="section-title-row">
+                <div>
+                    <h2>Λείπουν ακόμα</h2>
+                    <p class="muted">Αναμενόμενα αντικείμενα που δεν έχουν σκαναριστεί.</p>
+                </div>
+            </div>
+            <div id="missingList" class="room-audit-result-list">
+                <span class="muted">Θα ενημερωθεί μετά την πρώτη σάρωση.</span>
+            </div>
+        </article>
+    </section>
+
+    <script>
+        window.roomAuditData = {
+            selectedRoomId: @Model.RoomId.Value,
+            selectedRoomName: @Html.Raw(JsonSerializer.Serialize(Model.SelectedRoomName)),
+            roomSessionId: @(Model.RoomSessionId?.ToString() ?? "null"),
+            isLocked: @(Model.IsLocked ? "true" : "false"),
+            expectedItems: @Html.Raw(expectedJson),
+            savedScans: @Html.Raw(savedJson)
+        };
+    </script>
+}
+
+<style>
+    .room-audit-picker {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1rem;
+    }
+
+    .room-audit-picker .form-row {
+        min-width: 320px;
+        margin: 0;
+    }
+
+    .room-audit-folder-banner {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-color: rgba(34, 211, 238, 0.24);
+    }
+
+    .room-audit-folder-banner strong,
+    .room-audit-folder-banner span {
+        display: block;
+    }
+
+    .room-audit-folder-banner strong {
+        color: #f8fafc;
+    }
+
+    .room-audit-folder-banner span {
+        color: #94a3b8;
+        margin-top: 0.2rem;
+    }
+
+    .room-audit-summary-grid {
+        display: grid;
+        grid-template-columns: 1.35fr repeat(4, minmax(130px, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .room-audit-stat {
+        padding: 1rem;
+    }
+
+    .room-audit-stat span,
+    .room-audit-stat strong {
+        display: block;
+    }
+
+    .room-audit-stat span {
+        color: #94a3b8;
+        font-size: 0.78rem;
+        font-weight: 850;
+    }
+
+    .room-audit-stat strong {
+        color: #f8fafc;
+        font-size: 1.5rem;
+        margin-top: 0.25rem;
+        overflow-wrap: anywhere;
+    }
+
+    .room-audit-stat.success {
+        border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    .room-audit-stat.warning {
+        border-color: rgba(245, 158, 11, 0.28);
+    }
+
+    .room-audit-stat.danger {
+        border-color: rgba(248, 113, 113, 0.28);
+    }
+
+    .room-audit-grid {
+        display: grid;
+        grid-template-columns: minmax(340px, 0.85fr) minmax(420px, 1.15fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .room-audit-camera-box {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        border-radius: 22px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at center, rgba(34, 211, 238, 0.12), transparent 46%),
+            rgba(2, 6, 23, 0.72);
+    }
+
+    #qrVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+
+    .room-audit-camera-placeholder {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        text-align: center;
+        padding: 1.5rem;
+        color: #94a3b8;
+    }
+
+    .room-audit-camera-placeholder strong,
+    .room-audit-camera-placeholder span {
+        display: block;
+    }
+
+    .room-audit-camera-placeholder strong {
+        color: #f8fafc;
+        margin-bottom: 0.4rem;
+    }
+
+    .room-audit-camera-actions,
+    .room-audit-manual {
+        margin-top: 0.9rem;
+    }
+
+    .room-audit-status {
+        margin-top: 0.75rem;
+        font-weight: 800;
+    }
+
+    .room-audit-last-result {
+        margin-top: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 16px;
+        padding: 0.85rem;
+        background: rgba(2, 6, 23, 0.26);
+        color: #94a3b8;
+    }
+
+    .room-audit-last-result.found {
+        border-color: rgba(34, 197, 94, 0.28);
+        color: #bbf7d0;
+    }
+
+    .room-audit-last-result.wrong,
+    .room-audit-last-result.unknown {
+        border-color: rgba(248, 113, 113, 0.28);
+        color: #fecaca;
+    }
+
+    .room-audit-expected-list,
+    .room-audit-result-list {
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .room-audit-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 16px;
+        padding: 0.75rem 0.85rem;
+        background: rgba(2, 6, 23, 0.30);
+    }
+
+    .room-audit-row strong,
+    .room-audit-row span,
+    .room-audit-row small {
+        display: block;
+    }
+
+    .room-audit-row strong {
+        color: #f8fafc;
+        font-size: 0.93rem;
+    }
+
+    .room-audit-row span,
+    .room-audit-row small {
+        color: #94a3b8;
+        font-size: 0.78rem;
+        margin-top: 0.15rem;
+    }
+
+    .room-audit-row.found {
+        border-color: rgba(34, 197, 94, 0.32);
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    .room-audit-row.wrong,
+    .room-audit-row.unknown {
+        border-color: rgba(248, 113, 113, 0.32);
+        background: rgba(248, 113, 113, 0.08);
+    }
+
+    .status-pill {
+        min-width: 74px;
+        text-align: center;
+        padding: 0.28rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(245, 158, 11, 0.14);
+        color: #fed7aa;
+        font-size: 0.72rem;
+    }
+
+    .room-audit-row.found .status-pill {
+        background: rgba(34, 197, 94, 0.14);
+        color: #bbf7d0;
+    }
+
+    .room-audit-results-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    @@media (max-width: 1050px) {
+        .room-audit-summary-grid,
+        .room-audit-grid,
+        .room-audit-results-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .room-audit-picker,
+        .room-audit-folder-banner {
+            display: block;
+        }
+
+        .room-audit-picker .actions,
+        .room-audit-folder-banner .actions {
+            margin-top: 0.75rem;
+        }
+    }
+
+    @@media print {
+        .topbar,
+        .footer,
+        .mobile-bottom-nav,
+        .room-audit-scan-card,
+        .room-audit-picker,
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: #ffffff !important;
+            color: #111827 !important;
+        }
+
+        .container,
+        main {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .card {
+            background: #ffffff !important;
+            color: #111827 !important;
+            box-shadow: none !important;
+            border: 1px solid #111827 !important;
+        }
+
+        .room-audit-summary-grid,
+        .room-audit-results-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .room-audit-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .room-audit-row strong,
+        .room-audit-stat strong,
+        .section-title-row h2 {
+            color: #111827 !important;
+        }
+
+        .room-audit-row span,
+        .room-audit-row small,
+        .room-audit-stat span,
+        .muted {
+            color: #374151 !important;
+        }
+
+        @@page {
+            size: A4 portrait;
+            margin: 12mm;
+        }
+    }
+</style>
+
+@section Scripts {
+@if (Model.RoomId.HasValue)
+{
+<script>
+    const audit = {
+        selectedRoomId: window.roomAuditData.selectedRoomId,
+        roomSessionId: window.roomAuditData.roomSessionId,
+        isLocked: window.roomAuditData.isLocked,
+        expectedItems: window.roomAuditData.expectedItems || [],
+        savedScans: window.roomAuditData.savedScans || [],
+        foundIds: new Set(),
+        wrongItems: [],
+        unknownCodes: [],
+        lastScannedText: "",
+        lastScannedAt: 0,
+        stream: null,
+        detector: null,
+        timer: null
+    };
+
+    const expectedById = new Map(audit.expectedItems.map(item => [item.id, item]));
+
+    const video = document.getElementById("qrVideo");
+    const placeholder = document.getElementById("qrCameraPlaceholder");
+    const scannerStatus = document.getElementById("scannerStatus");
+    const startBtn = document.getElementById("startCameraBtn");
+    const stopBtn = document.getElementById("stopCameraBtn");
+    const manualInput = document.getElementById("manualCode");
+    const manualBtn = document.getElementById("manualLookupBtn");
+    const resetBtn = document.getElementById("resetAuditBtn");
+    const lastScanResult = document.getElementById("lastScanResult");
+
+    function setStatus(message) {
+        scannerStatus.textContent = message;
+    }
+
+    function hydrateSavedScans() {
+        audit.savedScans.forEach(scan => {
+            if (scan.status === "Found" && scan.itemId) {
+                audit.foundIds.add(scan.itemId);
+                markExpectedRow(scan.itemId, true);
+            } else if (scan.status === "WrongRoom") {
+                audit.wrongItems.push({
+                    itemId: scan.itemId,
+                    code: scan.code,
+                    name: scan.name,
+                    roomName: scan.roomName,
+                    categoryName: scan.categoryName,
+                    serialNumber: scan.serialNumber
+                });
+            } else if (scan.status === "Unknown") {
+                audit.unknownCodes.push(scan.code);
+            }
+        });
+
+        renderLists();
+    }
+
+    async function lookupCode(value) {
+        if (audit.isLocked) {
+            renderLastResult("Η απογραφή χώρου είναι κλειδωμένη.", "wrong");
+            return;
+        }
+
+        const code = (value || "").trim();
+
+        if (!code) {
+            renderLastResult("Δεν δόθηκε κωδικός.", "unknown");
+            return;
+        }
+
+        try {
+            let url = `?handler=Lookup&code=${encodeURIComponent(code)}`;
+
+            if (audit.roomSessionId) {
+                url += `&roomSessionId=${encodeURIComponent(audit.roomSessionId)}`;
+            }
+
+            const response = await fetch(url, {
+                headers: { "Accept": "application/json" }
+            });
+
+            if (!response.ok) {
+                renderLastResult("Δεν μπόρεσε να γίνει έλεγχος του QR.", "unknown");
+                return;
+            }
+
+            const data = await response.json();
+            handleLookupResult(data, code);
+        } catch (error) {
+            console.error(error);
+            renderLastResult("Σφάλμα κατά τον έλεγχο του QR.", "unknown");
+        }
+    }
+
+    function handleLookupResult(data, rawCode) {
+        if (!data.found) {
+            const code = data.code || rawCode || "Άγνωστο QR";
+            if (!audit.unknownCodes.includes(code)) {
+                audit.unknownCodes.push(code);
+            }
+
+            renderLastResult((data.message || "Δεν βρέθηκε αντικείμενο.") + (data.persisted ? " Αποθηκεύτηκε ως άγνωστο." : ""), "unknown");
+            renderLists();
+            return;
+        }
+
+        if (data.roomId === audit.selectedRoomId) {
+            audit.foundIds.add(data.itemId);
+            markExpectedRow(data.itemId, true);
+            renderLastResult(`Βρέθηκε σωστά: ${data.name}${data.persisted ? " · αποθηκεύτηκε" : ""}`, "found");
+        } else {
+            const alreadyExists = audit.wrongItems.some(item => item.itemId === data.itemId);
+            if (!alreadyExists) {
+                audit.wrongItems.push(data);
+            }
+
+            renderLastResult(`Βρέθηκε εδώ, αλλά είναι δηλωμένο σε άλλο χώρο: ${data.roomName}${data.persisted ? " · αποθηκεύτηκε" : ""}`, "wrong");
+        }
+
+        renderLists();
+    }
+
+    function markExpectedRow(itemId, found) {
+        const row = document.querySelector(`.room-audit-row[data-item-id="${itemId}"]`);
+        if (!row) {
+            return;
+        }
+
+        row.classList.toggle("found", found);
+        row.classList.toggle("pending", !found);
+
+        const pill = row.querySelector(".status-pill");
+        if (pill) {
+            pill.textContent = found ? "Βρέθηκε" : "Λείπει";
+        }
+    }
+
+    function renderLastResult(message, type) {
+        lastScanResult.className = `room-audit-last-result ${type || ""}`;
+        lastScanResult.textContent = message;
+    }
+
+    function renderLists() {
+        document.getElementById("foundCount").textContent = audit.foundIds.size;
+        document.getElementById("missingCount").textContent = audit.expectedItems.length - audit.foundIds.size;
+        document.getElementById("wrongCount").textContent = audit.wrongItems.length + audit.unknownCodes.length;
+
+        renderFoundList();
+        renderWrongList();
+        renderMissingList();
+    }
+
+    function renderFoundList() {
+        const target = document.getElementById("foundList");
+        const found = audit.expectedItems.filter(item => audit.foundIds.has(item.id));
+
+        if (found.length === 0) {
+            target.innerHTML = '<span class="muted">Δεν έχει βρεθεί ακόμα αντικείμενο.</span>';
+            return;
+        }
+
+        target.innerHTML = found.map(item => rowHtml(item, "found", "Βρέθηκε")).join("");
+    }
+
+    function renderWrongList() {
+        const target = document.getElementById("wrongList");
+        const rows = [];
+
+        audit.wrongItems.forEach(item => {
+            rows.push(`
+                <div class="room-audit-row wrong">
+                    <div>
+                        <strong>${escapeHtml(item.name)}</strong>
+                        <span>${escapeHtml(item.code)} · δηλωμένο σε: ${escapeHtml(item.roomName || "-")}</span>
+                        <small>${escapeHtml(item.categoryName || "-")}</small>
+                    </div>
+                    <b class="status-pill">Άλλος χώρος</b>
+                </div>
+            `);
+        });
+
+        audit.unknownCodes.forEach(code => {
+            rows.push(`
+                <div class="room-audit-row unknown">
+                    <div>
+                        <strong>Άγνωστο QR</strong>
+                        <span>${escapeHtml(code)}</span>
+                    </div>
+                    <b class="status-pill">Άγνωστο</b>
+                </div>
+            `);
+        });
+
+        target.innerHTML = rows.length === 0
+            ? '<span class="muted">Δεν υπάρχουν τέτοιες σαρώσεις.</span>'
+            : rows.join("");
+    }
+
+    function renderMissingList() {
+        const target = document.getElementById("missingList");
+        const missing = audit.expectedItems.filter(item => !audit.foundIds.has(item.id));
+
+        if (missing.length === 0) {
+            target.innerHTML = '<span class="muted">Δεν λείπει κανένα αντικείμενο από τον χώρο.</span>';
+            return;
+        }
+
+        target.innerHTML = missing.map(item => rowHtml(item, "pending", "Λείπει")).join("");
+    }
+
+    function rowHtml(item, className, status) {
+        return `
+            <div class="room-audit-row ${className}">
+                <div>
+                    <strong>${escapeHtml(item.name)}</strong>
+                    <span>${escapeHtml(item.assetCode)} · ${escapeHtml(item.categoryName || "-")}</span>
+                    ${item.serialNumber ? `<small>SN: ${escapeHtml(item.serialNumber)}</small>` : ""}
+                </div>
+                <b class="status-pill">${escapeHtml(status)}</b>
+            </div>
+        `;
+    }
+
+    async function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setStatus("Ο browser δεν υποστηρίζει πρόσβαση στην κάμερα.");
+            return;
+        }
+
+        if (!("BarcodeDetector" in window)) {
+            setStatus("Ο browser δεν υποστηρίζει BarcodeDetector. Χρησιμοποίησε χειροκίνητη αναζήτηση ή εξωτερικό QR scanner.");
+            return;
+        }
+
+        try {
+            audit.detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+            audit.stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: "environment" },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            });
+
+            video.srcObject = audit.stream;
+            video.style.display = "block";
+            placeholder.style.display = "none";
+
+            await video.play();
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            setStatus("Η κάμερα λειτουργεί. Στόχευσε το QR.");
+
+            scanLoop();
+        } catch (error) {
+            console.error(error);
+            setStatus("Δεν μπόρεσε να ανοίξει η κάμερα. Σε κινητό με HTTP/IP ίσως χρειάζεται HTTPS.");
+        }
+    }
+
+    function stopCamera() {
+        if (audit.timer) {
+            clearTimeout(audit.timer);
+            audit.timer = null;
+        }
+
+        if (audit.stream) {
+            audit.stream.getTracks().forEach(track => track.stop());
+            audit.stream = null;
+        }
+
+        video.pause();
+        video.srcObject = null;
+        video.style.display = "none";
+        placeholder.style.display = "grid";
+
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        setStatus("Η κάμερα σταμάτησε.");
+    }
+
+    async function scanLoop() {
+        if (!audit.stream || !audit.detector) {
+            return;
+        }
+
+        try {
+            const barcodes = await audit.detector.detect(video);
+
+            if (barcodes && barcodes.length > 0) {
+                const rawValue = barcodes[0].rawValue;
+                const now = Date.now();
+
+                if (rawValue && (rawValue !== audit.lastScannedText || now - audit.lastScannedAt > 3000)) {
+                    audit.lastScannedText = rawValue;
+                    audit.lastScannedAt = now;
+                    setStatus("QR εντοπίστηκε. Έλεγχος...");
+                    await lookupCode(rawValue);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            setStatus("Σφάλμα κατά τη σάρωση.");
+        }
+
+        audit.timer = setTimeout(scanLoop, 450);
+    }
+
+    function resetAuditScreenOnly() {
+        audit.foundIds.clear();
+        audit.wrongItems = [];
+        audit.unknownCodes = [];
+
+        document.querySelectorAll(".room-audit-row[data-item-id]").forEach(row => {
+            row.classList.remove("found");
+            row.classList.add("pending");
+            const pill = row.querySelector(".status-pill");
+            if (pill) {
+                pill.textContent = "Λείπει";
+            }
+        });
+
+        manualInput.value = "";
+        renderLastResult("Η οθόνη μηδενίστηκε. Οι αποθηκευμένες σαρώσεις στη βάση δεν διαγράφηκαν.", "");
+        renderLists();
+    }
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    startBtn?.addEventListener("click", startCamera);
+    stopBtn?.addEventListener("click", stopCamera);
+
+    manualBtn?.addEventListener("click", function () {
+        lookupCode(manualInput.value);
+    });
+
+    manualInput?.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            lookupCode(manualInput.value);
+        }
+    });
+
+    resetBtn?.addEventListener("click", resetAuditScreenOnly);
+
+    hydrateSavedScans();
+</script>
+}
+}

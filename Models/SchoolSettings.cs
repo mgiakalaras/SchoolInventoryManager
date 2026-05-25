@@ -19,6 +19,10 @@ public class SchoolSettings
     [StringLength(250)]
     public string? Address { get; set; }
 
+    [Display(Name = "Διεύθυνση εφαρμογής στο τοπικό δίκτυο")]
+    [StringLength(300)]
+    public string? ApplicationBaseUrl { get; set; }
+
     [Display(Name = "Σχολικό έτος")]
     [StringLength(20)]
     public string SchoolYear { get; set; } = "2025-2026";

@@ -9,5 +9,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
     <PackageReference Include="ClosedXML" Version="0.102.3" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 </Project>

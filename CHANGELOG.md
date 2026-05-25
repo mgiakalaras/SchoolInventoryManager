@@ -4,6 +4,100 @@ All notable changes to School Inventory Manager are documented in this file.
 
 ---
 
+## v0.5.0 - QR inventory labels and audit folders
+
+### Added
+
+- Added QR identity foundation for inventory items.
+- Added automatic `AssetCode` generation for inventory items.
+- Added `QrToken` support.
+- Added automatic backfill for existing inventory items.
+- Added Application Base URL setting for QR code generation.
+- Added Settings action to use the current application URL as QR base URL.
+- Added read-only QR item card page:
+  - `/Items/Qr/{code}`
+- Added short QR redirect route:
+  - `/q/{code}`
+- Added QR label center:
+  - `/Labels/Qr`
+- Added QR label filtering by:
+  - search
+  - room
+  - category
+  - active/inactive status
+- Added QR label pagination.
+- Added selected QR label printing.
+- Added Typotrust TL2111 label layout:
+  - A4
+  - 21 labels per page
+  - 3 columns x 7 rows
+  - 70mm x 42.3mm
+- Added PNG QR rendering for more reliable browser print scaling.
+- Added QR scan page:
+  - `/Audit/Scan`
+- Added manual QR lookup by AssetCode or full QR URL.
+- Added camera scanning using browser BarcodeDetector where supported.
+- Added recent scans list.
+- Added room-based QR audit page:
+  - `/Audit/Room`
+- Added live counters for room QR audit:
+  - expected
+  - found
+  - missing
+  - wrong room
+  - unknown QR
+- Added inventory audit folder module.
+- Added inventory audit folder creation.
+- Added automatic room sessions for rooms with active items.
+- Added saved QR room audit progress.
+- Added `InventoryAuditScanLogs` table.
+- Added scan log persistence per room session.
+- Added reload of saved room scan progress after refresh.
+- Added room finalization.
+- Added reopening room audit while folder is still draft.
+- Added clearing room scans while not finalized.
+- Added folder finalization.
+- Added blocking of folder finalization while room sessions remain open.
+- Added school settings snapshot for audit folders.
+- Added `SchoolType` snapshot on inventory audit folders.
+- Added menu reorganization for clearer workflows.
+
+### Changed
+
+- QR codes now use short `/q/{code}` URLs for better scan reliability.
+- QR label print layout was calibrated for Typotrust TL2111 sheets.
+- QR labels include inventory date from School Settings.
+- Inventory audit folder creation now pulls school data from School Settings instead of asking the user to type it manually.
+- Audit folder creation now shows school details as read-only snapshot data.
+- Audit folder details now show school type.
+- Dashboard links were updated to include QR labels, QR scan and room audit workflow.
+- Menu structure was reorganized into clearer groups:
+  - βασικά
+  - απογραφή QR
+  - τεχνικά / απόθεμα
+  - διαχείριση
+
+### Fixed
+
+- Fixed QR label rendering issue where inline SVG could overlap the label text.
+- Fixed QR label print layout showing 2 columns instead of 3 in browser print preview.
+- Fixed QR label column flow for Typotrust TL2111 labels.
+- Fixed print top offset calibration for the selected label sheet.
+- Fixed missing `SchoolType` column issue on existing databases through schema upgrade.
+- Fixed QR item page Razor CSS escaping issues.
+- Fixed QR PNG color overload build issue with the installed QRCoder version.
+
+### Notes
+
+- Mobile/tablet QR URL opening works when the device is on the same network/VPN and `ApplicationBaseUrl` is configured correctly.
+- In-browser camera scanning on mobile may require HTTPS depending on browser/security policy.
+- External QR scanner / camera apps can open the QR URL directly.
+- The app remains in school testing phase.
+- Recommended usage remains local network only.
+- Backup is recommended before updating existing deployments.
+
+---
+
 ## v0.4.0 - Technical identity, spare parts stock and dashboard refresh
 
 ### Added
@@ -33,7 +127,6 @@ All notable changes to School Inventory Manager are documented in this file.
 - Added reference entries for processors, RAM, storage, disk types, GPUs, operating systems and power supplies.
 - Added manual entry support for missing technical references.
 - Added spare parts / consumables stock module.
-- Added stock categories for RAM, CPU, storage, power supplies, laptop chargers, keyboards, mice, cables, UPS, network parts and other items.
 - Added stock quantity tracking.
 - Added minimum stock threshold.
 - Added low stock indication.
@@ -46,12 +139,6 @@ All notable changes to School Inventory Manager are documented in this file.
 - Added spare part usage history page.
 - Added technical audit report.
 - Added detection for technical devices based on equipment/category names.
-- Added checks for:
-  - missing technical specs
-  - RAM below configurable threshold
-  - HDD / unknown storage
-  - old operating systems
-  - interactive displays without OPS / mini PC specs
 - Added clean printable technical audit report.
 - Added Excel export for technical audit.
 - Added clean printable spare parts stock report.
@@ -86,12 +173,6 @@ All notable changes to School Inventory Manager are documented in this file.
 - Fixed maintenance cleanup foreign key issue caused by destruction records.
 - Fixed technical audit print layout so it does not print the raw dashboard HTML.
 - Fixed dashboard donut layout issues from previous experimental layouts.
-
-### Notes
-
-- No manual EF migration is required for the new lightweight schema upgrades.
-- The app remains in school testing phase.
-- Recommended usage remains local network only.
 
 ---
 

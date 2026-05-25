@@ -1,0 +1,198 @@
+@page "{id:int}"
+@model SchoolInventoryManager.Pages.InventoryAudits.DetailsModel
+
+@{
+    ViewData["Title"] = Model.Folder?.Title ?? "Φάκελος απογραφής";
+    var folder = Model.Folder!;
+}
+
+<section class="page-header">
+    <div>
+        <span class="hero-kicker">Φάκελος απογραφής</span>
+        <h1>@folder.Title</h1>
+        <p>
+            @folder.SchoolName · @(string.IsNullOrWhiteSpace(folder.SchoolType) ? "Σχολική μονάδα" : folder.SchoolType) · @folder.SchoolYear · @folder.AuditDate.ToString("dd/MM/yyyy")
+        </p>
+    </div>
+
+    <div class="actions">
+        <a class="btn secondary" asp-page="./Index">Φάκελοι</a>
+        <a class="btn secondary" asp-page="/Audit/Room" asp-route-FolderId="@folder.Id">Απογραφή χώρου QR</a>
+
+        <form method="post" asp-page-handler="Recalculate" asp-route-id="@folder.Id">
+            <button class="btn secondary" type="submit">Ενημέρωση συνόλων</button>
+        </form>
+
+        @if (!folder.IsFinalized)
+        {
+            <form method="post" asp-page-handler="Finalize" asp-route-id="@folder.Id"
+                  onsubmit="return confirm('Οριστικοποίηση φακέλου; Μετά θα θεωρείται κλειδωμένος.');">
+                <button class="btn" type="submit">Οριστικοποίηση φακέλου</button>
+            </form>
+        }
+    </div>
+</section>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert success">@message</div>
+}
+
+@if (TempData["Warning"] is string warning)
+{
+    <div class="alert warning">@warning</div>
+}
+
+<section class="audit-folder-kpis">
+    <article class="card metric-card">
+        <span>Αναμενόμενα</span>
+        <strong>@Model.TotalExpected</strong>
+    </article>
+
+    <article class="card metric-card success">
+        <span>Βρέθηκαν</span>
+        <strong>@Model.TotalFound</strong>
+    </article>
+
+    <article class="card metric-card warning">
+        <span>Λείπουν</span>
+        <strong>@Model.TotalMissing</strong>
+    </article>
+
+    <article class="card metric-card danger">
+        <span>Θέματα</span>
+        <strong>@Model.TotalProblems</strong>
+    </article>
+
+    <article class="card metric-card">
+        <span>Χώροι κλειστοί</span>
+        <strong>@Model.FinalizedRooms / @folder.RoomSessions.Count</strong>
+    </article>
+
+    <article class="card metric-card">
+        <span>Κατάσταση</span>
+        <strong>@(folder.IsFinalized ? "Κλειστός" : "Πρόχειρος")</strong>
+    </article>
+</section>
+
+<section class="card">
+    <div class="section-title-row">
+        <div>
+            <h2>Χώροι φακέλου</h2>
+            <p class="muted">
+                Άνοιξε κάθε χώρο, σκάναρε τα QR, αποθήκευσε την πρόοδο και οριστικοποίησε τον χώρο όταν ολοκληρωθεί.
+            </p>
+        </div>
+    </div>
+
+    @if (!folder.RoomSessions.Any())
+    {
+        <div class="empty-state">
+            <h3>Δεν υπάρχουν χώροι στον φάκελο</h3>
+            <p>Πιθανόν δεν υπήρχαν ενεργά αντικείμενα κατά τη δημιουργία του φακέλου.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Χώρος</th>
+                        <th>Αναμενόμενα</th>
+                        <th>Βρέθηκαν</th>
+                        <th>Λείπουν</th>
+                        <th>Θέματα</th>
+                        <th>Σαρώσεις</th>
+                        <th>Κατάσταση</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var session in folder.RoomSessions.OrderBy(x => x.RoomNameSnapshot))
+                {
+                    var problems = session.WrongRoomItemsCount + session.UnknownItemsCount;
+                    var scans = session.ScanLogs?.Count ?? 0;
+
+                    <tr>
+                        <td>
+                            <strong>@session.RoomNameSnapshot</strong>
+                            @if (session.CompletedAt.HasValue)
+                            {
+                                <br />
+                                <span class="muted">Ολοκλήρωση: @session.CompletedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            }
+                        </td>
+                        <td>@session.ExpectedItemsCount</td>
+                        <td>@session.FoundItemsCount</td>
+                        <td>@session.MissingItemsCount</td>
+                        <td>@problems</td>
+                        <td>@scans</td>
+                        <td>
+                            <span class="badge @(session.IsFinalized ? "badge-success" : "badge-warning")">
+                                @(session.IsFinalized ? "Οριστικοποιημένος" : "Πρόχειρος")
+                            </span>
+                        </td>
+                        <td>
+                            @if (session.RoomId.HasValue)
+                            {
+                                <a class="btn small secondary"
+                                   asp-page="/Audit/Room"
+                                   asp-route-FolderId="@folder.Id"
+                                   asp-route-RoomSessionId="@session.Id"
+                                   asp-route-RoomId="@session.RoomId">
+                                    Άνοιγμα
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<style>
+    .audit-folder-kpis {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .metric-card span,
+    .metric-card strong {
+        display: block;
+    }
+
+    .metric-card span {
+        color: #94a3b8;
+        font-size: 0.78rem;
+        font-weight: 850;
+    }
+
+    .metric-card strong {
+        color: #f8fafc;
+        font-size: 1.4rem;
+        margin-top: 0.25rem;
+    }
+
+    .metric-card.success {
+        border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    .metric-card.warning {
+        border-color: rgba(245, 158, 11, 0.28);
+    }
+
+    .metric-card.danger {
+        border-color: rgba(248, 113, 113, 0.28);
+    }
+
+    @@media (max-width: 1100px) {
+        .audit-folder-kpis {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>

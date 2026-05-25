@@ -23,8 +23,12 @@ public class IndexModel : PageModel
     [BindProperty]
     public IFormFile? LogoFile { get; set; }
 
+    public string CurrentRequestBaseUrl { get; set; } = string.Empty;
+
     public async Task OnGetAsync()
     {
+        CurrentRequestBaseUrl = BuildCurrentRequestBaseUrl();
+
         Settings = await _db.SchoolSettings.FirstAsync();
         if (Settings.InventoryManagerTitle == "Εκπαιδευτικός ΠΕ86")
         {
@@ -34,6 +38,8 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
+        CurrentRequestBaseUrl = BuildCurrentRequestBaseUrl();
+
         if (!ModelState.IsValid)
         {
             return Page();
@@ -43,6 +49,7 @@ public class IndexModel : PageModel
         existing.SchoolName = Settings.SchoolName;
         existing.SchoolType = Settings.SchoolType;
         existing.Address = Settings.Address;
+        existing.ApplicationBaseUrl = NormalizeBaseUrl(Settings.ApplicationBaseUrl);
         existing.SchoolYear = Settings.SchoolYear;
         existing.InventoryDate = Settings.InventoryDate;
         existing.InventoryManagerName = Settings.InventoryManagerName;
@@ -75,4 +82,31 @@ public class IndexModel : PageModel
         TempData["Message"] = "Τα στοιχεία σχολείου αποθηκεύτηκαν.";
         return RedirectToPage();
     }
+
+
+    public async Task<IActionResult> OnPostUseCurrentBaseUrlAsync()
+    {
+        var existing = await _db.SchoolSettings.FirstAsync();
+        existing.ApplicationBaseUrl = BuildCurrentRequestBaseUrl();
+
+        await _db.SaveChangesAsync();
+
+        TempData["Message"] = $"Η διεύθυνση εφαρμογής για QR codes ορίστηκε σε: {existing.ApplicationBaseUrl}";
+        return RedirectToPage();
+    }
+
+    private string BuildCurrentRequestBaseUrl()
+    {
+        return $"{Request.Scheme}://{Request.Host}{Request.PathBase}".TrimEnd('/');
+    }
+
+    private static string? NormalizeBaseUrl(string? value)
+    {
+        var trimmed = value?.Trim().TrimEnd('/');
+
+        return string.IsNullOrWhiteSpace(trimmed)
+            ? null
+            : trimmed;
+    }
+
 }

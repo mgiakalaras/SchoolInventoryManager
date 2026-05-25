@@ -1,0 +1,87 @@
+@page
+@model SchoolInventoryManager.Pages.InventoryAudits.IndexModel
+
+@{
+    ViewData["Title"] = "Φάκελοι απογραφής";
+}
+
+<section class="page-header">
+    <div>
+        <span class="hero-kicker">Οργανωμένη απογραφή</span>
+        <h1>Φάκελοι απογραφής</h1>
+        <p>Δημιουργείς φάκελο, κάνεις απογραφή ανά χώρο και στο τέλος οριστικοποιείς.</p>
+    </div>
+
+    <div class="actions">
+        <a class="btn" asp-page="./Create">Νέος φάκελος απογραφής</a>
+        <a class="btn secondary" asp-page="/Audit/Room">Live απογραφή χώρου</a>
+    </div>
+</section>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert success">@message</div>
+}
+
+<section class="card">
+    <div class="section-title-row">
+        <div>
+            <h2>Φάκελοι</h2>
+            <p class="muted">Οι φάκελοι λειτουργούν σαν “περίοδοι απογραφής”, π.χ. Μάιος 2026.</p>
+        </div>
+    </div>
+
+    @if (!Model.Folders.Any())
+    {
+        <div class="empty-state">
+            <h3>Δεν υπάρχει ακόμα φάκελος απογραφής</h3>
+            <p>Ξεκίνα δημιουργώντας έναν νέο φάκελο. Θα δημιουργηθούν αυτόματα εγγραφές χώρων με βάση τον ενεργό εξοπλισμό.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Φάκελος</th>
+                        <th>Ημερομηνία</th>
+                        <th>Χώροι</th>
+                        <th>Πρόοδος</th>
+                        <th>Κατάσταση</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var folder in Model.Folders)
+                {
+                    var totalRooms = folder.RoomSessions.Count;
+                    var finalizedRooms = folder.RoomSessions.Count(x => x.IsFinalized);
+                    var expected = folder.RoomSessions.Sum(x => x.ExpectedItemsCount);
+                    var found = folder.RoomSessions.Sum(x => x.FoundItemsCount);
+                    var statusText = folder.IsFinalized ? "Οριστικοποιημένος" : "Πρόχειρος";
+
+                    <tr>
+                        <td>
+                            <strong>@folder.Title</strong><br />
+                            <span class="muted">@folder.SchoolName · @folder.SchoolYear</span>
+                        </td>
+                        <td>@folder.AuditDate.ToString("dd/MM/yyyy")</td>
+                        <td>@totalRooms</td>
+                        <td>
+                            <strong>@found / @expected</strong><br />
+                            <span class="muted">@finalizedRooms / @totalRooms χώροι οριστικοποιημένοι</span>
+                        </td>
+                        <td>
+                            <span class="badge @(folder.IsFinalized ? "badge-success" : "badge-warning")">@statusText</span>
+                        </td>
+                        <td>
+                            <a class="btn small secondary" asp-page="./Details" asp-route-id="@folder.Id">Άνοιγμα</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

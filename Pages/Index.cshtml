@@ -20,6 +20,10 @@
         <a class="btn" asp-page="/Items/Create">+ Νέο αντικείμενο</a>
         <a class="btn secondary" asp-page="/ImportExport/Index">Import / Export</a>
         <a class="btn secondary" asp-page="/Reports/Print">Προβολή αναφοράς</a>
+        <a class="btn secondary" asp-page="/Labels/Qr">QR ετικέτες</a>
+        <a class="btn secondary" asp-page="/Audit/Scan">Σάρωση QR</a>
+        <a class="btn secondary" asp-page="/Audit/Room">Απογραφή χώρου</a>
+        <a class="btn secondary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
     </div>
 </section>
 
@@ -116,6 +120,22 @@
             <a asp-page="/ImportExport/Index">
                 <strong>Import / Export</strong>
                 <span>Excel και CSV</span>
+            </a>
+            <a asp-page="/Labels/Qr">
+                <strong>QR ετικέτες</strong>
+                <span>Προβολή και εκτύπωση QR</span>
+            </a>
+            <a asp-page="/Audit/Scan">
+                <strong>Σάρωση QR</strong>
+                <span>Έλεγχος ύπαρξης αντικειμένου</span>
+            </a>
+            <a asp-page="/Audit/Room">
+                <strong>Απογραφή χώρου QR</strong>
+                <span>Βρέθηκαν, λείπουν, άλλου χώρου</span>
+            </a>
+            <a asp-page="/InventoryAudits/Index">
+                <strong>Φάκελοι απογραφής</strong>
+                <span>Οργάνωση, πρόοδος, οριστικοποίηση</span>
             </a>
             <a asp-page="/Rooms/Create">
                 <strong>Νέος χώρος</strong>
@@ -298,6 +318,10 @@
             <a asp-page="/Reports/Index">
                 <strong>Αναφορές</strong>
                 <span>Εκτύπωση και PDF</span>
+            </a>
+            <a asp-page="/Labels/Qr">
+                <strong>QR απογραφής</strong>
+                <span>Ετικέτες ανά αντικείμενο</span>
             </a>
         </div>
     </article>

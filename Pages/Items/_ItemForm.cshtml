@@ -31,6 +31,23 @@
         <span asp-validation-for="InventoryCategoryId"></span>
     </div>
 
+    @if (!string.IsNullOrWhiteSpace(Model.AssetCode))
+    {
+        <div class="form-row">
+            <label>Κωδικός QR / απογραφής</label>
+            <input value="@Model.AssetCode" readonly />
+            <small class="muted">Δημιουργείται αυτόματα και δεν πρέπει να αλλάζει.</small>
+            <div class="form-mini-actions">
+                <a class="btn small secondary"
+                   asp-page="/Items/Qr"
+                   asp-route-code="@Model.AssetCode"
+                   target="_blank">
+                    Άνοιγμα QR καρτέλας
+                </a>
+            </div>
+        </div>
+    }
+
     <div class="form-row">
         <label asp-for="Name"></label>
         <input asp-for="Name" placeholder="π.χ. Η/Υ, Laptop, Διαδραστικός πίνακας, Βιντεοπροβολέας Epson" />
