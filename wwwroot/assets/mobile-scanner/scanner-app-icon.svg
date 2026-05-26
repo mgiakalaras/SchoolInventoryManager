@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="62" y1="48" x2="448" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111F"/>
+      <stop offset=".55" stop-color="#0B1728"/>
+      <stop offset="1" stop-color="#082F3A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="126" y1="118" x2="392" y2="405" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+  </defs>
+  <rect x="48" y="48" width="416" height="416" rx="104" fill="url(#bg)"/>
+  <rect x="61" y="61" width="390" height="390" rx="92" stroke="url(#accent)" stroke-width="18"/>
+  <path d="M160 186v-34h34M318 152h34v34M352 318v34h-34M194 352h-34v-34" stroke="#22D3EE" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M198 214h28v28h-28v-28ZM258 214h28v28h-28v-28ZM318 214h28v28h-28v-28ZM198 274h28v28h-28v-28ZM258 274h28v28h-28v-28ZM318 274h28v28h-28v-28Z" fill="#E2F7FF"/>
+  <path d="M236 336l25 25 58-72" stroke="#34D399" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

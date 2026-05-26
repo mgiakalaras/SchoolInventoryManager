@@ -1,16 +1,41 @@
-# Assets
+# School Inventory Manager assets
 
-Αυτός είναι ο φάκελος για τα στατικά αρχεία της εφαρμογής.
+Ο φάκελος `wwwroot/assets` κρατά τα βασικά γραφικά assets του project.
 
-Προτεινόμενη οργάνωση:
+## Δομή
 
-- `brand/` για logo, icon, favicon και γραφικά ταυτότητας.
-- `illustrations/` για μικρά SVG/εικονίδια που χρησιμοποιούνται στο UI.
-- `templates/` για μελλοντικά αρχεία-πρότυπα, αν χρειαστούν.
+```text
+wwwroot/assets/
+  brand/
+    sim-logo-lockup-dark.svg
+    sim-logo-lockup-light.svg
+    sim-mark-outline.svg
 
-Σημειώσεις:
+  icons/
+    folder-audit.svg
+    room-pin.svg
+    qr-scan.svg
+    sync-cloud.svg
+    help-book.svg
+    android-phone.svg
 
-- Κράτα τα ονόματα αρχείων με λατινικούς χαρακτήρες, μικρά γράμματα και παύλες.
-- Απόφυγε κενά στα filenames.
-- Μην βάζεις εδώ παραγόμενα PDF/Excel της απογραφής. Αυτά είναι exports, όχι assets.
-- Για αλλαγή logo, αντικατάστησε τα SVG στο `brand/` κρατώντας ίδια filenames ή ενημέρωσε το `_Layout.cshtml`.
+  mobile-scanner/
+    scanner-app-icon.svg
+    scanner-logo-dark.svg
+
+  help/
+    mobile-scanner-download-card.svg
+    android-workflow-dark.svg
+```
+
+## Χρήση
+
+- `brand/` για web app header, about, help, release notes.
+- `icons/` για menu/cards/help pages.
+- `mobile-scanner/` για την native Android scanner εφαρμογή.
+- `help/` για σελίδες βοήθειας και download εφαρμογής.
+
+## Σημείωση
+
+Τα SVG είναι source assets και μπορούν να γίνουν export σε PNG όταν χρειαστεί.
+Για native Android project θα χρειαστεί αργότερα παραγωγή adaptive icon assets.

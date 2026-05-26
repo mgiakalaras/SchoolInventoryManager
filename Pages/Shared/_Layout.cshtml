@@ -47,7 +47,7 @@
                     <a asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
                     <a asp-page="/InventoryAudits/Create">Νέος φάκελος</a>
                     <a asp-page="/Audit/Room">Απογραφή χώρου QR</a>
-                    <a asp-page="/Audit/Scan">Σάρωση QR</a>
+                    <a asp-page="/Scanner/Index">Εφαρμογή Scanner</a>
                     <a asp-page="/Labels/Qr">QR ετικέτες</a>
                     <a asp-page="/Reports/Index">Αναφορές απογραφής</a>
                 </div>
@@ -76,8 +76,10 @@
             <div class="nav-group">
                 <span class="nav-group-title">Βοήθεια</span>
                 <div class="nav-group-menu nav-group-menu-right">
+                    <a asp-page="/Help/Index">Βοήθεια χρήσης</a>
                     <a asp-page="/About/Index">About</a>
-                    <a asp-page="/Contact/Index">Επικοινωνία</a>
+                    <a asp-page="/Help/Index">Βοήθεια</a>
+            <a asp-page="/Contact/Index">Επικοινωνία</a>
                 </div>
             </div>
         </nav>
@@ -101,7 +103,9 @@
     <footer class="footer">
         <span>© @DateTime.Now.Year - School Inventory Manager</span>
         <span class="footer-links">
-            <a asp-page="/About/Index">About</a>
+            <a asp-page="/Help/Index">Βοήθεια χρήσης</a>
+                    <a asp-page="/About/Index">About</a>
+            <a asp-page="/Help/Index">Βοήθεια</a>
             <a asp-page="/Contact/Index">Επικοινωνία</a>
             <a asp-page="/Update/Index">Update</a>
         </span>

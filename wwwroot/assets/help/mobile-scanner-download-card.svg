@@ -1,0 +1,18 @@
+<svg width="960" height="420" viewBox="0 0 960 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="420" rx="34" fill="#07111F"/>
+  <rect x="1" y="1" width="958" height="418" rx="33" stroke="#22D3EE" stroke-opacity=".22" stroke-width="2"/>
+  <text x="48" y="72" fill="#22D3EE" font-family="Segoe UI, Arial, sans-serif" font-size="35" font-weight="850">Κατέβασε την εφαρμογή Scanner</text>
+  <text x="48" y="124" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="650">Η σάρωση QR γίνεται από native Android εφαρμογή, όχι από browser.</text>
+  <rect x="52" y="168" width="160" height="160" rx="16" fill="#FFFFFF"/>
+  <path d="M78 194h38v38H78v-38ZM148 194h38v38h-38v-38ZM78 264h38v38H78v-38ZM132 242h22v22h-22v-22ZM166 276h20v20h-20v-20Z" fill="#020617"/>
+  <text x="248" y="192" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="750">Σκανάρεις αυτό το QR ή πατάς λήψη από το web app.</text>
+  <text x="248" y="236" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="600">Η εφαρμογή συνδέεται με τον server του σχολείου και αποθηκεύει τις σαρώσεις στον φάκελο απογραφής.</text>
+  <rect x="248" y="286" width="218" height="54" rx="14" fill="#22D3EE"/>
+  <text x="286" y="321" fill="#07111F" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="850">Λήψη Android</text>
+  <g transform="translate(715 70)">
+    <rect width="135" height="260" rx="28" fill="#0B1728" stroke="#334155" stroke-width="3"/>
+    <circle cx="68" cy="128" r="48" fill="#082F3A" stroke="#22D3EE" stroke-width="4"/>
+    <path d="M46 129h44M68 107v44" stroke="#E2F7FF" stroke-width="8" stroke-linecap="round"/>
+    <text x="30" y="218" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">Scanner</text>
+  </g>
+</svg>
