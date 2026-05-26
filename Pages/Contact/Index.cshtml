@@ -1,62 +1,297 @@
 @page
 @model SchoolInventoryManager.Pages.Contact.IndexModel
+@using SchoolInventoryManager.Utilities
+
 @{
     ViewData["Title"] = "Επικοινωνία";
+    var supportEmail = "mgiakalaras@hotmail.com";
 }
 
-<section class="page-header app-info-hero">
+<section class="contact-hero">
     <div>
-        <span class="eyebrow">Επικοινωνία</span>
-        <h1>Υποστήριξη και στοιχεία έργου</h1>
-        <p>Χρήσιμες πληροφορίες για αναφορά προβλήματος, προτάσεις και τεχνική υποστήριξη.</p>
+        <span class="hero-kicker">Επικοινωνία και υποστήριξη</span>
+        <h1>Χρειάζεσαι βοήθεια ή έχεις πρόταση;</h1>
+        <p>
+            Για απορίες, προτάσεις, αναφορά προβλήματος ή ιδέες βελτίωσης της εφαρμογής, μπορείς να χρησιμοποιήσεις
+            το email επικοινωνίας ή το GitHub repository.
+        </p>
+
+        <div class="contact-hero-actions">
+            <a class="btn contact-primary" href="mailto:@supportEmail?subject=School%20Inventory%20Manager%20-%20Επικοινωνία">
+                Αποστολή email
+            </a>
+            <a class="btn secondary" href="@AppVersion.RepositoryUrl" target="_blank" rel="noopener">
+                GitHub repository
+            </a>
+        </div>
+    </div>
+
+    <div class="contact-card contact-email-card">
+        <span>Βασικό email επικοινωνίας</span>
+        <strong>@supportEmail</strong>
+        <a href="mailto:@supportEmail">Άνοιγμα email client</a>
     </div>
 </section>
 
-<section class="info-grid">
-    <article class="card info-card wide">
-        <h2>Πώς αναφέρουμε πρόβλημα</h2>
+<section class="contact-grid">
+    <article class="contact-card">
+        <img src="~/assets/icons/help-book.svg" alt="" />
+        <h2>Υποστήριξη χρήσης</h2>
         <p>
-            Για να διορθώνεται γρήγορα ένα θέμα, κράτησε όσο γίνεται πιο συγκεκριμένες πληροφορίες:
-            σελίδα, βήματα που έκανες, μήνυμα λάθους, screenshot και αν συνέβη σε PC, tablet ή κινητό.
+            Για ερωτήσεις σχετικά με εγκατάσταση, χρήση, απογραφή, QR labels, import/export ή αναφορές.
         </p>
-        <div class="support-checklist">
-            <label><input type="checkbox" disabled /> Σε ποια σελίδα έγινε το πρόβλημα;</label>
-            <label><input type="checkbox" disabled /> Τι πάτησες ακριβώς πριν εμφανιστεί;</label>
-            <label><input type="checkbox" disabled /> Υπάρχει screenshot ή μήνυμα λάθους;</label>
-            <label><input type="checkbox" disabled /> Είναι σε PC, tablet ή κινητό;</label>
-            <label><input type="checkbox" disabled /> Υπάρχουν logs από Portainer/Docker;</label>
-        </div>
+        <a asp-page="/Help/Index">Άνοιγμα οδηγιών χρήσης</a>
     </article>
 
-    <article class="card info-card">
-        <h2>Τεχνικά στοιχεία</h2>
-        <dl class="meta-list">
-            <div><dt>Εφαρμογή</dt><dd>School Inventory Manager</dd></div>
-            <div><dt>Τεχνολογία</dt><dd>ASP.NET Core Razor Pages</dd></div>
-            <div><dt>Βάση δεδομένων</dt><dd>SQLite</dd></div>
-            <div><dt>Deployment</dt><dd>Docker / Portainer</dd></div>
-        </dl>
+    <article class="contact-card">
+        <img src="~/assets/icons/qr-scan.svg" alt="" />
+        <h2>Αναφορά προβλήματος</h2>
+        <p>
+            Αν κάτι δεν λειτουργεί σωστά, στείλε σύντομη περιγραφή, βήματα αναπαραγωγής, screenshot και έκδοση εφαρμογής.
+        </p>
+        <a href="mailto:@supportEmail?subject=School%20Inventory%20Manager%20-%20Bug%20Report">Αναφορά με email</a>
     </article>
 
-    <article class="card info-card">
-        <h2>Γρήγορες ενέργειες</h2>
-        <div class="stacked-actions">
-            <a class="btn" asp-page="/ImportExport/Index">Import / Export</a>
-            <a class="btn secondary" asp-page="/Maintenance/Index">Συντήρηση βάσης</a>
-            <a class="btn secondary" asp-page="/Update/Index">Οδηγίες αναβάθμισης</a>
-        </div>
-    </article>
-
-    <article class="card info-card wide">
-        <h2>Πρότυπο αναφοράς προβλήματος</h2>
-        <p>Αν χρειαστείς βοήθεια, μπορείς να αντιγράψεις το παρακάτω και να το συμπληρώσεις.</p>
-        <pre class="code-box">Σελίδα:
-Συσκευή: PC / Tablet / Κινητό
-Browser:
-Τι έκανα:
-Τι περίμενα να γίνει:
-Τι έγινε τελικά:
-Μήνυμα λάθους / screenshot:
-Logs από Portainer, αν υπάρχουν:</pre>
+    <article class="contact-card">
+        <img src="~/assets/icons/sync-cloud.svg" alt="" />
+        <h2>Προτάσεις βελτίωσης</h2>
+        <p>
+            Ιδέες για νέες λειτουργίες, σχολικά workflows, reports, scanner app ή τεχνική διαχείριση εξοπλισμού.
+        </p>
+        <a href="mailto:@supportEmail?subject=School%20Inventory%20Manager%20-%20Feature%20Request">Αποστολή πρότασης</a>
     </article>
 </section>
+
+<section class="contact-section">
+    <div>
+        <span class="contact-kicker">Πριν στείλεις πρόβλημα</span>
+        <h2>Χρήσιμες πληροφορίες που βοηθούν</h2>
+        <p class="muted">
+            Όσο πιο καθαρά είναι τα στοιχεία, τόσο πιο εύκολο είναι να βρεθεί η αιτία.
+        </p>
+    </div>
+
+    <div class="contact-checklist">
+        <div>
+            <strong>1</strong>
+            <span>Τι προσπαθούσες να κάνεις;</span>
+        </div>
+        <div>
+            <strong>2</strong>
+            <span>Τι ακριβώς εμφανίστηκε;</span>
+        </div>
+        <div>
+            <strong>3</strong>
+            <span>Screenshot ή log, αν υπάρχει.</span>
+        </div>
+        <div>
+            <strong>4</strong>
+            <span>Έκδοση εφαρμογής: @AppVersion.Current</span>
+        </div>
+        <div>
+            <strong>5</strong>
+            <span>Περιβάλλον: Visual Studio, Docker, Portainer, ZimaOS κ.λπ.</span>
+        </div>
+    </div>
+</section>
+
+<section class="contact-section contact-message-template">
+    <div>
+        <span class="contact-kicker">Template</span>
+        <h2>Πρότυπο μηνύματος</h2>
+        <p class="muted">Μπορείς να αντιγράψεις το παρακάτω σε email.</p>
+    </div>
+
+    <div class="contact-template-box">
+        <p><strong>Θέμα:</strong> School Inventory Manager - Αναφορά / Πρόταση</p>
+        <p><strong>Έκδοση:</strong> @AppVersion.Current</p>
+        <p><strong>Περιβάλλον:</strong> Visual Studio / Docker / Portainer / άλλο</p>
+        <p><strong>Τι έκανα:</strong></p>
+        <p><strong>Τι περίμενα να γίνει:</strong></p>
+        <p><strong>Τι έγινε τελικά:</strong></p>
+        <p><strong>Screenshot / log:</strong></p>
+    </div>
+</section>
+
+<section class="contact-section contact-note">
+    <h2>Σημαντική σημείωση</h2>
+    <p>
+        Η εφαρμογή βρίσκεται σε φάση school testing και προτείνεται για χρήση μέσα σε τοπικό σχολικό δίκτυο.
+        Πριν χρησιμοποιηθεί σε δημόσια έκθεση στο Internet, χρειάζονται login, ρόλοι χρηστών, HTTPS και βασικό audit/security layer.
+    </p>
+</section>
+
+<style>
+    .contact-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 1rem;
+        align-items: stretch;
+        margin-bottom: 1rem;
+    }
+
+    .contact-hero > div,
+    .contact-card,
+    .contact-section {
+        border: 1px solid rgba(34, 211, 238, 0.18);
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, 0.11), transparent 34%),
+            rgba(15, 23, 42, 0.78);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+    }
+
+    .contact-hero > div {
+        padding: clamp(1.25rem, 3vw, 2rem);
+    }
+
+    .contact-hero h1 {
+        color: #f8fafc;
+        font-size: clamp(2.2rem, 4.5vw, 4.4rem);
+        line-height: 0.96;
+        letter-spacing: -0.06em;
+        margin: 0.5rem 0 0.8rem;
+    }
+
+    .contact-hero p,
+    .contact-card p,
+    .contact-section p,
+    .contact-checklist span {
+        color: #cbd5e1;
+        line-height: 1.6;
+    }
+
+    .contact-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 1.15rem;
+    }
+
+    .contact-primary {
+        background: linear-gradient(135deg, #22d3ee, #34d399);
+        color: #06121f !important;
+        border: 0;
+        box-shadow: 0 18px 38px rgba(34, 211, 238, 0.20);
+    }
+
+    .contact-email-card {
+        display: grid;
+        place-content: center;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .contact-email-card span {
+        color: #94a3b8;
+        font-weight: 850;
+    }
+
+    .contact-email-card strong {
+        color: #f8fafc;
+        font-size: clamp(1.35rem, 3vw, 2rem);
+        margin: 0.4rem 0;
+        overflow-wrap: anywhere;
+    }
+
+    .contact-email-card a,
+    .contact-card a {
+        color: #22d3ee;
+        font-weight: 850;
+        text-decoration: none;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-card,
+    .contact-section {
+        padding: 1.25rem;
+    }
+
+    .contact-card img {
+        width: 58px;
+        height: 58px;
+        margin-bottom: 0.75rem;
+    }
+
+    .contact-card h2,
+    .contact-section h2 {
+        color: #f8fafc;
+        margin: 0 0 0.55rem;
+    }
+
+    .contact-section {
+        margin-bottom: 1rem;
+    }
+
+    .contact-kicker {
+        display: inline-flex;
+        border: 1px solid rgba(34, 211, 238, 0.20);
+        border-radius: 999px;
+        padding: 0.35rem 0.6rem;
+        color: #67e8f9;
+        background: rgba(34, 211, 238, 0.08);
+        font-size: 0.78rem;
+        font-weight: 850;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+
+    .contact-checklist {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .contact-checklist div {
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 18px;
+        padding: 0.85rem;
+        background: rgba(2, 6, 23, 0.28);
+    }
+
+    .contact-checklist strong {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        color: #06121f;
+        background: linear-gradient(135deg, #22d3ee, #34d399);
+        margin-bottom: 0.55rem;
+    }
+
+    .contact-template-box {
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 20px;
+        padding: 1rem;
+        background: rgba(2, 6, 23, 0.28);
+        margin-top: 1rem;
+    }
+
+    .contact-template-box p {
+        margin: 0.35rem 0;
+    }
+
+    .contact-note {
+        border-color: rgba(245, 158, 11, 0.26);
+        background:
+            radial-gradient(circle at top left, rgba(245, 158, 11, 0.10), transparent 34%),
+            rgba(15, 23, 42, 0.78);
+    }
+
+    @@media (max-width: 1050px) {
+        .contact-hero,
+        .contact-grid,
+        .contact-checklist {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
