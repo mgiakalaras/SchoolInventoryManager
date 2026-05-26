@@ -45,24 +45,43 @@ public class RoomSessionModel : PageModel
                 .Select(x => x.InventoryItemId!.Value)
                 .ToHashSet();
 
-            expectedItems = await _db.InventoryItems
+            /*
+             * Important:
+             * Keep the EF query simple and materialize first.
+             * Do NOT use string.Join / LINQ-to-objects helpers inside the EF Select,
+             * because SQLite/EF cannot translate them and the API returns HTTP 500.
+             */
+            var rawItems = await _db.InventoryItems
                 .Where(x => x.IsActive && x.RoomId == session.RoomId.Value)
                 .Include(x => x.InventoryCategory)
                 .AsNoTracking()
-                .OrderBy(x => x.InventoryCategory!.Name)
-                .ThenBy(x => x.Name)
+                .OrderBy(x => x.Name)
                 .Select(x => new
                 {
                     x.Id,
-                    code = x.AssetCode ?? x.QrToken ?? x.Id.ToString(),
+                    Code = x.AssetCode ?? x.QrToken ?? x.Id.ToString(),
+                    x.Name,
+                    x.Brand,
+                    x.Model,
+                    CategoryName = x.InventoryCategory != null ? x.InventoryCategory.Name : "Χωρίς κατηγορία",
+                    x.SerialNumber,
+                    x.Quantity
+                })
+                .ToListAsync();
+
+            expectedItems = rawItems
+                .Select(x => new
+                {
+                    x.Id,
+                    code = x.Code,
                     x.Name,
                     brandModel = string.Join(" ", new[] { x.Brand, x.Model }.Where(v => !string.IsNullOrWhiteSpace(v))),
-                    categoryName = x.InventoryCategory != null ? x.InventoryCategory.Name : "Χωρίς κατηγορία",
+                    categoryName = x.CategoryName,
                     x.SerialNumber,
                     x.Quantity,
                     scanned = foundIds.Contains(x.Id)
                 } as object)
-                .ToListAsync();
+                .ToList();
         }
 
         var wrongRoom = session.ScanLogs
