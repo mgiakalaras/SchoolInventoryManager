@@ -1,41 +1,31 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using SchoolInventoryManager.Data;
 
 namespace SchoolInventoryManager.Pages.Scanner;
 
 public class IndexModel : PageModel
 {
-    private readonly IWebHostEnvironment _environment;
+    private readonly AppDbContext _db;
 
-    public IndexModel(IWebHostEnvironment environment)
+    public IndexModel(AppDbContext db)
     {
-        _environment = environment;
+        _db = db;
     }
 
-    public bool ApkExists { get; set; }
-    public string ApkDownloadUrl { get; set; } = "/downloads/SchoolInventoryScanner.apk";
-    public string ApkFileName { get; set; } = "SchoolInventoryScanner.apk";
-    public long ApkSizeBytes { get; set; }
+    public string SuggestedServerUrl { get; set; } = "http://SERVER-IP:5148";
 
-    public string ApkSizeText
+    public async Task OnGetAsync()
     {
-        get
+        var settings = await _db.SchoolSettings.FirstOrDefaultAsync();
+
+        if (!string.IsNullOrWhiteSpace(settings?.ApplicationBaseUrl))
         {
-            if (ApkSizeBytes <= 0)
-            {
-                return "Δεν έχει ανέβει ακόμα";
-            }
-
-            var mb = ApkSizeBytes / 1024d / 1024d;
-            return $"{mb:0.0} MB";
+            SuggestedServerUrl = settings.ApplicationBaseUrl.Trim().TrimEnd('/');
+            return;
         }
-    }
 
-    public void OnGet()
-    {
-        var apkPath = Path.Combine(_environment.WebRootPath, "downloads", ApkFileName);
-        var file = new FileInfo(apkPath);
-
-        ApkExists = file.Exists;
-        ApkSizeBytes = ApkExists ? file.Length : 0;
+        var request = HttpContext.Request;
+        SuggestedServerUrl = $"{request.Scheme}://{request.Host}".TrimEnd('/');
     }
 }
