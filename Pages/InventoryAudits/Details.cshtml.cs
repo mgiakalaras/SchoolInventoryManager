@@ -18,19 +18,20 @@ public class DetailsModel : PageModel
     public InventoryAuditFolder? Folder { get; set; }
 
     public int TotalExpected { get; set; }
+
     public int TotalFound { get; set; }
+
     public int TotalMissing { get; set; }
+
     public int TotalProblems { get; set; }
+
     public int FinalizedRooms { get; set; }
+
+    public int TotalScans { get; set; }
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        Folder = await _db.InventoryAuditFolders
-            .Include(x => x.RoomSessions)
-                .ThenInclude(x => x.Room)
-            .Include(x => x.RoomSessions)
-                .ThenInclude(x => x.ScanLogs)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        Folder = await LoadFolderAsync(id);
 
         if (Folder == null)
         {
@@ -59,9 +60,10 @@ public class DetailsModel : PageModel
         }
 
         var openRooms = folder.RoomSessions.Count(x => !x.IsFinalized);
+
         if (openRooms > 0)
         {
-            TempData["Warning"] = $"Υπάρχουν ακόμα {openRooms} χώροι που δεν έχουν οριστικοποιηθεί. Οριστικοποίησε πρώτα τους χώρους ή επιβεβαίωσε ότι θέλεις να κλείσει ο φάκελος.";
+            TempData["Warning"] = $"Υπάρχουν ακόμα {openRooms} χώροι που δεν έχουν οριστικοποιηθεί. Οριστικοποίησε πρώτα τους χώρους.";
             return RedirectToPage(new { id });
         }
 
@@ -100,6 +102,81 @@ public class DetailsModel : PageModel
         return RedirectToPage(new { id });
     }
 
+    public async Task<IActionResult> OnPostClearScansAsync(int id)
+    {
+        var folder = await LoadFolderAsync(id);
+
+        if (folder == null)
+        {
+            return NotFound();
+        }
+
+        if (folder.IsFinalized)
+        {
+            TempData["Warning"] = "Ο φάκελος είναι οριστικοποιημένος και δεν μπορεί να καθαριστεί.";
+            return RedirectToPage(new { id });
+        }
+
+        var logs = folder.RoomSessions
+            .SelectMany(x => x.ScanLogs)
+            .ToList();
+
+        _db.InventoryAuditScanLogs.RemoveRange(logs);
+
+        foreach (var session in folder.RoomSessions)
+        {
+            session.FoundItemsCount = 0;
+            session.MissingItemsCount = session.ExpectedItemsCount;
+            session.WrongRoomItemsCount = 0;
+            session.UnknownItemsCount = 0;
+            session.StartedAt = null;
+            session.CompletedAt = null;
+            session.IsFinalized = false;
+            session.UpdatedAt = DateTime.Now;
+        }
+
+        folder.UpdatedAt = DateTime.Now;
+
+        await _db.SaveChangesAsync();
+
+        TempData["Message"] = "Οι καταχωρήσεις/scans του φακέλου καθαρίστηκαν.";
+        return RedirectToPage(new { id });
+    }
+
+    public async Task<IActionResult> OnPostDeleteAsync(int id)
+    {
+        var folder = await LoadFolderAsync(id);
+
+        if (folder == null)
+        {
+            return NotFound();
+        }
+
+        if (folder.IsFinalized)
+        {
+            TempData["Warning"] = "Ο φάκελος είναι οριστικοποιημένος και δεν μπορεί να διαγραφεί.";
+            return RedirectToPage(new { id });
+        }
+
+        var title = folder.Title;
+
+        _db.InventoryAuditFolders.Remove(folder);
+        await _db.SaveChangesAsync();
+
+        TempData["Message"] = $"Ο πρόχειρος φάκελος «{title}» διαγράφηκε.";
+        return RedirectToPage("/InventoryAudits/Index");
+    }
+
+    private async Task<InventoryAuditFolder?> LoadFolderAsync(int id)
+    {
+        return await _db.InventoryAuditFolders
+            .Include(x => x.RoomSessions)
+                .ThenInclude(x => x.Room)
+            .Include(x => x.RoomSessions)
+                .ThenInclude(x => x.ScanLogs)
+            .FirstOrDefaultAsync(x => x.Id == id);
+    }
+
     private void CalculateTotals()
     {
         if (Folder == null)
@@ -112,6 +189,7 @@ public class DetailsModel : PageModel
         TotalMissing = Folder.RoomSessions.Sum(x => x.MissingItemsCount);
         TotalProblems = Folder.RoomSessions.Sum(x => x.WrongRoomItemsCount + x.UnknownItemsCount);
         FinalizedRooms = Folder.RoomSessions.Count(x => x.IsFinalized);
+        TotalScans = Folder.RoomSessions.Sum(x => x.ScanLogs?.Count ?? 0);
     }
 
     private static void RecalculateSession(InventoryAuditRoomSession session)
@@ -138,6 +216,16 @@ public class DetailsModel : PageModel
         session.MissingItemsCount = Math.Max(0, session.ExpectedItemsCount - found);
         session.WrongRoomItemsCount = wrong;
         session.UnknownItemsCount = unknown;
+
+        if (session.ExpectedItemsCount > 0 && session.MissingItemsCount == 0)
+        {
+            session.CompletedAt ??= DateTime.Now;
+        }
+        else if (!session.IsFinalized)
+        {
+            session.CompletedAt = null;
+        }
+
         session.UpdatedAt = DateTime.Now;
     }
 }
