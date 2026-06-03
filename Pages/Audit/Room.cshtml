@@ -7,172 +7,315 @@
         : "Χειροκίνητος έλεγχος χώρου";
 }
 
-<section class="hero compact-hero">
-    <div>
-        <span class="eyebrow">Απογραφή χώρου</span>
-        <h1>Χειροκίνητος έλεγχος χώρου</h1>
-        <p class="muted">
-            Η σάρωση QR με κάμερα γίνεται από την Android εφαρμογή.
-            Από το web app μπορείς να κάνεις χειροκίνητη καταχώρηση κωδικού, έλεγχο και διαχείριση χώρου.
-        </p>
-    </div>
+<style>
+    .audit-room-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding-bottom: 3rem;
+    }
 
-    <div class="hero-actions">
-        @if (Model.FolderId.HasValue)
-        {
-            <a class="btn secondary" asp-page="/InventoryAudits/Details" asp-route-id="@Model.FolderId.Value">Πίσω στον φάκελο</a>
+    .audit-room-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1.25rem;
+        align-items: center;
+        padding: 1.35rem;
+        border: 1px solid rgba(34, 211, 238, .22);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .14), transparent 38%),
+            linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(17, 24, 39, .92));
+        box-shadow: 0 18px 42px rgba(0, 0, 0, .28);
+        margin-bottom: 1rem;
+    }
+
+    .audit-room-hero h1,
+    .audit-room-card h2,
+    .audit-room-card h3 {
+        margin: 0;
+    }
+
+    .audit-room-hero p,
+    .audit-room-card p {
+        margin-bottom: 0;
+    }
+
+    .audit-room-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        justify-content: flex-end;
+    }
+
+    .audit-room-grid {
+        display: grid;
+        grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .audit-room-card {
+        border: 1px solid rgba(148, 163, 184, .16);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .06), transparent 40%),
+            rgba(15, 23, 42, .82);
+        padding: 1rem;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, .22);
+        margin-bottom: 1rem;
+    }
+
+    .audit-room-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: .85rem;
+    }
+
+    .audit-room-badge {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        gap: .35rem;
+        padding: .25rem .55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(34, 211, 238, .32);
+        color: #a5f3fc;
+        background: rgba(8, 47, 73, .42);
+        font-weight: 800;
+        font-size: .72rem;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        margin-bottom: .65rem;
+    }
+
+    .audit-room-warning {
+        border-color: rgba(245, 158, 11, .35);
+        background:
+            radial-gradient(circle at top left, rgba(245, 158, 11, .14), transparent 36%),
+            rgba(30, 23, 10, .78);
+    }
+
+    .audit-room-success {
+        border-color: rgba(52, 211, 153, .35);
+        background:
+            radial-gradient(circle at top left, rgba(52, 211, 153, .12), transparent 36%),
+            rgba(6, 30, 25, .78);
+    }
+
+    .audit-room-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .audit-room-stat {
+        padding: .85rem;
+        border: 1px solid rgba(148, 163, 184, .15);
+        border-radius: 16px;
+        background: rgba(2, 6, 23, .36);
+    }
+
+    .audit-room-stat span {
+        display: block;
+        color: #94a3b8;
+        font-size: .8rem;
+        margin-bottom: .25rem;
+    }
+
+    .audit-room-stat strong {
+        display: block;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .audit-room-stat.success strong { color: #34d399; }
+    .audit-room-stat.warning strong { color: #f59e0b; }
+    .audit-room-stat.danger strong { color: #f87171; }
+
+    .audit-room-form-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .audit-room-input,
+    .audit-room-select {
+        width: 100%;
+        min-height: 42px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, .22);
+        background: rgba(2, 6, 23, .45);
+        color: #e5eefb;
+        padding: .65rem .75rem;
+    }
+
+    .audit-room-label span {
+        display: block;
+        font-weight: 800;
+        margin-bottom: .35rem;
+    }
+
+    .audit-room-list {
+        display: grid;
+        gap: .55rem;
+    }
+
+    .audit-room-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .7rem;
+        align-items: center;
+        border: 1px solid rgba(148, 163, 184, .13);
+        border-radius: 15px;
+        background: rgba(2, 6, 23, .33);
+        padding: .75rem;
+    }
+
+    .audit-room-row strong,
+    .audit-room-row span,
+    .audit-room-row small {
+        display: block;
+    }
+
+    .audit-room-row span,
+    .audit-room-row small {
+        color: #94a3b8;
+    }
+
+    .audit-room-row em {
+        font-style: normal;
+        font-weight: 900;
+        font-size: .78rem;
+        padding: .28rem .55rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, .12);
+        color: #cbd5e1;
+        white-space: nowrap;
+    }
+
+    .audit-room-row.is-found {
+        border-color: rgba(52, 211, 153, .25);
+        background: rgba(6, 78, 59, .14);
+    }
+
+    .audit-room-row.is-found em {
+        background: rgba(52, 211, 153, .14);
+        color: #86efac;
+    }
+
+    .audit-room-row.has-warning {
+        border-color: rgba(245, 158, 11, .28);
+        background: rgba(120, 53, 15, .13);
+    }
+
+    .audit-room-row.has-warning em {
+        background: rgba(245, 158, 11, .14);
+        color: #fcd34d;
+    }
+
+    .audit-room-empty {
+        text-align: center;
+        padding: 1.25rem;
+        border: 1px dashed rgba(148, 163, 184, .22);
+        border-radius: 16px;
+        color: #94a3b8;
+        background: rgba(2, 6, 23, .22);
+    }
+
+    .audit-room-result {
+        margin-top: .85rem;
+        padding: .9rem;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: rgba(2, 6, 23, .32);
+    }
+
+    .audit-room-result.success {
+        border-color: rgba(52, 211, 153, .28);
+    }
+
+    .audit-room-result.warning {
+        border-color: rgba(245, 158, 11, .28);
+    }
+
+    .audit-room-details {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: .35rem .75rem;
+        margin: .75rem 0;
+    }
+
+    .audit-room-details dt {
+        color: #94a3b8;
+    }
+
+    .audit-room-details dd {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    @@media (max-width: 900px) {
+        .audit-room-hero,
+        .audit-room-grid,
+        .audit-room-form-row {
+            grid-template-columns: 1fr;
         }
 
-        <a class="btn secondary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
-        <a class="btn secondary" asp-page="/Labels/Qr">QR ετικέτες</a>
-    </div>
-</section>
+        .audit-room-actions {
+            justify-content: flex-start;
+        }
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert success">@message</div>
-}
+        .audit-room-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
 
-@if (TempData["Warning"] is string warning)
-{
-    <div class="alert warning">@warning</div>
-}
-
-<section class="panel">
-    <div class="panel-header">
+<div class="audit-room-page">
+    <section class="audit-room-hero">
         <div>
-            <h2>Επιλογή χώρου</h2>
+            <span class="audit-room-badge">Απογραφή χώρου</span>
+            <h1>Χειροκίνητος έλεγχος χώρου</h1>
             <p class="muted">
-                Για επίσημη απογραφή προτίμησε να ανοίγεις τον χώρο μέσα από φάκελο απογραφής.
-                Εκεί αποθηκεύονται οι καταχωρήσεις και η πρόοδος.
+                Η κάμερα QR ανήκει στην Android εφαρμογή. Στο web app κάνουμε χειροκίνητη καταχώρηση, έλεγχο, διόρθωση και οριστικοποίηση.
             </p>
         </div>
-    </div>
 
-    <form method="get" class="form-grid">
-        @if (Model.FolderId.HasValue)
-        {
-            <input type="hidden" name="FolderId" value="@Model.FolderId.Value" />
-        }
-
-        @if (Model.RoomSessionId.HasValue)
-        {
-            <input type="hidden" name="RoomSessionId" value="@Model.RoomSessionId.Value" />
-        }
-
-        <label>
-            <span>Χώρος</span>
-            <select asp-for="RoomId" asp-items="Model.Rooms">
-                <option value="">-- επίλεξε χώρο --</option>
-            </select>
-        </label>
-
-        <div class="form-actions">
-            <button type="submit" class="btn primary">Φόρτωση χώρου</button>
-        </div>
-    </form>
-</section>
-
-@if (!Model.RoomId.HasValue)
-{
-    <section class="empty-state">
-        <h2>Επίλεξε χώρο για να ξεκινήσεις</h2>
-        <p>
-            Από εδώ γίνεται μόνο χειροκίνητη καταχώρηση / έλεγχος.
-            Για κάμερα QR χρησιμοποίησε την Android εφαρμογή.
-        </p>
-    </section>
-}
-else
-{
-    <section class="panel">
-        <div class="panel-header">
-            <div>
-                <span class="eyebrow">Χώρος</span>
-                <h2>@Model.SelectedRoomName</h2>
-
-                @if (Model.IsFolderMode)
-                {
-                    <p class="muted">
-                        Φάκελος: <strong>@Model.Folder!.Title</strong> ·
-                        Κατάσταση χώρου:
-                        <strong>@(Model.RoomSession!.IsFinalized ? "Οριστικοποιημένος" : (Model.RoomSession.CompletedAt.HasValue ? "Ολοκληρωμένος" : "Πρόχειρος"))</strong> ·
-                        Καταχωρήσεις: <strong>@Model.SavedScans.Count</strong>
-                    </p>
-                }
-                else
-                {
-                    <p class="muted">
-                        Live έλεγχος χωρίς φάκελο. Η αναζήτηση δείχνει στοιχεία αντικειμένου, αλλά δεν αποθηκεύει επίσημη πρόοδο.
-                    </p>
-                }
-            </div>
-
-            @if (Model.IsFolderMode)
+        <div class="audit-room-actions">
+            @if (Model.FolderId.HasValue)
             {
-                <div class="hero-actions">
-                    @if (!Model.RoomSession!.IsFinalized && !Model.Folder!.IsFinalized)
-                    {
-                        <form method="post" asp-page-handler="FinalizeRoom" asp-route-roomSessionId="@Model.RoomSession.Id">
-                            <button type="submit" class="btn primary">Οριστικοποίηση χώρου</button>
-                        </form>
-
-                        <form method="post" asp-page-handler="ClearRoomScans" asp-route-roomSessionId="@Model.RoomSession.Id"
-                              onsubmit="return confirm('Να καθαριστούν όλες οι χειροκίνητες/QR καταχωρήσεις αυτού του χώρου;');">
-                            <button type="submit" class="btn danger">Καθαρισμός καταχωρήσεων</button>
-                        </form>
-                    }
-                    else if (Model.RoomSession!.IsFinalized && !Model.Folder!.IsFinalized)
-                    {
-                        <form method="post" asp-page-handler="ReopenRoom" asp-route-roomSessionId="@Model.RoomSession.Id">
-                            <button type="submit" class="btn secondary">Άνοιγμα για διορθώσεις</button>
-                        </form>
-                    }
-                </div>
+                <a class="btn secondary" asp-page="/InventoryAudits/Details" asp-route-id="@Model.FolderId.Value">Πίσω στον φάκελο</a>
             }
-        </div>
 
-        @if (Model.IsLocked)
-        {
-            <div class="alert warning">
-                Ο χώρος ή ο φάκελος είναι οριστικοποιημένος. Δεν επιτρέπονται νέες καταχωρήσεις.
-            </div>
-        }
-
-        <div class="stats-grid">
-            <article class="stat-card">
-                <span>Αναμενόμενα</span>
-                <strong>@Model.ExpectedItems.Count</strong>
-            </article>
-
-            <article class="stat-card success">
-                <span>Βρέθηκαν</span>
-                <strong>@(Model.RoomSession?.FoundItemsCount ?? Model.SavedScans.Count(x => x.Status == SchoolInventoryManager.Models.AuditScanStatus.Found))</strong>
-            </article>
-
-            <article class="stat-card warning">
-                <span>Λείπουν</span>
-                <strong>@Model.MissingItems.Count</strong>
-            </article>
-
-            <article class="stat-card danger">
-                <span>Θέματα</span>
-                <strong>@(Model.WrongRoomScans.Count + Model.UnknownScans.Count)</strong>
-            </article>
+            <a class="btn secondary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+            <a class="btn secondary" asp-page="/Labels/Qr">QR ετικέτες</a>
         </div>
     </section>
 
-    <section class="panel">
-        <div class="panel-header">
+    @if (TempData["Message"] is string message)
+    {
+        <div class="alert success">@message</div>
+    }
+
+    @if (TempData["Warning"] is string warning)
+    {
+        <div class="alert warning">@warning</div>
+    }
+
+    <section class="audit-room-card">
+        <div class="audit-room-card-header">
             <div>
-                <h2>Χειροκίνητη καταχώρηση</h2>
+                <h2>Επιλογή χώρου</h2>
                 <p class="muted">
-                    Γράψε τον κωδικό απογραφής ή ολόκληρο QR URL. Η καταχώρηση αποθηκεύεται μόνο όταν ο χώρος έχει ανοιχτεί μέσα από φάκελο απογραφής.
+                    Για επίσημη απογραφή άνοιξε τον χώρο μέσα από φάκελο. Αν επιλέξεις απλά χώρο, η εφαρμογή θα προσπαθήσει να βρει αυτόματα τον τελευταίο ενεργό φάκελο.
                 </p>
             </div>
         </div>
 
-        <form method="post" asp-page-handler="ManualScan" class="manual-scan-form">
+        <form method="get" class="audit-room-form-row">
             @if (Model.FolderId.HasValue)
             {
                 <input type="hidden" name="FolderId" value="@Model.FolderId.Value" />
@@ -183,175 +326,250 @@ else
                 <input type="hidden" name="RoomSessionId" value="@Model.RoomSessionId.Value" />
             }
 
-            <input type="hidden" name="RoomId" value="@Model.RoomId.Value" />
-
-            <label>
-                <span>Κωδικός / QR URL</span>
-                <input name="code" value="" placeholder="SIM-2026-000123 ή http://server/q/SIM-2026-000123" autocomplete="off" />
+            <label class="audit-room-label">
+                <span>Χώρος</span>
+                <select class="audit-room-select" asp-for="RoomId" asp-items="Model.Rooms">
+                    <option value="">-- επίλεξε χώρο --</option>
+                </select>
             </label>
 
-            <button type="submit" class="btn primary" @(Model.IsLocked ? "disabled" : "")>Καταχώρηση</button>
+            <button type="submit" class="btn primary">Φόρτωση χώρου</button>
         </form>
+    </section>
 
-        @if (Model.LastLookup is not null)
-        {
-            <div class="lookup-result @(Model.LastLookup.Found ? "success" : "warning")">
-                <h3>@(Model.LastLookup.Found ? Model.LastLookup.Name : "Δεν βρέθηκε αντικείμενο")</h3>
-                <p>@Model.LastLookup.Message</p>
+    @if (!Model.RoomId.HasValue)
+    {
+        <section class="audit-room-card">
+            <div class="audit-room-empty">
+                <h2>Επίλεξε χώρο για να ξεκινήσεις</h2>
+                <p>Η σάρωση με κάμερα γίνεται από Android. Από εδώ κάνουμε χειροκίνητο έλεγχο.</p>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="audit-room-card @(Model.IsFolderMode ? "audit-room-success" : "audit-room-warning")">
+            <div class="audit-room-card-header">
+                <div>
+                    <span class="audit-room-badge">Χώρος</span>
+                    <h2>@Model.SelectedRoomName</h2>
 
-                @if (Model.LastLookup.Found)
+                    @if (Model.IsFolderMode)
+                    {
+                        <p class="muted">
+                            Επίσημη απογραφή μέσα από φάκελο:
+                            <strong>@Model.Folder!.Title</strong> ·
+                            κατάσταση:
+                            <strong>@(Model.RoomSession!.IsFinalized ? "Οριστικοποιημένος" : (Model.RoomSession.CompletedAt.HasValue ? "Ολοκληρωμένος" : "Πρόχειρος"))</strong>
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="muted">
+                            Δεν βρέθηκε ενεργός φάκελος/χώρος. Τα στοιχεία είναι live έλεγχος και όχι επίσημη πρόοδος.
+                        </p>
+                    }
+                </div>
+
+                @if (Model.IsFolderMode)
                 {
-                    <dl class="details-list">
-                        <dt>Κωδικός</dt>
-                        <dd>@Model.LastLookup.Code</dd>
+                    <div class="audit-room-actions">
+                        @if (!Model.RoomSession!.IsFinalized && !Model.Folder!.IsFinalized)
+                        {
+                            <form method="post" asp-page-handler="FinalizeRoom" asp-route-roomSessionId="@Model.RoomSession.Id">
+                                <button type="submit" class="btn primary">Οριστικοποίηση χώρου</button>
+                            </form>
 
-                        <dt>Χώρος αντικειμένου</dt>
-                        <dd>@Model.LastLookup.RoomName</dd>
-
-                        <dt>Κατηγορία</dt>
-                        <dd>@Model.LastLookup.CategoryName</dd>
-
-                        <dt>Serial</dt>
-                        <dd>@(string.IsNullOrWhiteSpace(Model.LastLookup.SerialNumber) ? "-" : Model.LastLookup.SerialNumber)</dd>
-                    </dl>
-
-                    <div class="hero-actions">
-                        <a class="btn secondary" href="@Model.LastLookup.ItemCardUrl">Προβολή καρτέλας</a>
-                        <a class="btn secondary" href="@Model.LastLookup.EditUrl">Επεξεργασία</a>
+                            <form method="post" asp-page-handler="ClearRoomScans" asp-route-roomSessionId="@Model.RoomSession.Id"
+                                  onsubmit="return confirm('Να καθαριστούν όλες οι καταχωρήσεις αυτού του χώρου;');">
+                                <button type="submit" class="btn danger">Καθαρισμός</button>
+                            </form>
+                        }
+                        else if (Model.RoomSession!.IsFinalized && !Model.Folder!.IsFinalized)
+                        {
+                            <form method="post" asp-page-handler="ReopenRoom" asp-route-roomSessionId="@Model.RoomSession.Id">
+                                <button type="submit" class="btn secondary">Άνοιγμα για διορθώσεις</button>
+                            </form>
+                        }
                     </div>
                 }
             </div>
-        }
-    </section>
 
-    <section class="grid two-columns">
-        <article class="panel">
-            <div class="panel-header">
-                <div>
+            @if (Model.IsLocked)
+            {
+                <div class="alert warning">Ο χώρος ή ο φάκελος είναι οριστικοποιημένος. Δεν επιτρέπονται νέες καταχωρήσεις.</div>
+            }
+
+            <div class="audit-room-stats">
+                <article class="audit-room-stat">
+                    <span>Αναμενόμενα</span>
+                    <strong>@Model.ExpectedItems.Count</strong>
+                </article>
+
+                <article class="audit-room-stat success">
+                    <span>Βρέθηκαν</span>
+                    <strong>@(Model.RoomSession?.FoundItemsCount ?? Model.FoundItemIds.Count)</strong>
+                </article>
+
+                <article class="audit-room-stat warning">
+                    <span>Λείπουν</span>
+                    <strong>@Model.MissingItems.Count</strong>
+                </article>
+
+                <article class="audit-room-stat danger">
+                    <span>Θέματα</span>
+                    <strong>@(Model.WrongRoomScans.Count + Model.UnknownScans.Count)</strong>
+                </article>
+            </div>
+        </section>
+
+        <div class="audit-room-grid">
+            <div>
+                <section class="audit-room-card">
+                    <h2>Χειροκίνητη καταχώρηση</h2>
+                    <p class="muted">
+                        Γράψε κωδικό απογραφής ή QR URL. Αποθηκεύεται μόνο όταν υπάρχει ενεργός φάκελος/χώρος.
+                    </p>
+
+                    <form method="post" asp-page-handler="ManualScan">
+                        @if (Model.FolderId.HasValue)
+                        {
+                            <input type="hidden" name="FolderId" value="@Model.FolderId.Value" />
+                        }
+
+                        @if (Model.RoomSessionId.HasValue)
+                        {
+                            <input type="hidden" name="RoomSessionId" value="@Model.RoomSessionId.Value" />
+                        }
+
+                        <input type="hidden" name="RoomId" value="@Model.RoomId.Value" />
+
+                        <label class="audit-room-label">
+                            <span>Κωδικός / QR URL</span>
+                            <input class="audit-room-input" name="code" placeholder="SIM-2026-000123 ή http://server/q/SIM-2026-000123" autocomplete="off" />
+                        </label>
+
+                        <button type="submit" class="btn primary" @(Model.IsLocked ? "disabled" : "")>Καταχώρηση</button>
+                    </form>
+
+                    @if (Model.LastLookup is not null)
+                    {
+                        <div class="audit-room-result @(Model.LastLookup.Found ? "success" : "warning")">
+                            <h3>@(Model.LastLookup.Found ? Model.LastLookup.Name : "Δεν βρέθηκε αντικείμενο")</h3>
+                            <p>@Model.LastLookup.Message</p>
+
+                            @if (Model.LastLookup.Found)
+                            {
+                                <dl class="audit-room-details">
+                                    <dt>Κωδικός</dt>
+                                    <dd>@Model.LastLookup.Code</dd>
+
+                                    <dt>Χώρος</dt>
+                                    <dd>@Model.LastLookup.RoomName</dd>
+
+                                    <dt>Κατηγορία</dt>
+                                    <dd>@Model.LastLookup.CategoryName</dd>
+
+                                    <dt>Serial</dt>
+                                    <dd>@(string.IsNullOrWhiteSpace(Model.LastLookup.SerialNumber) ? "-" : Model.LastLookup.SerialNumber)</dd>
+                                </dl>
+
+                                <div class="audit-room-actions">
+                                    <a class="btn secondary" href="@Model.LastLookup.ItemCardUrl">Καρτέλα</a>
+                                    <a class="btn secondary" href="@Model.LastLookup.EditUrl">Επεξεργασία</a>
+                                </div>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <section class="audit-room-card">
+                    <h2>Καταχωρήσεις χώρου</h2>
+                    <p class="muted">Ό,τι έχει αποθηκευτεί στον επίσημο φάκελο για αυτόν τον χώρο.</p>
+
+                    @if (!Model.SavedScans.Any())
+                    {
+                        <div class="audit-room-empty">Δεν υπάρχουν καταχωρήσεις.</div>
+                    }
+                    else
+                    {
+                        <div class="audit-room-list">
+                            @foreach (var scan in Model.SavedScans.OrderByDescending(x => x.ScannedAt))
+                            {
+                                <article class="audit-room-row @(scan.Status == SchoolInventoryManager.Models.AuditScanStatus.Found ? "is-found" : "has-warning")">
+                                    <div>
+                                        <strong>@scan.Name</strong>
+                                        <span>@scan.Code · @scan.RoomName</span>
+                                        <small>@scan.ScannedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+
+                                    <em>@scan.Status</em>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
+            </div>
+
+            <div>
+                <section class="audit-room-card">
                     <h2>Αναμενόμενα αντικείμενα</h2>
                     <p class="muted">Τα αντικείμενα που είναι δηλωμένα στον χώρο.</p>
-                </div>
+
+                    @if (!Model.ExpectedItems.Any())
+                    {
+                        <div class="audit-room-empty">Δεν υπάρχουν αντικείμενα για αυτόν τον χώρο.</div>
+                    }
+                    else
+                    {
+                        <div class="audit-room-list">
+                            @foreach (var item in Model.ExpectedItems)
+                            {
+                                var isFound = Model.FoundItemIds.Contains(item.Id);
+
+                                <article class="audit-room-row @(isFound ? "is-found" : "has-warning")">
+                                    <div>
+                                        <strong>@item.Name</strong>
+                                        <span>@item.AssetCode · @item.CategoryName</span>
+                                        @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
+                                        {
+                                            <small>SN: @item.SerialNumber</small>
+                                        }
+                                    </div>
+
+                                    <em>@(isFound ? "Βρέθηκε" : "Λείπει")</em>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <section class="audit-room-card">
+                    <h2>Εκτός χώρου / άγνωστα</h2>
+
+                    @if (!Model.WrongRoomScans.Any() && !Model.UnknownScans.Any())
+                    {
+                        <div class="audit-room-empty">Δεν υπάρχουν θέματα.</div>
+                    }
+                    else
+                    {
+                        <div class="audit-room-list">
+                            @foreach (var scan in Model.WrongRoomScans.Concat(Model.UnknownScans).OrderByDescending(x => x.ScannedAt))
+                            {
+                                <article class="audit-room-row has-warning">
+                                    <div>
+                                        <strong>@scan.Name</strong>
+                                        <span>@scan.Code · @scan.RoomName</span>
+                                        <small>@scan.ScannedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+
+                                    <em>@scan.Status</em>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
             </div>
-
-            @if (!Model.ExpectedItems.Any())
-            {
-                <div class="empty-state small">
-                    <h3>Δεν υπάρχουν αντικείμενα για αυτόν τον χώρο</h3>
-                    <p>Ίσως ο χώρος είναι κενός ή ο φάκελος δημιουργήθηκε πριν την εισαγωγή των αντικειμένων.</p>
-                </div>
-            }
-            else
-            {
-                <div class="compact-list">
-                    @foreach (var item in Model.ExpectedItems)
-                    {
-                        var isFound = Model.FoundItemIds.Contains(item.Id);
-
-                        <article class="compact-row @(isFound ? "is-found" : "")">
-                            <div>
-                                <strong>@item.Name</strong>
-                                <span>@item.AssetCode · @item.CategoryName</span>
-                                @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
-                                {
-                                    <small>SN: @item.SerialNumber</small>
-                                }
-                            </div>
-
-                            <em>@(isFound ? "Βρέθηκε" : "Λείπει")</em>
-                        </article>
-                    }
-                </div>
-            }
-        </article>
-
-        <article class="panel">
-            <div class="panel-header">
-                <div>
-                    <h2>Καταχωρήσεις χώρου</h2>
-                    <p class="muted">Τι έχει καταγραφεί για αυτόν τον χώρο.</p>
-                </div>
-            </div>
-
-            @if (!Model.SavedScans.Any())
-            {
-                <div class="empty-state small">
-                    <h3>Δεν υπάρχουν καταχωρήσεις</h3>
-                    <p>Η λίστα θα ενημερωθεί μετά από καταχώρηση από Android ή χειροκίνητα από εδώ.</p>
-                </div>
-            }
-            else
-            {
-                <div class="compact-list">
-                    @foreach (var scan in Model.SavedScans.OrderByDescending(x => x.ScannedAt))
-                    {
-                        <article class="compact-row @(scan.Status == SchoolInventoryManager.Models.AuditScanStatus.Found ? "is-found" : "has-warning")">
-                            <div>
-                                <strong>@scan.Name</strong>
-                                <span>@scan.Code · @scan.RoomName</span>
-                                <small>@scan.ScannedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                            </div>
-
-                            <em>@scan.Status</em>
-                        </article>
-                    }
-                </div>
-            }
-        </article>
-    </section>
-
-    <section class="grid two-columns">
-        <article class="panel">
-            <h2>Λείπουν ακόμα</h2>
-
-            @if (!Model.MissingItems.Any())
-            {
-                <div class="empty-state small success">
-                    <h3>Δεν λείπει κάτι</h3>
-                    <p>Όλα τα αναμενόμενα αντικείμενα έχουν καταγραφεί.</p>
-                </div>
-            }
-            else
-            {
-                <div class="compact-list">
-                    @foreach (var item in Model.MissingItems)
-                    {
-                        <article class="compact-row has-warning">
-                            <div>
-                                <strong>@item.Name</strong>
-                                <span>@item.AssetCode · @item.CategoryName</span>
-                            </div>
-                            <em>Λείπει</em>
-                        </article>
-                    }
-                </div>
-            }
-        </article>
-
-        <article class="panel">
-            <h2>Εκτός χώρου / άγνωστα</h2>
-
-            @if (!Model.WrongRoomScans.Any() && !Model.UnknownScans.Any())
-            {
-                <div class="empty-state small">
-                    <h3>Δεν υπάρχουν θέματα</h3>
-                    <p>Δεν έχουν καταγραφεί αντικείμενα άλλου χώρου ή άγνωστοι κωδικοί.</p>
-                </div>
-            }
-            else
-            {
-                <div class="compact-list">
-                    @foreach (var scan in Model.WrongRoomScans.Concat(Model.UnknownScans).OrderByDescending(x => x.ScannedAt))
-                    {
-                        <article class="compact-row has-warning">
-                            <div>
-                                <strong>@scan.Name</strong>
-                                <span>@scan.Code · @scan.RoomName</span>
-                            </div>
-                            <em>@scan.Status</em>
-                        </article>
-                    }
-                </div>
-            }
-        </article>
-    </section>
-}
+        </div>
+    }
+</div>

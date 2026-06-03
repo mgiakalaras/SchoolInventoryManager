@@ -279,6 +279,47 @@ public class RoomModel : PageModel
                 SelectedRoomName = RoomSession.RoomNameSnapshot;
             }
         }
+
+        await AutoAttachLatestActiveSessionAsync();
+    }
+
+
+    private async Task AutoAttachLatestActiveSessionAsync()
+    {
+        if (!RoomId.HasValue || RoomSession != null || RoomSessionId.HasValue || FolderId.HasValue)
+        {
+            return;
+        }
+
+        var selectedRoom = await _db.Rooms
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == RoomId.Value);
+
+        var selectedRoomName = NormalizeRoomName(selectedRoom?.Name);
+
+        var sessions = await _db.InventoryAuditRoomSessions
+            .Include(x => x.InventoryAuditFolder)
+            .Include(x => x.Room)
+            .Where(x => !x.InventoryAuditFolder!.IsFinalized)
+            .OrderByDescending(x => x.InventoryAuditFolder!.AuditDate)
+            .ThenByDescending(x => x.InventoryAuditFolderId)
+            .ThenByDescending(x => x.Id)
+            .ToListAsync();
+
+        RoomSession = sessions.FirstOrDefault(x =>
+            x.RoomId == RoomId.Value ||
+            (!string.IsNullOrWhiteSpace(selectedRoomName) &&
+             NormalizeRoomName(x.RoomNameSnapshot) == selectedRoomName));
+
+        if (RoomSession == null)
+        {
+            return;
+        }
+
+        Folder = RoomSession.InventoryAuditFolder;
+        FolderId = RoomSession.InventoryAuditFolderId;
+        RoomSessionId = RoomSession.Id;
+        SelectedRoomName = RoomSession.RoomNameSnapshot;
     }
 
     private async Task LoadRoomsAsync()
