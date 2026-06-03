@@ -310,7 +310,7 @@
             <div>
                 <h2>Επιλογή χώρου</h2>
                 <p class="muted">
-                    Για επίσημη απογραφή άνοιξε τον χώρο μέσα από φάκελο. Αν επιλέξεις απλά χώρο, η εφαρμογή θα προσπαθήσει να βρει αυτόματα τον τελευταίο ενεργό φάκελο.
+                    Για επίσημη απογραφή άνοιξε τον χώρο μέσα από φάκελο. Αν αλλάξεις χώρο, η σελίδα θα φορτώσει το σωστό ενεργό session για τον νέο χώρο.
                 </p>
             </div>
         </div>
@@ -319,11 +319,6 @@
             @if (Model.FolderId.HasValue)
             {
                 <input type="hidden" name="FolderId" value="@Model.FolderId.Value" />
-            }
-
-            @if (Model.RoomSessionId.HasValue)
-            {
-                <input type="hidden" name="RoomSessionId" value="@Model.RoomSessionId.Value" />
             }
 
             <label class="audit-room-label">

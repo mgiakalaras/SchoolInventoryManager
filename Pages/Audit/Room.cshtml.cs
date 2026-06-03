@@ -214,7 +214,7 @@ public class RoomModel : PageModel
         await LoadRoomsAsync();
         await LoadSessionAsync();
 
-        if (RoomSession?.RoomId.HasValue == true)
+        if (!RoomId.HasValue && RoomSession?.RoomId.HasValue == true)
         {
             RoomId = RoomSession.RoomId;
         }
@@ -246,43 +246,63 @@ public class RoomModel : PageModel
     {
         if (RoomSessionId.HasValue)
         {
-            RoomSession = await _db.InventoryAuditRoomSessions
+            var candidate = await _db.InventoryAuditRoomSessions
                 .Include(x => x.InventoryAuditFolder)
                 .Include(x => x.Room)
                 .Include(x => x.ScanLogs)
                 .FirstOrDefaultAsync(x => x.Id == RoomSessionId.Value);
 
-            if (RoomSession != null)
+            /*
+             * If the user changed the room from the dropdown, the old RoomSessionId can remain
+             * in the URL/form state. In that case, ignore the stale session and bind again by
+             * the selected RoomId / FolderId.
+             */
+            if (candidate != null && RoomId.HasValue && candidate.RoomId.HasValue && candidate.RoomId.Value != RoomId.Value)
             {
+                RoomSessionId = null;
+                RoomSession = null;
+            }
+            else if (candidate != null)
+            {
+                RoomSession = candidate;
                 Folder = RoomSession.InventoryAuditFolder;
                 FolderId = RoomSession.InventoryAuditFolderId;
                 SelectedRoomName = RoomSession.RoomNameSnapshot;
+                return;
             }
-
-            return;
         }
 
         if (FolderId.HasValue && RoomId.HasValue)
         {
-            RoomSession = await _db.InventoryAuditRoomSessions
+            var selectedRoom = await _db.Rooms
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == RoomId.Value);
+
+            var selectedRoomName = NormalizeRoomName(selectedRoom?.Name);
+
+            var sessions = await _db.InventoryAuditRoomSessions
                 .Include(x => x.InventoryAuditFolder)
                 .Include(x => x.Room)
                 .Include(x => x.ScanLogs)
-                .FirstOrDefaultAsync(x =>
-                    x.InventoryAuditFolderId == FolderId.Value &&
-                    x.RoomId == RoomId.Value);
+                .Where(x => x.InventoryAuditFolderId == FolderId.Value)
+                .ToListAsync();
+
+            RoomSession = sessions.FirstOrDefault(x => x.RoomId == RoomId.Value) ??
+                          sessions.FirstOrDefault(x =>
+                              !string.IsNullOrWhiteSpace(selectedRoomName) &&
+                              NormalizeRoomName(x.RoomNameSnapshot) == selectedRoomName);
 
             if (RoomSession != null)
             {
                 Folder = RoomSession.InventoryAuditFolder;
                 RoomSessionId = RoomSession.Id;
                 SelectedRoomName = RoomSession.RoomNameSnapshot;
+                return;
             }
         }
 
         await AutoAttachLatestActiveSessionAsync();
     }
-
 
     private async Task AutoAttachLatestActiveSessionAsync()
     {
