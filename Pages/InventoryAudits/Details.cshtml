@@ -39,6 +39,54 @@
         justify-content: flex-end;
     }
 
+    .audit-details-action-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+        border: 1px solid rgba(148, 163, 184, .16);
+        border-radius: 18px;
+        background: rgba(2, 6, 23, .28);
+        padding: .9rem;
+        margin-top: 1rem;
+    }
+
+    .audit-details-action-panel h3 {
+        margin: 0 0 .25rem;
+    }
+
+    .audit-details-action-panel p {
+        margin: 0;
+    }
+
+    .audit-details-action-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: .5rem;
+        min-width: 320px;
+    }
+
+    .audit-details-action-buttons .btn,
+    .audit-details-action-buttons button {
+        width: 100%;
+        min-height: 40px;
+        margin: 0;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .audit-details-action-buttons .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .audit-details-danger-panel {
+        border-color: rgba(248, 113, 113, .28);
+        background:
+            radial-gradient(circle at top left, rgba(248, 113, 113, .10), transparent 36%),
+            rgba(30, 10, 18, .42);
+    }
+
     .audit-details-card {
         border: 1px solid rgba(148, 163, 184, .16);
         border-radius: 22px;
@@ -157,12 +205,22 @@
     }
 
     @@media (max-width: 900px) {
-        .audit-details-hero {
+        .audit-details-hero,
+        .audit-details-action-panel {
             grid-template-columns: 1fr;
         }
 
         .audit-details-actions {
             justify-content: flex-start;
+        }
+
+        .audit-details-action-buttons {
+            min-width: 0;
+            grid-template-columns: 1fr;
+        }
+
+        .audit-details-action-buttons .full-width {
+            grid-column: auto;
         }
 
         .audit-details-stats {
@@ -190,13 +248,6 @@
                 <button class="btn secondary" type="submit">Ενημέρωση συνόλων</button>
             </form>
 
-            @if (!folder.IsFinalized)
-            {
-                <form class="audit-details-inline-form" method="post" asp-page-handler="Finalize" asp-route-id="@folder.Id"
-                      onsubmit="return confirm('Να οριστικοποιηθεί ο φάκελος απογραφής; Μετά δεν θα μπορεί να διαγραφεί ή να καθαριστεί.');">
-                    <button class="btn primary" type="submit">Οριστικοποίηση φακέλου</button>
-                </form>
-            }
         </div>
     </section>
 
@@ -245,16 +296,42 @@
 
         @if (!folder.IsFinalized)
         {
-            <div class="audit-details-actions" style="justify-content:flex-start;">
-                <form class="audit-details-inline-form" method="post" asp-page-handler="ClearScans" asp-route-id="@folder.Id"
-                      onsubmit="return confirm('Να καθαριστούν ΟΛΕΣ οι καταχωρήσεις/scans του φακέλου; Τα αντικείμενα δεν διαγράφονται, μόνο η πρόοδος απογραφής.');">
-                    <button class="btn secondary" type="submit">Καθαρισμός scans φακέλου</button>
-                </form>
+            <div class="audit-details-action-panel">
+                <div>
+                    <h3>Οριστικοποίηση φακέλου</h3>
+                    <p class="muted">
+                        Χρησιμοποίησέ το μόνο όταν όλοι οι χώροι έχουν ελεγχθεί και ο φάκελος είναι έτοιμος να κλειδώσει.
+                    </p>
+                </div>
 
-                <form class="audit-details-inline-form" method="post" asp-page-handler="Delete" asp-route-id="@folder.Id"
-                      onsubmit="return confirm('Να διαγραφεί ο πρόχειρος φάκελος απογραφής; Θα διαγραφούν οι χώροι/καταχωρήσεις αυτού του φακέλου. Τα αντικείμενα απογραφής ΔΕΝ διαγράφονται.');">
-                    <button class="btn danger" type="submit">Διαγραφή πρόχειρου φακέλου</button>
-                </form>
+                <div class="audit-details-action-buttons">
+                    <form class="audit-details-inline-form full-width" method="post" asp-page-handler="Finalize" asp-route-id="@folder.Id"
+                          onsubmit="return confirm('Να οριστικοποιηθεί ο φάκελος απογραφής; Μετά δεν θα μπορεί να διαγραφεί ή να καθαριστεί.');">
+                        <button class="btn primary" type="submit">Οριστικοποίηση φακέλου</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="audit-details-action-panel audit-details-danger-panel">
+                <div>
+                    <h3>Διορθώσεις πρόχειρου φακέλου</h3>
+                    <p class="muted">
+                        Για λάθος δοκιμές μπορείς να καθαρίσεις τις καταχωρήσεις ή να διαγράψεις ολόκληρο τον πρόχειρο φάκελο.
+                        Τα αντικείμενα απογραφής δεν διαγράφονται.
+                    </p>
+                </div>
+
+                <div class="audit-details-action-buttons">
+                    <form class="audit-details-inline-form" method="post" asp-page-handler="ClearScans" asp-route-id="@folder.Id"
+                          onsubmit="return confirm('Να καθαριστούν ΟΛΕΣ οι καταχωρήσεις/scans του φακέλου; Τα αντικείμενα δεν διαγράφονται, μόνο η πρόοδος απογραφής.');">
+                        <button class="btn secondary" type="submit">Καθαρισμός scans</button>
+                    </form>
+
+                    <form class="audit-details-inline-form" method="post" asp-page-handler="Delete" asp-route-id="@folder.Id"
+                          onsubmit="return confirm('Να διαγραφεί ο πρόχειρος φάκελος απογραφής; Θα διαγραφούν οι χώροι/καταχωρήσεις αυτού του φακέλου. Τα αντικείμενα απογραφής ΔΕΝ διαγράφονται.');">
+                        <button class="btn danger" type="submit">Διαγραφή φακέλου</button>
+                    </form>
+                </div>
             </div>
         }
     </section>
@@ -320,7 +397,7 @@
                                            asp-route-folderId="@folder.Id"
                                            asp-route-roomSessionId="@session.Id"
                                            asp-route-roomId="@session.RoomId">
-                                            Άνοιγμα
+                                            Άνοιγμα χώρου
                                         </a>
                                     </div>
                                 </td>
