@@ -21,7 +21,6 @@ public class RoomSessionModel : PageModel
         var session = await _db.InventoryAuditRoomSessions
             .Include(x => x.InventoryAuditFolder)
             .Include(x => x.ScanLogs)
-            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (session == null)
@@ -36,12 +35,10 @@ public class RoomSessionModel : PageModel
             };
         }
 
+        await MobileAuditLiveCalculator.RecalculateSessionAsync(_db, session);
+        await _db.SaveChangesAsync();
+
         var expectedItems = await LoadExpectedItemsAsync(session);
-        var foundCount = session.ScanLogs
-            .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
-            .Select(x => x.InventoryItemId!.Value)
-            .Distinct()
-            .Count();
 
         var wrongRoom = session.ScanLogs
             .Where(x => x.Status == AuditScanStatus.WrongRoom)
@@ -84,11 +81,12 @@ public class RoomSessionModel : PageModel
                 session.Id,
                 session.RoomId,
                 roomName = session.RoomNameSnapshot,
-                expectedItemsCount = expectedItems.Count,
-                foundItemsCount = foundCount,
-                missingItemsCount = Math.Max(0, expectedItems.Count - foundCount),
+                session.ExpectedItemsCount,
+                session.FoundItemsCount,
+                session.MissingItemsCount,
                 session.WrongRoomItemsCount,
                 session.UnknownItemsCount,
+                isCompleted = session.ExpectedItemsCount > 0 && session.MissingItemsCount == 0,
                 session.IsFinalized,
                 session.StartedAt,
                 session.CompletedAt
@@ -106,29 +104,9 @@ public class RoomSessionModel : PageModel
             .Select(x => x.InventoryItemId!.Value)
             .ToHashSet();
 
-        /*
-         * Defensive matching for mobile audit sessions:
-         * 1. Prefer RoomId when it matches.
-         * 2. Fallback to RoomNameSnapshot matching current item Room.Name.
-         *
-         * This protects the scanner flow after database reset/re-import operations.
-         */
-        var roomNameSnapshot = NormalizeRoomName(session.RoomNameSnapshot);
+        var expected = await MobileAuditLiveCalculator.GetExpectedItemsAsync(_db, session);
 
-        var rawItems = await _db.InventoryItems
-            .Where(x => x.IsActive)
-            .Include(x => x.Room)
-            .Include(x => x.InventoryCategory)
-            .AsNoTracking()
-            .ToListAsync();
-
-        return rawItems
-            .Where(x =>
-                (session.RoomId.HasValue && x.RoomId == session.RoomId.Value) ||
-                (!string.IsNullOrWhiteSpace(roomNameSnapshot) &&
-                 NormalizeRoomName(x.Room != null ? x.Room.Name : null) == roomNameSnapshot))
-            .OrderBy(x => x.InventoryCategory != null ? x.InventoryCategory.Name : string.Empty)
-            .ThenBy(x => x.Name)
+        return expected
             .Select(x => new
             {
                 x.Id,
@@ -142,10 +120,5 @@ public class RoomSessionModel : PageModel
                 scanned = foundIds.Contains(x.Id)
             } as object)
             .ToList();
-    }
-
-    private static string NormalizeRoomName(string? value)
-    {
-        return (value ?? string.Empty).Trim().ToUpperInvariant();
     }
 }

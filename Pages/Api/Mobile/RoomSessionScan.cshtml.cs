@@ -76,7 +76,8 @@ public class RoomSessionScanModel : PageModel
         if (item == null)
         {
             await SaveUnknownScanAsync(session, normalizedCode);
-            await RecalculateSessionAsync(session);
+            await MobileAuditLiveCalculator.RecalculateSessionAsync(_db, session);
+            await _db.SaveChangesAsync();
 
             response = new MobileScanResponse
             {
@@ -89,11 +90,12 @@ public class RoomSessionScanModel : PageModel
         }
         else
         {
-            var sameRoom = IsSameRoom(session, item);
+            var sameRoom = MobileAuditLiveCalculator.IsSameRoom(session, item);
             var status = sameRoom ? AuditScanStatus.Found : AuditScanStatus.WrongRoom;
 
             await SaveItemScanAsync(session, item, normalizedCode, status);
-            await RecalculateSessionAsync(session);
+            await MobileAuditLiveCalculator.RecalculateSessionAsync(_db, session);
+            await _db.SaveChangesAsync();
 
             var brandModel = string.Join(" ", new[] { item.Brand, item.Model }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
@@ -130,7 +132,9 @@ public class RoomSessionScanModel : PageModel
             session.FoundItemsCount,
             session.MissingItemsCount,
             session.WrongRoomItemsCount,
-            session.UnknownItemsCount
+            session.UnknownItemsCount,
+            isCompleted = session.ExpectedItemsCount > 0 && session.MissingItemsCount == 0,
+            session.CompletedAt
         };
 
         return new JsonResult(response);
@@ -162,19 +166,6 @@ public class RoomSessionScanModel : PageModel
         {
             return new MobileScanRequest();
         }
-    }
-
-    private static bool IsSameRoom(InventoryAuditRoomSession session, InventoryItem item)
-    {
-        if (session.RoomId.HasValue && item.RoomId == session.RoomId.Value)
-        {
-            return true;
-        }
-
-        var sessionRoomName = NormalizeRoomName(session.RoomNameSnapshot);
-        var itemRoomName = NormalizeRoomName(item.Room?.Name);
-
-        return !string.IsNullOrWhiteSpace(sessionRoomName) && sessionRoomName == itemRoomName;
     }
 
     private async Task SaveItemScanAsync(InventoryAuditRoomSession session, InventoryItem item, string code, string status)
@@ -243,68 +234,6 @@ public class RoomSessionScanModel : PageModel
         }
 
         session.UpdatedAt = DateTime.Now;
-    }
-
-    private async Task RecalculateSessionAsync(InventoryAuditRoomSession session)
-    {
-        var logs = await _db.InventoryAuditScanLogs
-            .Where(x => x.InventoryAuditRoomSessionId == session.Id)
-            .AsNoTracking()
-            .ToListAsync();
-
-        var expectedCount = await CountExpectedItemsAsync(session);
-
-        var found = logs
-            .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
-            .Select(x => x.InventoryItemId!.Value)
-            .Distinct()
-            .Count();
-
-        var wrong = logs
-            .Where(x => x.Status == AuditScanStatus.WrongRoom)
-            .Select(x => x.InventoryItemId?.ToString() ?? x.ScannedCode)
-            .Distinct()
-            .Count();
-
-        var unknown = logs
-            .Where(x => x.Status == AuditScanStatus.Unknown)
-            .Select(x => x.ScannedCode)
-            .Distinct()
-            .Count();
-
-        session.ExpectedItemsCount = expectedCount;
-        session.FoundItemsCount = found;
-        session.MissingItemsCount = Math.Max(0, expectedCount - found);
-        session.WrongRoomItemsCount = wrong;
-        session.UnknownItemsCount = unknown;
-        session.UpdatedAt = DateTime.Now;
-
-        await _db.SaveChangesAsync();
-    }
-
-    private async Task<int> CountExpectedItemsAsync(InventoryAuditRoomSession session)
-    {
-        var roomNameSnapshot = NormalizeRoomName(session.RoomNameSnapshot);
-
-        var items = await _db.InventoryItems
-            .Where(x => x.IsActive)
-            .Include(x => x.Room)
-            .AsNoTracking()
-            .Select(x => new
-            {
-                x.RoomId,
-                RoomName = x.Room != null ? x.Room.Name : null
-            })
-            .ToListAsync();
-
-        return items.Count(x =>
-            (session.RoomId.HasValue && x.RoomId == session.RoomId.Value) ||
-            (!string.IsNullOrWhiteSpace(roomNameSnapshot) && NormalizeRoomName(x.RoomName) == roomNameSnapshot));
-    }
-
-    private static string NormalizeRoomName(string? value)
-    {
-        return (value ?? string.Empty).Trim().ToUpperInvariant();
     }
 
     public class MobileScanRequest

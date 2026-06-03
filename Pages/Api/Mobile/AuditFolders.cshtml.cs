@@ -21,7 +21,6 @@ public class AuditFoldersModel : PageModel
 
         var query = _db.InventoryAuditFolders
             .Include(x => x.RoomSessions)
-            .AsNoTracking()
             .AsQueryable();
 
         if (!includeFinalized)
@@ -29,10 +28,20 @@ public class AuditFoldersModel : PageModel
             query = query.Where(x => !x.IsFinalized);
         }
 
-        var folders = await query
+        var folderEntities = await query
             .OrderByDescending(x => x.AuditDate)
             .ThenByDescending(x => x.Id)
             .Take(take)
+            .ToListAsync();
+
+        foreach (var folder in folderEntities)
+        {
+            await MobileAuditLiveCalculator.RecalculateFolderAsync(_db, folder);
+        }
+
+        await _db.SaveChangesAsync();
+
+        var folders = folderEntities
             .Select(x => new
             {
                 x.Id,
@@ -50,9 +59,10 @@ public class AuditFoldersModel : PageModel
                 missing = x.RoomSessions.Sum(r => r.MissingItemsCount),
                 wrongRoom = x.RoomSessions.Sum(r => r.WrongRoomItemsCount),
                 unknown = x.RoomSessions.Sum(r => r.UnknownItemsCount),
+                completedRooms = x.RoomSessions.Count(r => r.ExpectedItemsCount > 0 && r.MissingItemsCount == 0),
                 finalizedRooms = x.RoomSessions.Count(r => r.IsFinalized)
             })
-            .ToListAsync();
+            .ToList();
 
         return new JsonResult(new
         {

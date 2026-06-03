@@ -20,7 +20,6 @@ public class AuditFolderRoomsModel : PageModel
         var folder = await _db.InventoryAuditFolders
             .Include(x => x.RoomSessions)
                 .ThenInclude(x => x.ScanLogs)
-            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (folder == null)
@@ -35,6 +34,9 @@ public class AuditFolderRoomsModel : PageModel
             };
         }
 
+        await MobileAuditLiveCalculator.RecalculateFolderAsync(_db, folder);
+        await _db.SaveChangesAsync();
+
         var rooms = folder.RoomSessions
             .OrderBy(x => x.RoomNameSnapshot)
             .Select(x => new
@@ -48,6 +50,7 @@ public class AuditFolderRoomsModel : PageModel
                 x.MissingItemsCount,
                 x.WrongRoomItemsCount,
                 x.UnknownItemsCount,
+                isCompleted = x.ExpectedItemsCount > 0 && x.MissingItemsCount == 0,
                 x.IsFinalized,
                 x.StartedAt,
                 x.CompletedAt,
@@ -67,7 +70,9 @@ public class AuditFolderRoomsModel : PageModel
                 folder.SchoolType,
                 folder.SchoolYear,
                 folder.ResponsibleName,
-                folder.IsFinalized
+                folder.IsFinalized,
+                completedRooms = folder.RoomSessions.Count(x => x.ExpectedItemsCount > 0 && x.MissingItemsCount == 0),
+                totalRooms = folder.RoomSessions.Count
             },
             rooms
         });
