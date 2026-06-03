@@ -36,53 +36,12 @@ public class RoomSessionModel : PageModel
             };
         }
 
-        var expectedItems = new List<object>();
-
-        if (session.RoomId.HasValue)
-        {
-            var foundIds = session.ScanLogs
-                .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
-                .Select(x => x.InventoryItemId!.Value)
-                .ToHashSet();
-
-            /*
-             * Important:
-             * Keep the EF query simple and materialize first.
-             * Do NOT use string.Join / LINQ-to-objects helpers inside the EF Select,
-             * because SQLite/EF cannot translate them and the API returns HTTP 500.
-             */
-            var rawItems = await _db.InventoryItems
-                .Where(x => x.IsActive && x.RoomId == session.RoomId.Value)
-                .Include(x => x.InventoryCategory)
-                .AsNoTracking()
-                .OrderBy(x => x.Name)
-                .Select(x => new
-                {
-                    x.Id,
-                    Code = x.AssetCode ?? x.QrToken ?? x.Id.ToString(),
-                    x.Name,
-                    x.Brand,
-                    x.Model,
-                    CategoryName = x.InventoryCategory != null ? x.InventoryCategory.Name : "Χωρίς κατηγορία",
-                    x.SerialNumber,
-                    x.Quantity
-                })
-                .ToListAsync();
-
-            expectedItems = rawItems
-                .Select(x => new
-                {
-                    x.Id,
-                    code = x.Code,
-                    x.Name,
-                    brandModel = string.Join(" ", new[] { x.Brand, x.Model }.Where(v => !string.IsNullOrWhiteSpace(v))),
-                    categoryName = x.CategoryName,
-                    x.SerialNumber,
-                    x.Quantity,
-                    scanned = foundIds.Contains(x.Id)
-                } as object)
-                .ToList();
-        }
+        var expectedItems = await LoadExpectedItemsAsync(session);
+        var foundCount = session.ScanLogs
+            .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
+            .Select(x => x.InventoryItemId!.Value)
+            .Distinct()
+            .Count();
 
         var wrongRoom = session.ScanLogs
             .Where(x => x.Status == AuditScanStatus.WrongRoom)
@@ -125,9 +84,9 @@ public class RoomSessionModel : PageModel
                 session.Id,
                 session.RoomId,
                 roomName = session.RoomNameSnapshot,
-                session.ExpectedItemsCount,
-                session.FoundItemsCount,
-                session.MissingItemsCount,
+                expectedItemsCount = expectedItems.Count,
+                foundItemsCount = foundCount,
+                missingItemsCount = Math.Max(0, expectedItems.Count - foundCount),
                 session.WrongRoomItemsCount,
                 session.UnknownItemsCount,
                 session.IsFinalized,
@@ -138,5 +97,55 @@ public class RoomSessionModel : PageModel
             wrongRoom,
             unknown
         });
+    }
+
+    private async Task<List<object>> LoadExpectedItemsAsync(InventoryAuditRoomSession session)
+    {
+        var foundIds = session.ScanLogs
+            .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
+            .Select(x => x.InventoryItemId!.Value)
+            .ToHashSet();
+
+        /*
+         * Defensive matching for mobile audit sessions:
+         * 1. Prefer RoomId when it matches.
+         * 2. Fallback to RoomNameSnapshot matching current item Room.Name.
+         *
+         * This protects the scanner flow after database reset/re-import operations.
+         */
+        var roomNameSnapshot = NormalizeRoomName(session.RoomNameSnapshot);
+
+        var rawItems = await _db.InventoryItems
+            .Where(x => x.IsActive)
+            .Include(x => x.Room)
+            .Include(x => x.InventoryCategory)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return rawItems
+            .Where(x =>
+                (session.RoomId.HasValue && x.RoomId == session.RoomId.Value) ||
+                (!string.IsNullOrWhiteSpace(roomNameSnapshot) &&
+                 NormalizeRoomName(x.Room != null ? x.Room.Name : null) == roomNameSnapshot))
+            .OrderBy(x => x.InventoryCategory != null ? x.InventoryCategory.Name : string.Empty)
+            .ThenBy(x => x.Name)
+            .Select(x => new
+            {
+                x.Id,
+                code = x.AssetCode ?? x.QrToken ?? x.Id.ToString(),
+                x.Name,
+                brandModel = string.Join(" ", new[] { x.Brand, x.Model }.Where(v => !string.IsNullOrWhiteSpace(v))),
+                categoryName = x.InventoryCategory != null ? x.InventoryCategory.Name : "Χωρίς κατηγορία",
+                roomName = x.Room != null ? x.Room.Name : "Χωρίς χώρο",
+                x.SerialNumber,
+                x.Quantity,
+                scanned = foundIds.Contains(x.Id)
+            } as object)
+            .ToList();
+    }
+
+    private static string NormalizeRoomName(string? value)
+    {
+        return (value ?? string.Empty).Trim().ToUpperInvariant();
     }
 }

@@ -67,7 +67,9 @@ public class RoomSessionScanModel : PageModel
         var item = await _db.InventoryItems
             .Include(x => x.Room)
             .Include(x => x.InventoryCategory)
-            .FirstOrDefaultAsync(x => x.AssetCode == normalizedCode || x.QrToken == normalizedCode);
+            .FirstOrDefaultAsync(x =>
+                x.AssetCode == normalizedCode ||
+                x.QrToken == normalizedCode);
 
         MobileScanResponse response;
 
@@ -87,9 +89,8 @@ public class RoomSessionScanModel : PageModel
         }
         else
         {
-            var status = item.RoomId == session.RoomId
-                ? AuditScanStatus.Found
-                : AuditScanStatus.WrongRoom;
+            var sameRoom = IsSameRoom(session, item);
+            var status = sameRoom ? AuditScanStatus.Found : AuditScanStatus.WrongRoom;
 
             await SaveItemScanAsync(session, item, normalizedCode, status);
             await RecalculateSessionAsync(session);
@@ -99,10 +100,10 @@ public class RoomSessionScanModel : PageModel
             response = new MobileScanResponse
             {
                 Ok = true,
-                Found = true,
+                Found = sameRoom,
                 Status = status,
                 Code = normalizedCode,
-                Message = status == AuditScanStatus.Found
+                Message = sameRoom
                     ? "Το αντικείμενο βρέθηκε σωστά στον χώρο."
                     : $"Το αντικείμενο είναι δηλωμένο σε άλλο χώρο: {item.Room?.Name ?? "Χωρίς χώρο"}",
                 Item = new
@@ -161,6 +162,19 @@ public class RoomSessionScanModel : PageModel
         {
             return new MobileScanRequest();
         }
+    }
+
+    private static bool IsSameRoom(InventoryAuditRoomSession session, InventoryItem item)
+    {
+        if (session.RoomId.HasValue && item.RoomId == session.RoomId.Value)
+        {
+            return true;
+        }
+
+        var sessionRoomName = NormalizeRoomName(session.RoomNameSnapshot);
+        var itemRoomName = NormalizeRoomName(item.Room?.Name);
+
+        return !string.IsNullOrWhiteSpace(sessionRoomName) && sessionRoomName == itemRoomName;
     }
 
     private async Task SaveItemScanAsync(InventoryAuditRoomSession session, InventoryItem item, string code, string status)
@@ -238,6 +252,8 @@ public class RoomSessionScanModel : PageModel
             .AsNoTracking()
             .ToListAsync();
 
+        var expectedCount = await CountExpectedItemsAsync(session);
+
         var found = logs
             .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
             .Select(x => x.InventoryItemId!.Value)
@@ -256,13 +272,39 @@ public class RoomSessionScanModel : PageModel
             .Distinct()
             .Count();
 
+        session.ExpectedItemsCount = expectedCount;
         session.FoundItemsCount = found;
-        session.MissingItemsCount = Math.Max(0, session.ExpectedItemsCount - found);
+        session.MissingItemsCount = Math.Max(0, expectedCount - found);
         session.WrongRoomItemsCount = wrong;
         session.UnknownItemsCount = unknown;
         session.UpdatedAt = DateTime.Now;
 
         await _db.SaveChangesAsync();
+    }
+
+    private async Task<int> CountExpectedItemsAsync(InventoryAuditRoomSession session)
+    {
+        var roomNameSnapshot = NormalizeRoomName(session.RoomNameSnapshot);
+
+        var items = await _db.InventoryItems
+            .Where(x => x.IsActive)
+            .Include(x => x.Room)
+            .AsNoTracking()
+            .Select(x => new
+            {
+                x.RoomId,
+                RoomName = x.Room != null ? x.Room.Name : null
+            })
+            .ToListAsync();
+
+        return items.Count(x =>
+            (session.RoomId.HasValue && x.RoomId == session.RoomId.Value) ||
+            (!string.IsNullOrWhiteSpace(roomNameSnapshot) && NormalizeRoomName(x.RoomName) == roomNameSnapshot));
+    }
+
+    private static string NormalizeRoomName(string? value)
+    {
+        return (value ?? string.Empty).Trim().ToUpperInvariant();
     }
 
     public class MobileScanRequest
