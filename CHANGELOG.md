@@ -4,6 +4,42 @@ All notable changes to School Inventory Manager are documented in this file.
 
 ---
 
+## v0.5.1 - Mobile scanner workflow cleanup
+
+### Added
+
+- Added Android Scanner workflow documentation.
+- Added clearer separation between web management and mobile QR camera scanning.
+- Added notes that the server remains the single source of truth for mobile scan progress.
+- Added documentation for official QR inventory flow through audit folders.
+
+### Changed
+
+- Updated README to remove confusing references to browser-based camera scanning as the main QR workflow.
+- Clarified that the web app is used for:
+  - rooms
+  - equipment
+  - audit folders
+  - QR labels
+  - manual checks
+  - reports
+  - finalization
+- Clarified that camera QR scanning is performed through the Android Scanner app.
+- Updated QR inventory wording from generic “web QR scanner” to “Android Scanner / official audit folder workflow”.
+- Cleaned repository documentation so it matches the current school-testing workflow.
+
+### Fixed
+
+- Removed outdated README guidance suggesting that mobile/browser camera scanning through the web page is part of the normal flow.
+- Reduced confusion between standalone QR checking pages and official audit folder progress.
+
+### Notes
+
+- `/Audit/Room` still exists in the project and should be cleaned in a later patch.
+- Next cleanup step: convert old browser QR pages into manual check / admin utility pages or move them out of the main workflow.
+
+---
+
 ## v0.5.0 - QR inventory labels and audit folders
 
 ### Added
@@ -33,19 +69,7 @@ All notable changes to School Inventory Manager are documented in this file.
   - 3 columns x 7 rows
   - 70mm x 42.3mm
 - Added PNG QR rendering for more reliable browser print scaling.
-- Added QR scan page:
-  - `/Audit/Scan`
-- Added manual QR lookup by AssetCode or full QR URL.
-- Added camera scanning using browser BarcodeDetector where supported.
-- Added recent scans list.
-- Added room-based QR audit page:
-  - `/Audit/Room`
-- Added live counters for room QR audit:
-  - expected
-  - found
-  - missing
-  - wrong room
-  - unknown QR
+- Added room-based QR audit foundation.
 - Added inventory audit folder module.
 - Added inventory audit folder creation.
 - Added automatic room sessions for rooms with active items.
@@ -70,12 +94,7 @@ All notable changes to School Inventory Manager are documented in this file.
 - Inventory audit folder creation now pulls school data from School Settings instead of asking the user to type it manually.
 - Audit folder creation now shows school details as read-only snapshot data.
 - Audit folder details now show school type.
-- Dashboard links were updated to include QR labels, QR scan and room audit workflow.
-- Menu structure was reorganized into clearer groups:
-  - βασικά
-  - απογραφή QR
-  - τεχνικά / απόθεμα
-  - διαχείριση
+- Menu structure was reorganized into clearer groups.
 
 ### Fixed
 
@@ -90,8 +109,6 @@ All notable changes to School Inventory Manager are documented in this file.
 ### Notes
 
 - Mobile/tablet QR URL opening works when the device is on the same network/VPN and `ApplicationBaseUrl` is configured correctly.
-- In-browser camera scanning on mobile may require HTTPS depending on browser/security policy.
-- External QR scanner / camera apps can open the QR URL directly.
 - The app remains in school testing phase.
 - Recommended usage remains local network only.
 - Backup is recommended before updating existing deployments.
