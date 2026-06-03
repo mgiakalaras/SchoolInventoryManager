@@ -2,222 +2,335 @@
 @model SchoolInventoryManager.Pages.Help.IndexModel
 
 @{
-    ViewData["Title"] = "Βοήθεια";
+    ViewData["Title"] = "Οδηγίες χρήσης";
 }
 
-<section class="help-hero">
-    <div>
-        <span class="hero-kicker">Κέντρο βοήθειας</span>
-        <h1>Βοήθεια χωρίς πονοκέφαλο.</h1>
-        <p>
-            Γρήγορες οδηγίες για απογραφή, QR ετικέτες, φακέλους απογραφής και την εφαρμογή Android Scanner.
-        </p>
-    </div>
-    <img src="~/assets/brand/sim-logo-lockup-dark.svg" alt="School Inventory Manager" />
-</section>
-
-<section class="help-grid">
-    <article class="help-card">
-        <img src="~/assets/icons/folder-audit.svg" alt="" />
-        <h2>Φάκελοι απογραφής</h2>
-        <p>Δημιούργησε φάκελο απογραφής, άνοιξε κάθε χώρο, έλεγξε τα αντικείμενα και οριστικοποίησε όταν τελειώσεις.</p>
-        <a asp-page="/InventoryAudits/Index">Άνοιγμα φακέλων</a>
-    </article>
-
-    <article class="help-card">
-        <img src="~/assets/icons/qr-scan.svg" alt="" />
-        <h2>QR ετικέτες</h2>
-        <p>Εκτύπωσε QR ανά αντικείμενο για γρήγορη αναγνώριση και μελλοντικές απογραφές με κινητό ή tablet.</p>
-        <a asp-page="/Labels/Qr">Άνοιγμα QR labels</a>
-    </article>
-
-    <article class="help-card">
-        <img src="~/assets/icons/android-phone.svg" alt="" />
-        <h2>Android Scanner</h2>
-        <p>Η σάρωση QR με κάμερα γίνεται από native Android εφαρμογή, ώστε να μην μπλοκάρει ο browser.</p>
-        <a asp-page="/Scanner/Index">Σελίδα εφαρμογής</a>
-    </article>
-
-    <article class="help-card">
-        <img src="~/assets/icons/room-pin.svg" alt="" />
-        <h2>Απογραφή χώρου</h2>
-        <p>Κάθε χώρος δείχνει αναμενόμενα, βρεθέντα, ελλείποντα, λάθος χώρο και άγνωστα QR.</p>
-        <a asp-page="/Audit/Room">Άνοιγμα απογραφής χώρου</a>
-    </article>
-</section>
-
-<section class="help-section">
-    <h2>Προτεινόμενη ροή απογραφής</h2>
-    <div class="help-steps">
-        <div><strong>1</strong><span>Δημιουργία φακέλου</span></div>
-        <div><strong>2</strong><span>Επιλογή χώρου</span></div>
-        <div><strong>3</strong><span>Σάρωση με Android app</span></div>
-        <div><strong>4</strong><span>Έλεγχος αποτελεσμάτων</span></div>
-        <div><strong>5</strong><span>Οριστικοποίηση</span></div>
-    </div>
-</section>
-
-<section class="help-section">
-    <h2>Συχνές απορίες</h2>
-
-    <details open>
-        <summary>Γιατί δεν σκανάρουμε πια μέσα από browser;</summary>
-        <p>
-            Σε κινητά και tablets, οι browsers μπλοκάρουν συχνά την κάμερα όταν η εφαρμογή τρέχει σε απλό HTTP.
-            Η native Android εφαρμογή λύνει αυτό το θέμα και δίνει πιο σταθερή εμπειρία.
-        </p>
-    </details>
-
-    <details>
-        <summary>Τα QR θα ανοίγουν από κινητό;</summary>
-        <p>
-            Ναι, αρκεί η διεύθυνση εφαρμογής στα Settings να δείχνει στη σωστή IP/διεύθυνση του server,
-            π.χ. <strong>http://172.26.0.1:5148</strong>, και το κινητό να έχει πρόσβαση στο ίδιο δίκτυο/VPN.
-        </p>
-    </details>
-
-    <details>
-        <summary>Πού θα ανεβαίνει το APK;</summary>
-        <p>
-            Στον φάκελο <strong>wwwroot/downloads/SchoolInventoryScanner.apk</strong>.
-            Η σελίδα Scanner θα ενεργοποιήσει αυτόματα το κουμπί λήψης όταν υπάρχει το αρχείο.
-        </p>
-    </details>
-</section>
-
 <style>
+    .help-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding-bottom: 3rem;
+    }
+
     .help-hero {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.65fr);
-        gap: 1rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1.25rem;
         align-items: center;
-        border: 1px solid rgba(34, 211, 238, 0.18);
-        border-radius: 28px;
-        padding: clamp(1.2rem, 3vw, 2rem);
-        margin-bottom: 1rem;
+        padding: 1.35rem;
+        border: 1px solid rgba(34, 211, 238, .22);
+        border-radius: 22px;
         background:
-            radial-gradient(circle at top left, rgba(34, 211, 238, 0.13), transparent 34%),
-            rgba(15, 23, 42, 0.78);
+            radial-gradient(circle at top left, rgba(34, 211, 238, .16), transparent 38%),
+            radial-gradient(circle at bottom right, rgba(52, 211, 153, .10), transparent 34%),
+            linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(17, 24, 39, .92));
+        box-shadow: 0 18px 42px rgba(0, 0, 0, .28);
+        margin-bottom: 1rem;
     }
 
-    .help-hero h1 {
-        color: #f8fafc;
-        font-size: clamp(2rem, 4vw, 3.8rem);
-        line-height: 1;
-        letter-spacing: -0.05em;
-        margin: 0.5rem 0 0.75rem;
-    }
-
-    .help-hero p {
-        color: #cbd5e1;
-        font-size: 1.08rem;
-        line-height: 1.6;
-        max-width: 740px;
+    .help-hero h1,
+    .help-card h2,
+    .help-card h3 {
         margin: 0;
     }
 
-    .help-hero img {
-        width: 100%;
-        border-radius: 22px;
+    .help-badge {
+        display: inline-flex;
+        width: fit-content;
+        padding: .25rem .55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(34, 211, 238, .32);
+        color: #a5f3fc;
+        background: rgba(8, 47, 73, .42);
+        font-weight: 800;
+        font-size: .72rem;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        margin-bottom: .65rem;
+    }
+
+    .help-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        justify-content: flex-end;
     }
 
     .help-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
         gap: 1rem;
+        align-items: start;
+    }
+
+    .help-card {
+        border: 1px solid rgba(148, 163, 184, .16);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .06), transparent 40%),
+            rgba(15, 23, 42, .82);
+        padding: 1rem;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, .22);
         margin-bottom: 1rem;
     }
 
-    .help-card,
-    .help-section {
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        border-radius: 24px;
-        background: rgba(15, 23, 42, 0.72);
-        padding: 1rem;
+    .help-card.success {
+        border-color: rgba(52, 211, 153, .26);
+        background:
+            radial-gradient(circle at top left, rgba(52, 211, 153, .10), transparent 36%),
+            rgba(6, 30, 25, .72);
     }
 
-    .help-card img {
-        width: 58px;
-        height: 58px;
-        margin-bottom: 0.75rem;
+    .help-card.warning {
+        border-color: rgba(245, 158, 11, .30);
+        background:
+            radial-gradient(circle at top left, rgba(245, 158, 11, .12), transparent 36%),
+            rgba(30, 23, 10, .72);
     }
 
-    .help-card h2,
-    .help-section h2 {
-        color: #f8fafc;
-        margin: 0 0 0.55rem;
+    .help-nav-list,
+    .help-checklist {
+        list-style: none;
+        padding: 0;
+        margin: .9rem 0 0;
+        display: grid;
+        gap: .55rem;
     }
 
-    .help-card p,
-    .help-section p {
-        color: #cbd5e1;
-        line-height: 1.55;
-    }
-
-    .help-card a {
-        color: #22d3ee;
-        font-weight: 850;
+    .help-nav-list a {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .7rem;
+        align-items: center;
+        padding: .78rem .85rem;
+        border-radius: 15px;
+        border: 1px solid rgba(148, 163, 184, .14);
+        background: rgba(2, 6, 23, .30);
         text-decoration: none;
+        color: #e5eefb;
+    }
+
+    .help-nav-list a::after {
+        content: "→";
+        color: #22d3ee;
+        font-weight: 900;
+    }
+
+    .help-checklist li {
+        padding: .75rem .85rem;
+        border-radius: 15px;
+        border: 1px solid rgba(148, 163, 184, .14);
+        background: rgba(2, 6, 23, .30);
+        color: #cbd5e1;
+    }
+
+    .help-checklist li::before {
+        content: "✓";
+        color: #34d399;
+        font-weight: 900;
+        margin-right: .55rem;
+    }
+
+    .help-warning-list li::before {
+        content: "!";
+        color: #f59e0b;
     }
 
     .help-steps {
+        counter-reset: help-step;
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 0.75rem;
+        gap: .65rem;
+        margin-top: .9rem;
     }
 
-    .help-steps div {
-        border: 1px solid rgba(34, 211, 238, 0.18);
-        border-radius: 18px;
-        padding: 0.9rem;
-        background: rgba(2, 6, 23, 0.28);
+    .help-step {
+        counter-increment: help-step;
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: .75rem;
+        align-items: start;
+        padding: .85rem;
+        border: 1px solid rgba(148, 163, 184, .14);
+        border-radius: 16px;
+        background: rgba(2, 6, 23, .30);
     }
 
-    .help-steps strong {
+    .help-step::before {
+        content: counter(help-step);
         display: grid;
         place-items: center;
         width: 34px;
         height: 34px;
-        border-radius: 999px;
-        color: #06121f;
-        background: linear-gradient(135deg, #22d3ee, #34d399);
-        margin-bottom: 0.55rem;
+        border-radius: 12px;
+        background: rgba(34, 211, 238, .14);
+        color: #67e8f9;
+        font-weight: 900;
+        border: 1px solid rgba(34, 211, 238, .32);
     }
 
-    .help-steps span {
-        color: #f8fafc;
-        font-weight: 800;
+    .help-step strong,
+    .help-step span {
+        display: block;
     }
 
-    details {
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        border-radius: 18px;
-        padding: 0.85rem 1rem;
-        background: rgba(2, 6, 23, 0.22);
+    .help-step span {
+        color: #94a3b8;
+        margin-top: .2rem;
     }
 
-    details + details {
-        margin-top: 0.65rem;
+    .help-section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
     }
 
-    summary {
-        color: #f8fafc;
-        cursor: pointer;
-        font-weight: 850;
-    }
-
-    @@media (max-width: 1100px) {
-        .help-grid,
-        .help-steps {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
-    @@media (max-width: 780px) {
+    @@media (max-width: 900px) {
         .help-hero,
         .help-grid,
-        .help-steps {
+        .help-section-grid {
             grid-template-columns: 1fr;
+        }
+
+        .help-actions {
+            justify-content: flex-start;
         }
     }
 </style>
+
+<div class="help-page">
+    <section class="help-hero">
+        <div>
+            <span class="help-badge">Οδηγίες χρήσης</span>
+            <h1>School Inventory Manager</h1>
+            <p class="muted">
+                Γρήγορη εικόνα για τη σωστή ροή: πρώτα στήνεις χώρους/εξοπλισμό, μετά δημιουργείς φάκελο απογραφής,
+                σκανάρεις από Android και οριστικοποιείς από το web app.
+            </p>
+        </div>
+
+        <div class="help-actions">
+            <a class="btn primary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+            <a class="btn secondary" asp-page="/Scanner/Index">Android Scanner</a>
+            <a class="btn secondary" asp-page="/Labels/Qr">QR ετικέτες</a>
+        </div>
+    </section>
+
+    <div class="help-grid">
+        <aside>
+            <section class="help-card">
+                <h2>Γρήγορη πλοήγηση</h2>
+                <ul class="help-nav-list">
+                    <li><a asp-page="/Settings/Index">Ρυθμίσεις σχολείου</a></li>
+                    <li><a asp-page="/Rooms/Index">Χώροι</a></li>
+                    <li><a asp-page="/Items/Index">Εξοπλισμός</a></li>
+                    <li><a asp-page="/ImportExport/Index">Import / Export</a></li>
+                    <li><a asp-page="/Labels/Qr">QR ετικέτες</a></li>
+                    <li><a asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a></li>
+                    <li><a asp-page="/Audit/Room">Χειροκίνητος έλεγχος χώρου</a></li>
+                    <li><a asp-page="/Scanner/Index">Android Scanner</a></li>
+                    <li><a asp-page="/Destructions/Index">Καταστροφή υλικού</a></li>
+                    <li><a asp-page="/SpareParts/Index">Ανταλλακτικά / Απόθεμα</a></li>
+                </ul>
+            </section>
+
+            <section class="help-card warning">
+                <h2>Σημαντικό</h2>
+                <ul class="help-checklist help-warning-list">
+                    <li>Η κάμερα QR γίνεται από Android κινητό ή tablet, όχι από browser υπολογιστή.</li>
+                    <li>Το web app είναι για διαχείριση, χειροκίνητο έλεγχο, αναφορές και οριστικοποίηση.</li>
+                    <li>Πριν εκτυπώσεις QR labels, έλεγξε το Application Base URL στις ρυθμίσεις.</li>
+                    <li>Πριν από σοβαρό update κράτα backup της βάσης ή του Docker volume.</li>
+                </ul>
+            </section>
+        </aside>
+
+        <main>
+            <section class="help-card success">
+                <h2>Βασική ροή απογραφής με QR</h2>
+
+                <div class="help-steps">
+                    <div class="help-step">
+                        <div>
+                            <strong>Συμπλήρωσε τις ρυθμίσεις σχολείου</strong>
+                            <span>Όνομα σχολείου, τύπος, σχολικό έτος, υπεύθυνος και Application Base URL.</span>
+                        </div>
+                    </div>
+
+                    <div class="help-step">
+                        <div>
+                            <strong>Πέρασε χώρους και εξοπλισμό</strong>
+                            <span>Με χειροκίνητη καταχώρηση ή import από Excel.</span>
+                        </div>
+                    </div>
+
+                    <div class="help-step">
+                        <div>
+                            <strong>Εκτύπωσε QR ετικέτες</strong>
+                            <span>Από τη σελίδα QR ετικετών, ανά χώρο/κατηγορία ή με επιλογή συγκεκριμένων αντικειμένων.</span>
+                        </div>
+                    </div>
+
+                    <div class="help-step">
+                        <div>
+                            <strong>Δημιούργησε φάκελο απογραφής</strong>
+                            <span>Ο φάκελος δημιουργεί room sessions και κρατά την επίσημη πρόοδο.</span>
+                        </div>
+                    </div>
+
+                    <div class="help-step">
+                        <div>
+                            <strong>Σκάναρε από Android</strong>
+                            <span>Επίλεξε φάκελο, χώρο και σκάναρε QR με κινητό ή tablet.</span>
+                        </div>
+                    </div>
+
+                    <div class="help-step">
+                        <div>
+                            <strong>Έλεγξε / οριστικοποίησε από web</strong>
+                            <span>Δες βρέθηκαν/λείπουν/θέματα, κάνε διορθώσεις και οριστικοποίησε.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="help-section-grid">
+                <article class="help-card">
+                    <h2>Χειροκίνητος έλεγχος χώρου</h2>
+                    <p class="muted">
+                        Χρησιμοποιείται από υπολογιστή για έλεγχο, διόρθωση ή χειροκίνητη καταχώρηση κωδικού.
+                        Αν υπάρχει ενεργός φάκελος, η σελίδα συνδέεται με το σωστό room session.
+                    </p>
+
+                    <div class="help-actions" style="justify-content:flex-start; margin-top:.9rem;">
+                        <a class="btn secondary" asp-page="/Audit/Room">Άνοιγμα χειροκίνητου ελέγχου</a>
+                    </div>
+                </article>
+
+                <article class="help-card">
+                    <h2>Android Scanner</h2>
+                    <p class="muted">
+                        Η εφαρμογή Android είναι η επίσημη λύση για camera QR scanning. Το κινητό πρέπει να βλέπει τον server.
+                    </p>
+
+                    <div class="help-actions" style="justify-content:flex-start; margin-top:.9rem;">
+                        <a class="btn secondary" asp-page="/Scanner/Index">Οδηγίες Android Scanner</a>
+                    </div>
+                </article>
+            </section>
+
+            <section class="help-card">
+                <h2>Καθαρισμός / διαγραφή λάθος φακέλου</h2>
+                <p class="muted">
+                    Αν δημιουργήσεις λάθος φάκελο απογραφής, μπορείς όσο είναι πρόχειρος να καθαρίσεις τα scans ή να τον διαγράψεις.
+                    Τα αντικείμενα απογραφής δεν διαγράφονται.
+                </p>
+
+                <ul class="help-checklist">
+                    <li>Καθαρισμός scans: μηδενίζει την πρόοδο του φακέλου.</li>
+                    <li>Διαγραφή πρόχειρου φακέλου: αφαιρεί τον φάκελο, τα room sessions και τα scan logs.</li>
+                    <li>Οριστικοποιημένος φάκελος δεν διαγράφεται από την κανονική ροή.</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+</div>
