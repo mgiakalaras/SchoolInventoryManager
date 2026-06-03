@@ -1,116 +1,194 @@
 <!DOCTYPE html>
+
 <html lang="el">
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#07111f" />
-    <title>@ViewData["Title"] - School Inventory Manager</title>
-    <link rel="icon" type="image/svg+xml" href="~/assets/brand/favicon.svg" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+ <meta charset="utf-8" />
+
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+ <meta name="theme-color" content="#07111f" />
+ <title>@ViewData["Title"] - School Inventory Manager</title>
+
+ <link rel="icon" type="image/svg+xml" href="~/assets/brand/favicon.svg" />
+
+ <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
 </head>
+
 <body class="sim-ops-theme">
-    <input class="nav-toggle" type="checkbox" id="nav-toggle" aria-hidden="true" />
 
-    <header class="topbar">
-        <a class="brand" asp-page="/Index">
-            <img class="brand-logo" src="~/assets/brand/sim-mark.svg" alt="School Inventory Manager" />
-            <span>
-                <strong>School Inventory Manager</strong>
-                <small>Ψηφιακή απογραφή σχολικού υλικού</small>
-            </span>
-            <em class="brand-console-chip">NYX SYSTEMS</em>
-        </a>
+ <input class="nav-toggle" type="checkbox" id="nav-toggle" aria-hidden="true" />
 
-        <label class="nav-toggle-button" for="nav-toggle" aria-label="Άνοιγμα μενού" title="Μενού">
-            <span></span>
-            <span></span>
-            <span></span>
-        </label>
+ <header class="topbar">
 
-        <nav class="nav nav-groups" aria-label="Κύρια πλοήγηση">
-            <a class="nav-link-single" asp-page="/Index">Κέντρο ελέγχου</a>
+ <a class="brand" asp-page="/Index">
 
-            <div class="nav-group">
-                <span class="nav-group-title">Βασικά</span>
-                <div class="nav-group-menu">
-                    <a asp-page="/Settings/Index">Σχολείο / Ρυθμίσεις</a>
-                    <a asp-page="/Rooms/Index">Χώροι</a>
-                    <a asp-page="/Items/Index">Εξοπλισμός</a>
-                    <a asp-page="/Items/Create">Νέο υλικό</a>
-                    <a asp-page="/ImportExport/Index">Import / Export</a>
-                </div>
-            </div>
+ <img class="brand-logo" src="~/assets/brand/sim-mark.svg" alt="School Inventory Manager" />
 
-            <div class="nav-group">
-                <span class="nav-group-title">Απογραφή QR</span>
-                <div class="nav-group-menu">
-                    <a asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
-                    <a asp-page="/InventoryAudits/Create">Νέος φάκελος</a>
-                    <a asp-page="/Audit/Room">Απογραφή χώρου QR</a>
-                    <a asp-page="/Scanner/Index">Εφαρμογή Scanner</a>
-                    <a asp-page="/Labels/Qr">QR ετικέτες</a>
-                    <a asp-page="/Reports/Index">Αναφορές απογραφής</a>
-                </div>
-            </div>
+ <span>
+ <strong>School Inventory Manager</strong>
 
-            <div class="nav-group">
-                <span class="nav-group-title">Τεχνικά / Απόθεμα</span>
-                <div class="nav-group-menu">
-                    <a asp-page="/TechnicalReports/Index">Τεχνικός έλεγχος</a>
-                    <a asp-page="/TechnicalReferences/Index">Τεχνικές αναφορές</a>
-                    <a asp-page="/SpareParts/Index">Ανταλλακτικά / Απόθεμα</a>
-                    <a asp-page="/SpareParts/UsageHistory">Ιστορικό ανταλλακτικών</a>
-                </div>
-            </div>
+ <small>Ψηφιακή απογραφή σχολικού υλικού</small>
 
-            <div class="nav-group">
-                <span class="nav-group-title">Διαχείριση</span>
-                <div class="nav-group-menu">
-                    <a asp-page="/Destructions/Index">Καταστροφή υλικού</a>
-                    <a asp-page="/Destructions/DestroyedItems">Κατεστραμμένα υλικά</a>
-                    <a asp-page="/Maintenance/Index">Συντήρηση βάσης</a>
-                    <a asp-page="/Update/Index">Update Center</a>
-                </div>
-            </div>
+ </span>
 
-            <div class="nav-group">
-                <span class="nav-group-title">Υποστήριξη</span>
-                <div class="nav-group-menu nav-group-menu-right">
-                    <a asp-page="/Help/Index">Οδηγίες χρήσης</a>
-                    <a asp-page="/About/Index">About</a>
-                    <a asp-page="/Contact/Index">Επικοινωνία</a>
-                </div>
-            </div>
-        </nav>
-    </header>
+ <em class="brand-console-chip">NYX SYSTEMS</em>
 
-    <label class="nav-backdrop" for="nav-toggle" aria-hidden="true"></label>
+ </a>
 
-    <main class="container">
-        @RenderBody()
-    </main>
+ <label class="nav-toggle-button" for="nav-toggle" aria-label="Άνοιγμα μενού" title="Μενού">
 
-    <nav class="mobile-bottom-nav" aria-label="Γρήγορη πλοήγηση πεδίου">
-        <a asp-page="/Index"><span>⌂</span><strong>Αρχική</strong></a>
-        <a asp-page="/Rooms/Index"><span>🏫</span><strong>Χώροι</strong></a>
-        <a class="mobile-primary-action" asp-page="/Items/Create"><span>＋</span><strong>Νέο</strong></a>
-        <a asp-page="/Items/Index"><span>📦</span><strong>Εξοπλ.</strong></a>
-        <a asp-page="/InventoryAudits/Index"><span>▣</span><strong>Απογρ.</strong></a>
-        <a asp-page="/Destructions/Index"><span>🧾</span><strong>Καταστ.</strong></a>
-    </nav>
+ <span></span>
 
-    <footer class="footer">
-        <span>© @DateTime.Now.Year - School Inventory Manager</span>
-        <span class="footer-links">
-            <a asp-page="/Help/Index">Οδηγίες χρήσης</a>
-                    <a asp-page="/About/Index">About</a>
-            <a asp-page="/Contact/Index">Επικοινωνία</a>
-            <a asp-page="/Update/Index">Update</a>
-        </span>
-        <span>Σχολική απογραφή · Nyx Systems</span>
-    </footer>
+ <span></span>
 
-    <script src="~/js/mobile-viewport-lock.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+ <span></span>
+
+ </label>
+
+ <nav class="nav nav-groups" aria-label="Κύρια πλοήγηση">
+
+ <a class="nav-link-single" asp-page="/Index">Κέντρο ελέγχου</a>
+
+ <div class="nav-group">
+
+ <span class="nav-group-title">Βασικά</span>
+ <div class="nav-group-menu">
+
+ <a asp-page="/Settings/Index">Σχολείο / Ρυθμίσεις</a>
+
+ <a asp-page="/Rooms/Index">Χώροι</a>
+
+ <a asp-page="/Items/Index">Εξοπλισμός</a>
+
+ <a asp-page="/Items/Create">Νέο υλικό</a>
+
+ <a asp-page="/ImportExport/Index">Import / Export</a>
+
+ </div>
+
+ </div>
+
+ <div class="nav-group">
+
+ <span class="nav-group-title">Απογραφή & QR</span>
+
+ <div class="nav-group-menu">
+
+ <a asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+ <a asp-page="/InventoryAudits/Create">Νέος φάκελος</a>
+
+ <a asp-page="/Labels/Qr">QR ετικέτες</a>
+
+ <a asp-page="/Scanner/Index">Android Scanner</a>
+
+ <a asp-page="/Reports/Index">Αναφορές απογραφής</a>
+
+ </div>
+
+ </div>
+
+ <div class="nav-group">
+
+ <span class="nav-group-title">Τεχνικά / Απόθεμα</span>
+
+ <div class="nav-group-menu">
+
+ <a asp-page="/TechnicalReports/Index">Τεχνικός έλεγχος</a>
+ <a asp-page="/TechnicalReferences/Index">Τεχνικές αναφορές</a>
+
+ <a asp-page="/SpareParts/Index">Ανταλλακτικά / Απόθεμα</a>
+
+ <a asp-page="/SpareParts/UsageHistory">Ιστορικό ανταλλακτικών</a>
+
+ </div>
+
+ </div>
+
+ <div class="nav-group">
+
+ <span class="nav-group-title">Διαχείριση</span>
+
+ <div class="nav-group-menu">
+
+ <a asp-page="/Destructions/Index">Καταστροφή υλικού</a>
+
+ <a asp-page="/Destructions/DestroyedItems">Κατεστραμμένα υλικά</a>
+
+ <a asp-page="/Maintenance/Index">Συντήρηση βάσης</a>
+ <a asp-page="/Update/Index">Update Center</a>
+
+ </div>
+
+ </div>
+
+ <div class="nav-group">
+
+ <span class="nav-group-title">Υποστήριξη</span>
+
+ <div class="nav-group-menu nav-group-menu-right">
+
+ <a asp-page="/Help/Index">Οδηγίες χρήσης</a>
+
+ <a asp-page="/About/Index">About</a>
+
+ <a asp-page="/Contact/Index">Επικοινωνία</a>
+
+ </div>
+
+ </div>
+
+ </nav>
+
+ </header>
+
+ <label class="nav-backdrop" for="nav-toggle" aria-hidden="true"></label>
+
+ <main class="container">
+
+ @RenderBody()
+
+ </main>
+ <nav class="mobile-bottom-nav" aria-label="Γρήγορη πλοήγηση πεδίου">
+
+ <a asp-page="/Index"><span>⌂</span><strong>Αρχική</strong></a>
+
+ <a asp-page="/Rooms/Index"><span></span><strong>Χώροι</strong></a>
+
+ <a class="mobile-primary-action" asp-page="/Items/Create"><span>＋</span><strong>Νέο</strong></a>
+
+ <a asp-page="/Items/Index"><span></span><strong>Εξοπλ.</strong></a>
+
+ <a asp-page="/InventoryAudits/Index"><span>▣</span><strong>Απογρ.</strong></a>
+ <a asp-page="/Destructions/Index"><span></span><strong>Καταστ.</strong></a>
+
+ </nav>
+
+ <footer class="footer">
+
+ <span>© @DateTime.Now.Year - School Inventory Manager</span>
+
+ <span class="footer-links">
+
+ <a asp-page="/Help/Index">Οδηγίες χρήσης</a>
+
+ <a asp-page="/About/Index">About</a>
+
+ <a asp-page="/Contact/Index">Επικοινωνία</a>
+
+ <a asp-page="/Update/Index">Update</a>
+
+ </span>
+
+ <span>Σχολική απογραφή · Nyx Systems</span>
+
+ </footer>
+ <script src="~/js/mobile-viewport-lock.js" asp-append-version="true"></script>
+
+ @await RenderSectionAsync("Scripts", required: false)
+
 </body>
+
 </html>
