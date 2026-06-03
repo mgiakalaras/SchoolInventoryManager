@@ -29,96 +29,80 @@ public class RoomModel : PageModel
     public SelectList Rooms { get; set; } = default!;
 
     public InventoryAuditFolder? Folder { get; set; }
+
     public InventoryAuditRoomSession? RoomSession { get; set; }
 
     public bool IsFolderMode => Folder != null && RoomSession != null;
+
     public bool IsLocked => Folder?.IsFinalized == true || RoomSession?.IsFinalized == true;
 
     public string SelectedRoomName { get; set; } = string.Empty;
 
     public List<RoomAuditExpectedItem> ExpectedItems { get; set; } = new();
+
     public List<RoomAuditSavedScan> SavedScans { get; set; } = new();
+
+    public HashSet<int> FoundItemIds { get; set; } = new();
+
+    public List<RoomAuditExpectedItem> MissingItems { get; set; } = new();
+
+    public List<RoomAuditSavedScan> WrongRoomScans { get; set; } = new();
+
+    public List<RoomAuditSavedScan> UnknownScans { get; set; } = new();
+
+    public RoomAuditLookupResult? LastLookup { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
     {
-        await LoadRoomsAsync();
-
-        if (RoomSessionId.HasValue)
-        {
-            RoomSession = await _db.InventoryAuditRoomSessions
-                .Include(x => x.InventoryAuditFolder)
-                .Include(x => x.Room)
-                .Include(x => x.ScanLogs)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == RoomSessionId.Value);
-
-            if (RoomSession == null)
-            {
-                return NotFound();
-            }
-
-            Folder = RoomSession.InventoryAuditFolder;
-            FolderId = RoomSession.InventoryAuditFolderId;
-            RoomId = RoomSession.RoomId;
-            SelectedRoomName = RoomSession.RoomNameSnapshot;
-        }
-        else if (FolderId.HasValue && RoomId.HasValue)
-        {
-            RoomSession = await _db.InventoryAuditRoomSessions
-                .Include(x => x.InventoryAuditFolder)
-                .Include(x => x.Room)
-                .Include(x => x.ScanLogs)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.InventoryAuditFolderId == FolderId.Value && x.RoomId == RoomId.Value);
-
-            if (RoomSession != null)
-            {
-                Folder = RoomSession.InventoryAuditFolder;
-                RoomSessionId = RoomSession.Id;
-                SelectedRoomName = RoomSession.RoomNameSnapshot;
-            }
-        }
-
-        if (RoomId.HasValue)
-        {
-            if (string.IsNullOrWhiteSpace(SelectedRoomName))
-            {
-                var room = await _db.Rooms
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.Id == RoomId.Value);
-
-                SelectedRoomName = room?.Name ?? "Άγνωστος χώρος";
-            }
-
-            await LoadExpectedItemsAsync(RoomId.Value);
-            await LoadSavedScansAsync();
-        }
-
+        await LoadPageDataAsync();
         return Page();
     }
 
-    public async Task<IActionResult> OnGetLookupAsync(string code, int? roomSessionId)
+    public async Task<IActionResult> OnPostManualScanAsync(string code)
     {
+        await LoadRoomsAsync();
+
         if (string.IsNullOrWhiteSpace(code))
         {
-            return new JsonResult(RoomAuditLookupResult.NotFound("Δεν δόθηκε κωδικός QR."));
+            TempData["Warning"] = "Δεν δόθηκε κωδικός.";
+            return RedirectToCurrentPage();
         }
 
-        var normalizedCode = ExtractCode(code);
+        await LoadSessionAsync();
 
-        if (string.IsNullOrWhiteSpace(normalizedCode))
+        if (!RoomId.HasValue && RoomSession?.RoomId.HasValue == true)
         {
-            return new JsonResult(RoomAuditLookupResult.NotFound("Δεν αναγνωρίστηκε έγκυρος κωδικός QR."));
+            RoomId = RoomSession.RoomId;
         }
 
-        var item = await _db.InventoryItems
-            .Include(x => x.Room)
-            .Include(x => x.InventoryCategory)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x =>
-                x.AssetCode == normalizedCode ||
-                x.QrToken == normalizedCode);
+        if (RoomSession != null && (RoomSession.IsFinalized || RoomSession.InventoryAuditFolder?.IsFinalized == true))
+        {
+            TempData["Warning"] = "Ο χώρος ή ο φάκελος είναι οριστικοποιημένος.";
+            return RedirectToCurrentPage();
+        }
 
+        LastLookup = await LookupAndMaybePersistAsync(code, RoomSession);
+
+        await LoadPageDataAsync();
+
+        if (LastLookup.Persisted)
+        {
+            TempData["Message"] = LastLookup.Message;
+            return RedirectToCurrentPage();
+        }
+
+        if (!LastLookup.Found)
+        {
+            TempData["Warning"] = LastLookup.Message;
+            return RedirectToCurrentPage();
+        }
+
+        TempData["Message"] = LastLookup.Message;
+        return Page();
+    }
+
+    public async Task<JsonResult> OnGetLookupAsync(string code, int? roomSessionId)
+    {
         InventoryAuditRoomSession? session = null;
 
         if (roomSessionId.HasValue)
@@ -128,53 +112,7 @@ public class RoomModel : PageModel
                 .FirstOrDefaultAsync(x => x.Id == roomSessionId.Value);
         }
 
-        if (item == null)
-        {
-            var unknownResult = RoomAuditLookupResult.NotFound($"Δεν βρέθηκε αντικείμενο για τον κωδικό: {normalizedCode}");
-            unknownResult.Code = normalizedCode;
-
-            if (session != null && !session.IsFinalized && session.InventoryAuditFolder?.IsFinalized != true)
-            {
-                await SaveUnknownScanAsync(session, normalizedCode);
-                await RecalculateSessionAsync(session);
-                unknownResult.Persisted = true;
-            }
-
-            return new JsonResult(unknownResult);
-        }
-
-        var displayParts = new[] { item.Brand, item.Model }
-            .Where(x => !string.IsNullOrWhiteSpace(x));
-
-        var result = new RoomAuditLookupResult
-        {
-            Found = true,
-            Code = normalizedCode,
-            ItemId = item.Id,
-            Name = item.Name,
-            BrandModel = string.Join(" ", displayParts),
-            RoomId = item.RoomId,
-            RoomName = item.Room?.Name ?? "Χωρίς χώρο",
-            CategoryName = item.InventoryCategory?.Name ?? "Χωρίς κατηγορία",
-            SerialNumber = item.SerialNumber ?? string.Empty,
-            ConditionText = item.Condition.GetDisplayName(),
-            Quantity = item.Quantity,
-            IsActive = item.IsActive,
-            ItemCardUrl = Url.Page("/Items/Qr", new { code = item.AssetCode ?? item.QrToken ?? item.Id.ToString() }) ?? string.Empty,
-            EditUrl = Url.Page("/Items/Edit", new { id = item.Id }) ?? string.Empty
-        };
-
-        if (session != null && !session.IsFinalized && session.InventoryAuditFolder?.IsFinalized != true)
-        {
-            await SaveItemScanAsync(session, item, normalizedCode);
-            await RecalculateSessionAsync(session);
-            result.Persisted = true;
-        }
-        else if (session?.IsFinalized == true || session?.InventoryAuditFolder?.IsFinalized == true)
-        {
-            result.Message = "Ο χώρος ή ο φάκελος είναι οριστικοποιημένος. Η σάρωση δεν αποθηκεύτηκε.";
-        }
-
+        var result = await LookupAndMaybePersistAsync(code, session);
         return new JsonResult(result);
     }
 
@@ -182,7 +120,6 @@ public class RoomModel : PageModel
     {
         var session = await _db.InventoryAuditRoomSessions
             .Include(x => x.InventoryAuditFolder)
-            .Include(x => x.ScanLogs)
             .FirstOrDefaultAsync(x => x.Id == roomSessionId);
 
         if (session == null)
@@ -193,7 +130,7 @@ public class RoomModel : PageModel
         if (session.InventoryAuditFolder?.IsFinalized == true)
         {
             TempData["Warning"] = "Ο φάκελος είναι ήδη οριστικοποιημένος.";
-            return RedirectToPage(new { FolderId = session.InventoryAuditFolderId, RoomSessionId = session.Id, RoomId = session.RoomId });
+            return RedirectToSession(session);
         }
 
         await RecalculateSessionAsync(session);
@@ -205,7 +142,7 @@ public class RoomModel : PageModel
         await _db.SaveChangesAsync();
 
         TempData["Message"] = "Η απογραφή του χώρου οριστικοποιήθηκε.";
-        return RedirectToPage(new { FolderId = session.InventoryAuditFolderId, RoomSessionId = session.Id, RoomId = session.RoomId });
+        return RedirectToSession(session);
     }
 
     public async Task<IActionResult> OnPostReopenRoomAsync(int roomSessionId)
@@ -222,7 +159,7 @@ public class RoomModel : PageModel
         if (session.InventoryAuditFolder?.IsFinalized == true)
         {
             TempData["Warning"] = "Ο φάκελος είναι οριστικοποιημένος και ο χώρος δεν μπορεί να ανοίξει.";
-            return RedirectToPage(new { FolderId = session.InventoryAuditFolderId, RoomSessionId = session.Id, RoomId = session.RoomId });
+            return RedirectToSession(session);
         }
 
         session.IsFinalized = false;
@@ -232,7 +169,7 @@ public class RoomModel : PageModel
         await _db.SaveChangesAsync();
 
         TempData["Message"] = "Η απογραφή του χώρου άνοιξε ξανά για διορθώσεις.";
-        return RedirectToPage(new { FolderId = session.InventoryAuditFolderId, RoomSessionId = session.Id, RoomId = session.RoomId });
+        return RedirectToSession(session);
     }
 
     public async Task<IActionResult> OnPostClearRoomScansAsync(int roomSessionId)
@@ -249,7 +186,7 @@ public class RoomModel : PageModel
         if (session.IsFinalized || session.InventoryAuditFolder?.IsFinalized == true)
         {
             TempData["Warning"] = "Δεν μπορεί να γίνει καθαρισμός σε οριστικοποιημένη απογραφή.";
-            return RedirectToPage(new { FolderId = session.InventoryAuditFolderId, RoomSessionId = session.Id, RoomId = session.RoomId });
+            return RedirectToSession(session);
         }
 
         var logs = await _db.InventoryAuditScanLogs
@@ -268,8 +205,80 @@ public class RoomModel : PageModel
 
         await _db.SaveChangesAsync();
 
-        TempData["Message"] = "Οι σαρώσεις του χώρου καθαρίστηκαν.";
-        return RedirectToPage(new { FolderId = session.InventoryAuditFolderId, RoomSessionId = session.Id, RoomId = session.RoomId });
+        TempData["Message"] = "Οι καταχωρήσεις του χώρου καθαρίστηκαν.";
+        return RedirectToSession(session);
+    }
+
+    private async Task LoadPageDataAsync()
+    {
+        await LoadRoomsAsync();
+        await LoadSessionAsync();
+
+        if (RoomSession?.RoomId.HasValue == true)
+        {
+            RoomId = RoomSession.RoomId;
+        }
+
+        if (RoomId.HasValue)
+        {
+            if (string.IsNullOrWhiteSpace(SelectedRoomName))
+            {
+                var room = await _db.Rooms
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == RoomId.Value);
+
+                SelectedRoomName = room?.Name ?? "Άγνωστος χώρος";
+            }
+
+            await LoadExpectedItemsAsync();
+            await LoadSavedScansAsync();
+            BuildDerivedLists();
+
+            if (RoomSession != null)
+            {
+                await RecalculateSessionAsync(RoomSession);
+                await _db.SaveChangesAsync();
+            }
+        }
+    }
+
+    private async Task LoadSessionAsync()
+    {
+        if (RoomSessionId.HasValue)
+        {
+            RoomSession = await _db.InventoryAuditRoomSessions
+                .Include(x => x.InventoryAuditFolder)
+                .Include(x => x.Room)
+                .Include(x => x.ScanLogs)
+                .FirstOrDefaultAsync(x => x.Id == RoomSessionId.Value);
+
+            if (RoomSession != null)
+            {
+                Folder = RoomSession.InventoryAuditFolder;
+                FolderId = RoomSession.InventoryAuditFolderId;
+                SelectedRoomName = RoomSession.RoomNameSnapshot;
+            }
+
+            return;
+        }
+
+        if (FolderId.HasValue && RoomId.HasValue)
+        {
+            RoomSession = await _db.InventoryAuditRoomSessions
+                .Include(x => x.InventoryAuditFolder)
+                .Include(x => x.Room)
+                .Include(x => x.ScanLogs)
+                .FirstOrDefaultAsync(x =>
+                    x.InventoryAuditFolderId == FolderId.Value &&
+                    x.RoomId == RoomId.Value);
+
+            if (RoomSession != null)
+            {
+                Folder = RoomSession.InventoryAuditFolder;
+                RoomSessionId = RoomSession.Id;
+                SelectedRoomName = RoomSession.RoomNameSnapshot;
+            }
+        }
     }
 
     private async Task LoadRoomsAsync()
@@ -284,25 +293,34 @@ public class RoomModel : PageModel
             "Name");
     }
 
-    private async Task LoadExpectedItemsAsync(int roomId)
+    private async Task LoadExpectedItemsAsync()
     {
+        var roomName = NormalizeRoomName(SelectedRoomName);
+
         var items = await _db.InventoryItems
-            .Where(x => x.IsActive && x.RoomId == roomId)
+            .Where(x => x.IsActive)
+            .Include(x => x.Room)
             .Include(x => x.InventoryCategory)
             .AsNoTracking()
-            .OrderBy(x => x.InventoryCategory!.Name)
+            .ToListAsync();
+
+        ExpectedItems = items
+            .Where(x =>
+                (RoomId.HasValue && x.RoomId == RoomId.Value) ||
+                (!string.IsNullOrWhiteSpace(roomName) && NormalizeRoomName(x.Room?.Name) == roomName))
+            .OrderBy(x => x.InventoryCategory?.Name)
             .ThenBy(x => x.Name)
             .ThenBy(x => x.Brand)
             .ThenBy(x => x.Model)
-            .ToListAsync();
-
-        ExpectedItems = items.Select(ToExpectedItem).ToList();
+            .Select(ToExpectedItem)
+            .ToList();
     }
 
     private async Task LoadSavedScansAsync()
     {
         if (!RoomSessionId.HasValue)
         {
+            SavedScans = new List<RoomAuditSavedScan>();
             return;
         }
 
@@ -322,6 +340,26 @@ public class RoomModel : PageModel
                 ScannedAt = x.ScannedAt
             })
             .ToListAsync();
+    }
+
+    private void BuildDerivedLists()
+    {
+        FoundItemIds = SavedScans
+            .Where(x => x.Status == AuditScanStatus.Found && x.ItemId.HasValue)
+            .Select(x => x.ItemId!.Value)
+            .ToHashSet();
+
+        MissingItems = ExpectedItems
+            .Where(x => !FoundItemIds.Contains(x.Id))
+            .ToList();
+
+        WrongRoomScans = SavedScans
+            .Where(x => x.Status == AuditScanStatus.WrongRoom)
+            .ToList();
+
+        UnknownScans = SavedScans
+            .Where(x => x.Status == AuditScanStatus.Unknown)
+            .ToList();
     }
 
     private RoomAuditExpectedItem ToExpectedItem(InventoryItem item)
@@ -347,12 +385,98 @@ public class RoomModel : PageModel
         };
     }
 
-    private async Task SaveItemScanAsync(InventoryAuditRoomSession session, InventoryItem item, string code)
+    private async Task<RoomAuditLookupResult> LookupAndMaybePersistAsync(string code, InventoryAuditRoomSession? session)
     {
-        var status = item.RoomId == session.RoomId
-            ? AuditScanStatus.Found
-            : AuditScanStatus.WrongRoom;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return RoomAuditLookupResult.NotFound("Δεν δόθηκε κωδικός QR.");
+        }
 
+        var normalizedCode = ExtractCode(code);
+
+        if (string.IsNullOrWhiteSpace(normalizedCode))
+        {
+            return RoomAuditLookupResult.NotFound("Δεν αναγνωρίστηκε έγκυρος κωδικός QR.");
+        }
+
+        var item = await _db.InventoryItems
+            .Include(x => x.Room)
+            .Include(x => x.InventoryCategory)
+            .FirstOrDefaultAsync(x =>
+                x.AssetCode == normalizedCode ||
+                x.QrToken == normalizedCode);
+
+        if (item == null)
+        {
+            var unknownResult = RoomAuditLookupResult.NotFound($"Δεν βρέθηκε αντικείμενο για τον κωδικό: {normalizedCode}");
+            unknownResult.Code = normalizedCode;
+
+            if (session != null && !session.IsFinalized && session.InventoryAuditFolder?.IsFinalized != true)
+            {
+                await SaveUnknownScanAsync(session, normalizedCode);
+                await RecalculateSessionAsync(session);
+                unknownResult.Persisted = true;
+                unknownResult.Message = "Άγνωστο QR. Καταγράφηκε στα άγνωστα.";
+                await _db.SaveChangesAsync();
+            }
+
+            return unknownResult;
+        }
+
+        var result = BuildLookupResult(item, normalizedCode);
+
+        if (session != null && !session.IsFinalized && session.InventoryAuditFolder?.IsFinalized != true)
+        {
+            var sameRoom = IsSameRoom(session, item);
+
+            await SaveItemScanAsync(session, item, normalizedCode, sameRoom ? AuditScanStatus.Found : AuditScanStatus.WrongRoom);
+            await RecalculateSessionAsync(session);
+
+            result.Persisted = true;
+            result.Message = sameRoom
+                ? "Το αντικείμενο βρέθηκε σωστά στον χώρο."
+                : $"Το αντικείμενο είναι δηλωμένο σε άλλο χώρο: {item.Room?.Name ?? "Χωρίς χώρο"}";
+
+            await _db.SaveChangesAsync();
+        }
+        else if (session?.IsFinalized == true || session?.InventoryAuditFolder?.IsFinalized == true)
+        {
+            result.Message = "Ο χώρος ή ο φάκελος είναι οριστικοποιημένος. Η καταχώρηση δεν αποθηκεύτηκε.";
+        }
+        else
+        {
+            result.Message = "Το αντικείμενο βρέθηκε. Δεν υπάρχει ενεργός φάκελος/χώρος, άρα δεν αποθηκεύτηκε πρόοδος.";
+        }
+
+        return result;
+    }
+
+    private RoomAuditLookupResult BuildLookupResult(InventoryItem item, string normalizedCode)
+    {
+        var displayParts = new[] { item.Brand, item.Model }
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+
+        return new RoomAuditLookupResult
+        {
+            Found = true,
+            Code = normalizedCode,
+            ItemId = item.Id,
+            Name = item.Name,
+            BrandModel = string.Join(" ", displayParts),
+            RoomId = item.RoomId,
+            RoomName = item.Room?.Name ?? "Χωρίς χώρο",
+            CategoryName = item.InventoryCategory?.Name ?? "Χωρίς κατηγορία",
+            SerialNumber = item.SerialNumber ?? string.Empty,
+            ConditionText = item.Condition.GetDisplayName(),
+            Quantity = item.Quantity,
+            IsActive = item.IsActive,
+            ItemCardUrl = Url.Page("/Items/Qr", new { code = item.AssetCode ?? item.QrToken ?? item.Id.ToString() }) ?? string.Empty,
+            EditUrl = Url.Page("/Items/Edit", new { id = item.Id }) ?? string.Empty
+        };
+    }
+
+    private async Task SaveItemScanAsync(InventoryAuditRoomSession session, InventoryItem item, string code, string status)
+    {
         var existing = await _db.InventoryAuditScanLogs
             .FirstOrDefaultAsync(x =>
                 x.InventoryAuditRoomSessionId == session.Id &&
@@ -421,13 +545,38 @@ public class RoomModel : PageModel
 
     private async Task RecalculateSessionAsync(InventoryAuditRoomSession session)
     {
+        var expectedIds = ExpectedItems
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        if (expectedIds.Count == 0)
+        {
+            var roomName = NormalizeRoomName(session.RoomNameSnapshot);
+
+            var expectedItems = await _db.InventoryItems
+                .Where(x => x.IsActive)
+                .Include(x => x.Room)
+                .AsNoTracking()
+                .ToListAsync();
+
+            expectedIds = expectedItems
+                .Where(x =>
+                    (session.RoomId.HasValue && x.RoomId == session.RoomId.Value) ||
+                    (!string.IsNullOrWhiteSpace(roomName) && NormalizeRoomName(x.Room?.Name) == roomName))
+                .Select(x => x.Id)
+                .ToHashSet();
+        }
+
         var logs = await _db.InventoryAuditScanLogs
             .Where(x => x.InventoryAuditRoomSessionId == session.Id)
             .AsNoTracking()
             .ToListAsync();
 
         var found = logs
-            .Where(x => x.Status == AuditScanStatus.Found && x.InventoryItemId.HasValue)
+            .Where(x =>
+                x.Status == AuditScanStatus.Found &&
+                x.InventoryItemId.HasValue &&
+                expectedIds.Contains(x.InventoryItemId.Value))
             .Select(x => x.InventoryItemId!.Value)
             .Distinct()
             .Count();
@@ -435,22 +584,70 @@ public class RoomModel : PageModel
         var wrong = logs
             .Where(x => x.Status == AuditScanStatus.WrongRoom)
             .Select(x => x.InventoryItemId?.ToString() ?? x.ScannedCode)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct()
             .Count();
 
         var unknown = logs
             .Where(x => x.Status == AuditScanStatus.Unknown)
             .Select(x => x.ScannedCode)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct()
             .Count();
 
+        var expected = expectedIds.Count;
+        var missing = Math.Max(0, expected - found);
+
+        session.ExpectedItemsCount = expected;
         session.FoundItemsCount = found;
-        session.MissingItemsCount = Math.Max(0, session.ExpectedItemsCount - found);
+        session.MissingItemsCount = missing;
         session.WrongRoomItemsCount = wrong;
         session.UnknownItemsCount = unknown;
-        session.UpdatedAt = DateTime.Now;
 
-        await _db.SaveChangesAsync();
+        if (expected > 0 && missing == 0)
+        {
+            session.CompletedAt ??= DateTime.Now;
+        }
+        else if (!session.IsFinalized)
+        {
+            session.CompletedAt = null;
+        }
+
+        session.UpdatedAt = DateTime.Now;
+    }
+
+    private static bool IsSameRoom(InventoryAuditRoomSession session, InventoryItem item)
+    {
+        if (session.RoomId.HasValue && item.RoomId == session.RoomId.Value)
+        {
+            return true;
+        }
+
+        var sessionRoomName = NormalizeRoomName(session.RoomNameSnapshot);
+        var itemRoomName = NormalizeRoomName(item.Room?.Name);
+
+        return !string.IsNullOrWhiteSpace(sessionRoomName) &&
+               sessionRoomName == itemRoomName;
+    }
+
+    private IActionResult RedirectToCurrentPage()
+    {
+        return RedirectToPage(new
+        {
+            FolderId,
+            RoomSessionId,
+            RoomId
+        });
+    }
+
+    private IActionResult RedirectToSession(InventoryAuditRoomSession session)
+    {
+        return RedirectToPage(new
+        {
+            FolderId = session.InventoryAuditFolderId,
+            RoomSessionId = session.Id,
+            RoomId = session.RoomId
+        });
     }
 
     private static string ExtractCode(string value)
@@ -462,8 +659,7 @@ public class RoomModel : PageModel
             var segments = uri.AbsolutePath
                 .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-            if (segments.Length >= 2 &&
-                segments[^2].Equals("q", StringComparison.OrdinalIgnoreCase))
+            if (segments.Length >= 2 && segments[^2].Equals("q", StringComparison.OrdinalIgnoreCase))
             {
                 return Uri.UnescapeDataString(segments[^1]).Trim();
             }
@@ -496,6 +692,11 @@ public class RoomModel : PageModel
         }
 
         return input;
+    }
+
+    private static string NormalizeRoomName(string? value)
+    {
+        return (value ?? string.Empty).Trim().ToUpperInvariant();
     }
 
     public class RoomAuditExpectedItem
