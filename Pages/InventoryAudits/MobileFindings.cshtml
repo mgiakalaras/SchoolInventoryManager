@@ -1,0 +1,334 @@
+@page
+@model SchoolInventoryManager.Pages.InventoryAudits.MobileFindingsModel
+
+@{
+    ViewData["Title"] = "Νέα ευρήματα απογραφής";
+}
+
+<style>
+    .findings-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding-bottom: 3rem;
+    }
+
+    .findings-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1.35rem;
+        border: 1px solid rgba(34, 211, 238, .22);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .14), transparent 38%),
+            linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(17, 24, 39, .92));
+        box-shadow: 0 18px 42px rgba(0, 0, 0, .28);
+        margin-bottom: 1rem;
+    }
+
+    .findings-hero h1,
+    .findings-card h2,
+    .findings-card h3 {
+        margin: 0;
+    }
+
+    .findings-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        justify-content: flex-end;
+    }
+
+    .findings-badge {
+        display: inline-flex;
+        width: fit-content;
+        padding: .25rem .55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(34, 211, 238, .32);
+        color: #a5f3fc;
+        background: rgba(8, 47, 73, .42);
+        font-weight: 800;
+        font-size: .72rem;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        margin-bottom: .65rem;
+    }
+
+    .findings-card {
+        border: 1px solid rgba(148, 163, 184, .16);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .06), transparent 40%),
+            rgba(15, 23, 42, .82);
+        padding: 1rem;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, .22);
+        margin-bottom: 1rem;
+    }
+
+    .findings-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .75rem;
+        margin-bottom: 1rem;
+    }
+
+    .findings-stat {
+        padding: .85rem;
+        border: 1px solid rgba(148, 163, 184, .15);
+        border-radius: 16px;
+        background: rgba(2, 6, 23, .36);
+    }
+
+    .findings-stat span {
+        display: block;
+        color: #94a3b8;
+        font-size: .8rem;
+        margin-bottom: .25rem;
+    }
+
+    .findings-stat strong {
+        display: block;
+        font-size: 1.35rem;
+        line-height: 1;
+    }
+
+    .findings-filter {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(220px, 320px) auto;
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .findings-filter label span {
+        display: block;
+        font-weight: 800;
+        margin-bottom: .35rem;
+    }
+
+    .findings-filter input,
+    .findings-filter select {
+        width: 100%;
+        min-height: 42px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, .22);
+        background: rgba(2, 6, 23, .45);
+        color: #e5eefb;
+        padding: .65rem .75rem;
+    }
+
+    .findings-room-group {
+        margin-top: 1rem;
+    }
+
+    .findings-room-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        padding: .85rem 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(34, 211, 238, .18);
+        background: rgba(8, 47, 73, .28);
+        margin-bottom: .65rem;
+    }
+
+    .findings-list {
+        display: grid;
+        gap: .6rem;
+    }
+
+    .findings-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .85rem;
+        align-items: center;
+        border: 1px solid rgba(148, 163, 184, .13);
+        border-radius: 16px;
+        background: rgba(2, 6, 23, .33);
+        padding: .8rem;
+    }
+
+    .findings-row strong,
+    .findings-row span,
+    .findings-row small {
+        display: block;
+    }
+
+    .findings-row span,
+    .findings-row small {
+        color: #94a3b8;
+    }
+
+    .findings-row-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(110px, 1fr));
+        gap: .45rem;
+        min-width: 240px;
+    }
+
+    .findings-row-actions .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .findings-pill {
+        display: inline-flex;
+        width: fit-content;
+        padding: .22rem .5rem;
+        margin-top: .3rem;
+        border-radius: 999px;
+        border: 1px solid rgba(245, 158, 11, .30);
+        background: rgba(245, 158, 11, .12);
+        color: #fcd34d;
+        font-size: .74rem;
+        font-weight: 900;
+    }
+
+    .findings-empty {
+        text-align: center;
+        padding: 2rem;
+        border: 1px dashed rgba(148, 163, 184, .22);
+        border-radius: 18px;
+        color: #94a3b8;
+    }
+
+    @@media (max-width: 900px) {
+        .findings-hero,
+        .findings-filter,
+        .findings-row {
+            grid-template-columns: 1fr;
+        }
+
+        .findings-actions {
+            justify-content: flex-start;
+        }
+
+        .findings-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .findings-row-actions {
+            min-width: 0;
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="findings-page">
+    <section class="findings-hero">
+        <div>
+            <span class="findings-badge">Mobile audit findings</span>
+            <h1>Νέα ευρήματα απογραφής</h1>
+            <p class="muted">
+                Αντικείμενα που προστέθηκαν από κινητό/tablet κατά την απογραφή και χρειάζονται έλεγχο από το web app.
+            </p>
+        </div>
+
+        <div class="findings-actions">
+            <a class="btn secondary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+            <a class="btn secondary" asp-page="/Audit/Room">Χειροκίνητος έλεγχος</a>
+            <a class="btn primary" asp-page="/Labels/Qr">QR ετικέτες</a>
+        </div>
+    </section>
+
+    <section class="findings-card">
+        <div class="findings-stats">
+            <article class="findings-stat">
+                <span>Σύνολο νέων</span>
+                <strong>@Model.TotalFindings</strong>
+            </article>
+
+            <article class="findings-stat">
+                <span>Χώροι</span>
+                <strong>@Model.RoomsWithFindings</strong>
+            </article>
+
+            <article class="findings-stat">
+                <span>Χωρίς serial</span>
+                <strong>@Model.WithoutSerial</strong>
+            </article>
+
+            <article class="findings-stat">
+                <span>Εμφανίζονται</span>
+                <strong>@Model.Items.Count</strong>
+            </article>
+        </div>
+
+        <form method="get" class="findings-filter">
+            <label>
+                <span>Αναζήτηση</span>
+                <input asp-for="Q" placeholder="όνομα, κωδικός, serial, σημειώσεις..." />
+            </label>
+
+            <label>
+                <span>Χώρος</span>
+                <select asp-for="RoomId" asp-items="Model.RoomOptions">
+                    <option value="">Όλοι οι χώροι</option>
+                </select>
+            </label>
+
+            <button type="submit" class="btn primary">Φίλτρο</button>
+        </form>
+    </section>
+
+    <section class="findings-card">
+        <h2>Λίστα νέων ευρημάτων</h2>
+        <p class="muted">
+            Για κάθε αντικείμενο άνοιξε την επεξεργασία, συμπλήρωσε όσα λείπουν και μετά τύπωσε QR ετικέτα.
+            Σε επόμενο βήμα θα μπει ξεχωριστή εκτύπωση QR μόνο για αυτά τα νέα ευρήματα, grouped ανά αίθουσα.
+        </p>
+
+        @if (!Model.Items.Any())
+        {
+            <div class="findings-empty">
+                <h3>Δεν βρέθηκαν νέα ευρήματα</h3>
+                <p>Όταν προστεθεί αντικείμενο από την Android εφαρμογή, θα εμφανιστεί εδώ.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var group in Model.Items.GroupBy(x => x.RoomName).OrderBy(x => x.Key))
+            {
+                <div class="findings-room-group">
+                    <div class="findings-room-title">
+                        <strong>@group.Key</strong>
+                        <span class="muted">@group.Count() αντικείμενα</span>
+                    </div>
+
+                    <div class="findings-list">
+                        @foreach (var item in group.OrderByDescending(x => x.CreatedAt).ThenBy(x => x.Name))
+                        {
+                            <article class="findings-row">
+                                <div>
+                                    <strong>@item.Name</strong>
+                                    <span>@item.Code · @item.CategoryName</span>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.BrandModel))
+                                    {
+                                        <small>@item.BrandModel</small>
+                                    }
+
+                                    <small>
+                                        Serial: @(string.IsNullOrWhiteSpace(item.SerialNumber) ? "-" : item.SerialNumber)
+                                        · Ποσότητα: @item.Quantity
+                                        · Δημιουργία: @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+
+                                    <em class="findings-pill">Προς έλεγχο από web app</em>
+                                </div>
+
+                                <div class="findings-row-actions">
+                                    <a class="btn secondary" asp-page="/Items/Edit" asp-route-id="@item.Id">Επεξεργασία</a>
+                                    <a class="btn secondary" asp-page="/Items/Qr" asp-route-code="@item.Code">Καρτέλα QR</a>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </section>
+</div>
