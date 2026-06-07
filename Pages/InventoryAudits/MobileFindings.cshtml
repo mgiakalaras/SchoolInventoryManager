@@ -5,111 +5,479 @@
     ViewData["Title"] = "Νέα ευρήματα απογραφής";
 }
 
-<section class="hero compact-hero">
-    <div>
-        <span class="eyebrow">Mobile audit findings</span>
-        <h1>Νέα ευρήματα απογραφής</h1>
-        <p class="muted">
-            Αντικείμενα που προστέθηκαν από κινητό/tablet κατά την απογραφή και χρειάζονται έλεγχο από το web app.
-        </p>
-    </div>
-
-    <div class="hero-actions">
-        <a class="btn primary" asp-page="/Labels/MobileFindings">QR νέων ευρημάτων</a>
-        <a class="btn secondary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
-        <a class="btn secondary" asp-page="/Audit/Room">Χειροκίνητος έλεγχος</a>
-    </div>
-</section>
-
-<section class="panel">
-    <div class="stats-grid">
-        <article class="stat-card">
-            <span>Σύνολο νέων</span>
-            <strong>@Model.TotalFindings</strong>
-        </article>
-
-        <article class="stat-card">
-            <span>Χώροι</span>
-            <strong>@Model.RoomsWithFindings</strong>
-        </article>
-
-        <article class="stat-card">
-            <span>Χωρίς serial</span>
-            <strong>@Model.WithoutSerial</strong>
-        </article>
-
-        <article class="stat-card">
-            <span>Εμφανίζονται</span>
-            <strong>@Model.Items.Count</strong>
-        </article>
-    </div>
-
-    <form method="get" class="form-grid">
-        <label>
-            <span>Αναζήτηση</span>
-            <input asp-for="Q" placeholder="όνομα, κωδικός, serial, σημειώσεις..." />
-        </label>
-
-        <label>
-            <span>Χώρος</span>
-            <select asp-for="RoomId" asp-items="Model.RoomOptions">
-                <option value="">Όλοι οι χώροι</option>
-            </select>
-        </label>
-
-        <div class="form-actions">
-            <button type="submit" class="btn primary">Φίλτρο</button>
-            <a class="btn secondary" asp-page="/InventoryAudits/MobileFindings">Καθαρισμός</a>
-        </div>
-    </form>
-</section>
-
-<section class="panel">
-    <h2>Λίστα νέων ευρημάτων</h2>
-    <p class="muted">
-        Για κάθε αντικείμενο άνοιξε την επεξεργασία, συμπλήρωσε όσα λείπουν και μετά τύπωσε QR ετικέτα.
-    </p>
-
-    @if (!Model.Items.Any())
-    {
-        <div class="empty-state">
-            <h3>Δεν βρέθηκαν νέα ευρήματα</h3>
-            <p>Όταν προστεθεί αντικείμενο από την Android εφαρμογή, θα εμφανιστεί εδώ.</p>
-        </div>
+<style>
+    .findings-review-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding-bottom: 3rem;
     }
-    else
-    {
-        <div class="compact-list">
-            @foreach (var group in Model.Items.GroupBy(x => x.RoomName).OrderBy(x => x.Key))
-            {
-                <h3>@group.Key <span class="muted">(@group.Count())</span></h3>
 
-                @foreach (var item in group.OrderByDescending(x => x.CreatedAt).ThenBy(x => x.Name))
-                {
-                    <article class="compact-row">
+    .findings-review-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1.35rem;
+        border: 1px solid rgba(34, 211, 238, .22);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .14), transparent 38%),
+            radial-gradient(circle at bottom right, rgba(52, 211, 153, .10), transparent 34%),
+            linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(17, 24, 39, .92));
+        box-shadow: 0 18px 42px rgba(0, 0, 0, .28);
+        margin-bottom: 1rem;
+    }
+
+    .findings-review-hero h1,
+    .findings-review-card h2,
+    .findings-review-card h3 {
+        margin: 0;
+    }
+
+    .findings-review-hero p,
+    .findings-review-card p {
+        margin-bottom: 0;
+    }
+
+    .findings-review-badge {
+        display: inline-flex;
+        width: fit-content;
+        padding: .25rem .55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(34, 211, 238, .32);
+        color: #a5f3fc;
+        background: rgba(8, 47, 73, .42);
+        font-weight: 800;
+        font-size: .72rem;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        margin-bottom: .65rem;
+    }
+
+    .findings-review-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        justify-content: flex-end;
+    }
+
+    .findings-review-card {
+        border: 1px solid rgba(148, 163, 184, .16);
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .06), transparent 40%),
+            rgba(15, 23, 42, .82);
+        padding: 1rem;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, .22);
+        margin-bottom: 1rem;
+    }
+
+    .findings-review-grid {
+        display: grid;
+        grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .findings-review-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .findings-review-stat {
+        padding: .85rem;
+        border: 1px solid rgba(148, 163, 184, .15);
+        border-radius: 16px;
+        background: rgba(2, 6, 23, .36);
+    }
+
+    .findings-review-stat span {
+        display: block;
+        color: #94a3b8;
+        font-size: .8rem;
+        margin-bottom: .25rem;
+    }
+
+    .findings-review-stat strong {
+        display: block;
+        font-size: 1.45rem;
+        line-height: 1;
+    }
+
+    .findings-review-workflow {
+        display: grid;
+        gap: .65rem;
+    }
+
+    .findings-review-step {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: .75rem;
+        align-items: start;
+        padding: .85rem;
+        border: 1px solid rgba(148, 163, 184, .14);
+        border-radius: 16px;
+        background: rgba(2, 6, 23, .30);
+    }
+
+    .findings-review-step-number {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: rgba(34, 211, 238, .14);
+        color: #67e8f9;
+        font-weight: 900;
+        border: 1px solid rgba(34, 211, 238, .32);
+    }
+
+    .findings-review-step strong,
+    .findings-review-step span {
+        display: block;
+    }
+
+    .findings-review-step span {
+        color: #94a3b8;
+        margin-top: .2rem;
+    }
+
+    .findings-review-filter {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(220px, 320px) auto auto;
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .findings-review-filter label span {
+        display: block;
+        font-weight: 800;
+        margin-bottom: .35rem;
+    }
+
+    .findings-review-filter input,
+    .findings-review-filter select {
+        width: 100%;
+        min-height: 42px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, .22);
+        background: rgba(2, 6, 23, .45);
+        color: #e5eefb;
+        padding: .65rem .75rem;
+    }
+
+    .findings-review-room-group {
+        margin-top: 1rem;
+    }
+
+    .findings-review-room-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        padding: .85rem 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(34, 211, 238, .18);
+        background: rgba(8, 47, 73, .28);
+        margin-bottom: .65rem;
+    }
+
+    .findings-review-room-title strong,
+    .findings-review-room-title span {
+        display: block;
+    }
+
+    .findings-review-list {
+        display: grid;
+        gap: .65rem;
+    }
+
+    .findings-review-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .85rem;
+        align-items: center;
+        border: 1px solid rgba(148, 163, 184, .13);
+        border-radius: 18px;
+        background: rgba(2, 6, 23, .33);
+        padding: .85rem;
+    }
+
+    .findings-review-row strong,
+    .findings-review-row span,
+    .findings-review-row small {
+        display: block;
+    }
+
+    .findings-review-row span,
+    .findings-review-row small {
+        color: #94a3b8;
+    }
+
+    .findings-review-row-title {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: .25rem;
+    }
+
+    .findings-review-code {
+        display: inline-flex;
+        width: fit-content;
+        padding: .18rem .45rem;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, .10);
+        border: 1px solid rgba(34, 211, 238, .22);
+        color: #a5f3fc;
+        font-size: .76rem;
+        font-weight: 900;
+    }
+
+    .findings-review-pill {
+        display: inline-flex;
+        width: fit-content;
+        padding: .22rem .5rem;
+        margin-top: .45rem;
+        border-radius: 999px;
+        border: 1px solid rgba(245, 158, 11, .30);
+        background: rgba(245, 158, 11, .12);
+        color: #fcd34d;
+        font-size: .74rem;
+        font-weight: 900;
+        font-style: normal;
+    }
+
+    .findings-review-ok-pill {
+        border-color: rgba(52, 211, 153, .30);
+        background: rgba(52, 211, 153, .12);
+        color: #86efac;
+    }
+
+    .findings-review-row-actions {
+        display: grid;
+        grid-template-columns: minmax(170px, 1fr);
+        gap: .45rem;
+        min-width: 190px;
+    }
+
+    .findings-review-row-actions .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .findings-review-empty {
+        text-align: center;
+        padding: 2rem;
+        border: 1px dashed rgba(148, 163, 184, .22);
+        border-radius: 18px;
+        color: #94a3b8;
+    }
+
+    .findings-review-note {
+        border-color: rgba(245, 158, 11, .32);
+        background:
+            radial-gradient(circle at top left, rgba(245, 158, 11, .11), transparent 36%),
+            rgba(30, 23, 10, .72);
+    }
+
+    @@media (max-width: 900px) {
+        .findings-review-hero,
+        .findings-review-grid,
+        .findings-review-filter,
+        .findings-review-row {
+            grid-template-columns: 1fr;
+        }
+
+        .findings-review-actions {
+            justify-content: flex-start;
+        }
+
+        .findings-review-row-actions {
+            min-width: 0;
+        }
+    }
+</style>
+
+<div class="findings-review-page">
+    <section class="findings-review-hero">
+        <div>
+            <span class="findings-review-badge">Mobile audit findings</span>
+            <h1>Νέα ευρήματα απογραφής</h1>
+            <p class="muted">
+                Εδώ ελέγχεις τα αντικείμενα που προστέθηκαν από κινητό/tablet κατά την απογραφή πριν τυπώσεις QR.
+            </p>
+        </div>
+
+        <div class="findings-review-actions">
+            <a class="btn primary" asp-page="/Labels/MobileFindings">QR νέων ευρημάτων</a>
+            <a class="btn secondary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+        </div>
+    </section>
+
+    <div class="findings-review-grid">
+        <aside>
+            <section class="findings-review-card">
+                <h2>Σύνοψη</h2>
+
+                <div class="findings-review-stats" style="margin-top:.9rem;">
+                    <article class="findings-review-stat">
+                        <span>Σύνολο νέων</span>
+                        <strong>@Model.TotalFindings</strong>
+                    </article>
+
+                    <article class="findings-review-stat">
+                        <span>Χώροι</span>
+                        <strong>@Model.RoomsWithFindings</strong>
+                    </article>
+
+                    <article class="findings-review-stat">
+                        <span>Χωρίς serial</span>
+                        <strong>@Model.WithoutSerial</strong>
+                    </article>
+
+                    <article class="findings-review-stat">
+                        <span>Εμφανίζονται</span>
+                        <strong>@Model.Items.Count</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="findings-review-card findings-review-note">
+                <h2>Τι κάνω εδώ;</h2>
+
+                <div class="findings-review-workflow" style="margin-top:.9rem;">
+                    <article class="findings-review-step">
+                        <span class="findings-review-step-number">1</span>
                         <div>
-                            <strong>@item.Name</strong>
-                            <span>@item.Code · @item.CategoryName</span>
-
-                            @if (!string.IsNullOrWhiteSpace(item.BrandModel))
-                            {
-                                <small>@item.BrandModel</small>
-                            }
-
-                            <small>
-                                Serial: @(string.IsNullOrWhiteSpace(item.SerialNumber) ? "-" : item.SerialNumber)
-                                · Ποσότητα: @item.Quantity
-                                · Δημιουργία: @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                            </small>
-                        </div>
-
-                        <div class="hero-actions">
-                            <a class="btn secondary" asp-page="/Items/Edit" asp-route-id="@item.Id">Επεξεργασία</a>
-                            <a class="btn secondary" asp-page="/Items/Qr" asp-route-code="@item.Code">Καρτέλα QR</a>
+                            <strong>Ελέγχω στοιχεία</strong>
+                            <span>Πατάω επεξεργασία σε όσα θέλουν serial, κατηγορία, μάρκα ή μοντέλο.</span>
                         </div>
                     </article>
+
+                    <article class="findings-review-step">
+                        <span class="findings-review-step-number">2</span>
+                        <div>
+                            <strong>Τυπώνω QR</strong>
+                            <span>Πηγαίνω στο QR νέων ευρημάτων και εκτυπώνω μόνο αυτά τα αντικείμενα.</span>
+                        </div>
+                    </article>
+
+                    <article class="findings-review-step">
+                        <span class="findings-review-step-number">3</span>
+                        <div>
+                            <strong>Συνεχίζω απογραφή</strong>
+                            <span>Κολλάω τις ετικέτες στον χώρο και συνεχίζω την κανονική ροή.</span>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </aside>
+
+        <main>
+            <section class="findings-review-card">
+                <h2>Φίλτρα</h2>
+
+                <form method="get" class="findings-review-filter" style="margin-top:.9rem;">
+                    <label>
+                        <span>Αναζήτηση</span>
+                        <input asp-for="Q" placeholder="όνομα, κωδικός, serial, σημειώσεις..." />
+                    </label>
+
+                    <label>
+                        <span>Χώρος</span>
+                        <select asp-for="RoomId" asp-items="Model.RoomOptions">
+                            <option value="">Όλοι οι χώροι</option>
+                        </select>
+                    </label>
+
+                    <button type="submit" class="btn primary">Εφαρμογή</button>
+                    <a class="btn secondary" asp-page="/InventoryAudits/MobileFindings">Καθαρισμός</a>
+                </form>
+            </section>
+
+            <section class="findings-review-card">
+                <div class="findings-review-actions" style="justify-content:space-between;">
+                    <div>
+                        <h2>Αντικείμενα προς έλεγχο</h2>
+                        <p class="muted">
+                            Τα αντικείμενα είναι grouped ανά αίθουσα για να ξέρεις πού πρέπει να πας μετά την εκτύπωση QR.
+                        </p>
+                    </div>
+
+                    @if (Model.Items.Any())
+                    {
+                        <a class="btn primary" asp-page="/Labels/MobileFindings">Εκτύπωση QR</a>
+                    }
+                </div>
+
+                @if (!Model.Items.Any())
+                {
+                    <div class="findings-review-empty" style="margin-top:1rem;">
+                        <h3>Δεν βρέθηκαν νέα ευρήματα</h3>
+                        <p>Όταν προστεθεί αντικείμενο από την Android εφαρμογή, θα εμφανιστεί εδώ.</p>
+                    </div>
                 }
-            }
-        </div>
-    }
-</section>
+                else
+                {
+                    @foreach (var group in Model.Items.GroupBy(x => x.RoomName).OrderBy(x => x.Key))
+                    {
+                        <div class="findings-review-room-group">
+                            <div class="findings-review-room-title">
+                                <div>
+                                    <strong>@group.Key</strong>
+                                    <span class="muted">Νέα αντικείμενα από mobile απογραφή</span>
+                                </div>
+
+                                <span class="muted">@group.Count() αντικείμενα</span>
+                            </div>
+
+                            <div class="findings-review-list">
+                                @foreach (var item in group.OrderByDescending(x => x.CreatedAt).ThenBy(x => x.Name))
+                                {
+                                    var missingSerial = string.IsNullOrWhiteSpace(item.SerialNumber);
+                                    var missingBrandModel = string.IsNullOrWhiteSpace(item.BrandModel);
+                                    var needsReview = missingSerial || missingBrandModel;
+
+                                    <article class="findings-review-row">
+                                        <div>
+                                            <div class="findings-review-row-title">
+                                                <strong>@item.Name</strong>
+                                                <span class="findings-review-code">@item.Code</span>
+                                            </div>
+
+                                            <span>@item.CategoryName</span>
+
+                                            <small>
+                                                @(missingBrandModel ? "Χωρίς μάρκα/μοντέλο" : item.BrandModel)
+                                                · Serial: @(missingSerial ? "λείπει" : item.SerialNumber)
+                                                · Ποσότητα: @item.Quantity
+                                                · @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+
+                                            @if (needsReview)
+                                            {
+                                                <em class="findings-review-pill">Χρειάζεται έλεγχο στοιχείων</em>
+                                            }
+                                            else
+                                            {
+                                                <em class="findings-review-pill findings-review-ok-pill">Έτοιμο για QR</em>
+                                            }
+                                        </div>
+
+                                        <div class="findings-review-row-actions">
+                                            <a class="btn primary" asp-page="/Items/Edit" asp-route-id="@item.Id">Επεξεργασία στοιχείων</a>
+                                        </div>
+                                    </article>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </section>
+        </main>
+    </div>
+</div>
