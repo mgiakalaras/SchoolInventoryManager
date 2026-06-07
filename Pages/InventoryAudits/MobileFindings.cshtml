@@ -3,6 +3,13 @@
 
 @{
     ViewData["Title"] = "Νέα ευρήματα απογραφής";
+    var currentReturnUrl = Url.Page(
+        "/InventoryAudits/MobileFindings",
+        new
+        {
+            q = Model.Q,
+            roomId = Model.RoomId
+        });
 }
 
 <style>
@@ -469,7 +476,12 @@
                                         </div>
 
                                         <div class="findings-review-row-actions">
-                                            <a class="btn primary" asp-page="/Items/Edit" asp-route-id="@item.Id">Επεξεργασία στοιχείων</a>
+                                            <a class="btn primary"
+                                               asp-page="/Items/Edit"
+                                               asp-route-id="@item.Id"
+                                               asp-route-returnUrl="@currentReturnUrl">
+                                                Επεξεργασία στοιχείων
+                                            </a>
                                         </div>
                                     </article>
                                 }

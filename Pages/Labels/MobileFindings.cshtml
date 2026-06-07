@@ -3,6 +3,15 @@
 
 @{
     ViewData["Title"] = "QR νέων ευρημάτων";
+    var currentReturnUrl = Url.Page(
+        "/Labels/MobileFindings",
+        new
+        {
+            search = Model.Search,
+            roomId = Model.RoomId,
+            includeInactive = Model.IncludeInactive
+        });
+
     var labelPages = Model.Items
         .Select((item, index) => new { item, index })
         .GroupBy(x => x.index / 21)
@@ -526,7 +535,12 @@
                                 </div>
 
                                 <div class="new-qr-row-actions">
-                                    <a class="btn primary" asp-page="/Items/Edit" asp-route-id="@item.Id">Επεξεργασία στοιχείων</a>
+                                    <a class="btn primary"
+                                       asp-page="/Items/Edit"
+                                       asp-route-id="@item.Id"
+                                       asp-route-returnUrl="@currentReturnUrl">
+                                        Επεξεργασία στοιχείων
+                                    </a>
                                 </div>
                             </article>
                         }

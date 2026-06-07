@@ -22,6 +22,11 @@ public class EditModel : PageModel
     [BindProperty]
     public InventoryItemTechnicalSpecs Specs { get; set; } = new();
 
+    [BindProperty(SupportsGet = true)]
+    public string? ReturnUrl { get; set; }
+
+    public string BackUrl => GetSafeReturnUrl() ?? Url.Page("Index") ?? "/Items";
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var item = await _db.InventoryItems
@@ -40,6 +45,7 @@ public class EditModel : PageModel
         };
 
         await LoadListsAsync();
+
         ViewData["TechnicalSpecs"] = Specs;
 
         return Page();
@@ -55,6 +61,7 @@ public class EditModel : PageModel
         }
 
         var existing = await _db.InventoryItems.FindAsync(Item.Id);
+
         if (existing == null)
         {
             return NotFound();
@@ -108,7 +115,27 @@ public class EditModel : PageModel
         }
 
         await _db.SaveChangesAsync();
+
+        var safeReturnUrl = GetSafeReturnUrl();
+
+        if (!string.IsNullOrWhiteSpace(safeReturnUrl))
+        {
+            return LocalRedirect(safeReturnUrl);
+        }
+
         return RedirectToPage("Index", new { roomId = existing.RoomId });
+    }
+
+    private string? GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+        {
+            return null;
+        }
+
+        return Url.IsLocalUrl(ReturnUrl)
+            ? ReturnUrl
+            : null;
     }
 
     private async Task LoadListsAsync()
