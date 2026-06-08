@@ -119,8 +119,8 @@ git push origin main
 Για release:
 
 ```powershell
-git tag -a v0.2.0 -m "School Inventory Manager v0.2.0"
-git push origin v0.2.0
+git tag -a v0.6.0 -m "School Inventory Manager v0.6.0"
+git push origin v0.6.0
 ```
 
 ---
@@ -130,10 +130,10 @@ git push origin v0.2.0
 Προτεινόμενο επόμενο release:
 
 ```text
-v0.2.0
+v0.6.0
 ```
 
-Λόγος: από τα παλιά `v0.1.x` έχουν προστεθεί σημαντικές ροές απογραφής, Android scanner integration, mobile quick add και νέα QR workflow.
+Λόγος: μετά το προηγούμενο `v0.5.0` έχουν προστεθεί σημαντικές ροές απογραφής, Android scanner integration, mobile quick add και νέα QR workflow.
 
 ---
 
