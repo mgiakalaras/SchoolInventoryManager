@@ -9,7 +9,7 @@
     <div>
         <span class="hero-kicker">Νέα διαδικασία</span>
         <h1>Νέος φάκελος απογραφής</h1>
-        <p>Ο φάκελος χρησιμοποιεί αυτόματα τα στοιχεία από τις Ρυθμίσεις σχολείου.</p>
+        <p>Διάλεξε αν ο φάκελος είναι ετήσιος έλεγχος υπάρχουσας βάσης ή πρώτη απογραφή από το μηδέν.</p>
     </div>
 
     <div class="actions">
@@ -66,6 +66,33 @@
             </p>
         </div>
 
+        <div class="audit-mode-card">
+            <h2>Τύπος φακέλου</h2>
+            <p class="muted">
+                Στην πρώτη απογραφή ο φάκελος ξεκινά κενός. Δεν αντιγράφει τους υπάρχοντες χώρους/αντικείμενα της βάσης.
+            </p>
+
+            <label class="audit-mode-option">
+                <input type="radio" name="AuditMode" value="@CreateModel.AuditModeAnnual" checked="@(Model.AuditMode == CreateModel.AuditModeAnnual)" />
+                <span>
+                    <strong>Ετήσιος έλεγχος υπάρχουσας βάσης</strong>
+                    <small>
+                        Χρησιμοποιείται όταν υπάρχει ήδη εξοπλισμός στη βάση και θέλουμε να ελέγξουμε τι βρέθηκε, τι λείπει και τι μετακινήθηκε.
+                    </small>
+                </span>
+            </label>
+
+            <label class="audit-mode-option">
+                <input type="radio" name="AuditMode" value="@CreateModel.AuditModeFirstInventory" checked="@(Model.AuditMode == CreateModel.AuditModeFirstInventory)" />
+                <span>
+                    <strong>Πρώτη απογραφή / από μηδενική βάση</strong>
+                    <small>
+                        Ο φάκελος δημιουργείται κενός. Οι χώροι και τα αντικείμενα θα προστεθούν σταδιακά από κινητά/tablet και μετά θα ελεγχθούν από PC.
+                    </small>
+                </span>
+            </label>
+        </div>
+
         <div class="form-row">
             <label asp-for="Folder.Title"></label>
             <input asp-for="Folder.Title" />
@@ -89,7 +116,12 @@
 
         <label class="check-row">
             <input asp-for="IncludeEmptyRooms" />
-            <span>Να δημιουργηθούν εγγραφές και για άδειους χώρους</span>
+            <span>
+                Να δημιουργηθούν εγγραφές και για άδειους χώρους
+                <small class="muted">
+                    Ισχύει μόνο στον ετήσιο έλεγχο υπάρχουσας βάσης. Στην πρώτη απογραφή ο φάκελος ξεκινά κενός.
+                </small>
+            </span>
         </label>
 
         <div class="actions">
@@ -101,7 +133,8 @@
     <aside class="card">
         <h2>Τι θα δημιουργηθεί;</h2>
         <p class="muted">
-            Με τη δημιουργία φακέλου θα δημιουργηθούν αυτόματα γραμμές ελέγχου για τους χώρους που έχουν ενεργό εξοπλισμό.
+            Στον ετήσιο έλεγχο δημιουργούνται γραμμές ελέγχου από τους υπάρχοντες χώρους.
+            Στην πρώτη απογραφή ο φάκελος ξεκινά κενός ώστε να στηθεί η βάση από το μηδέν.
         </p>
 
         <div class="metric-grid">
@@ -116,23 +149,24 @@
         </div>
 
         <div class="info-box">
-            <strong>Ροή εργασίας</strong>
+            <strong>Ετήσιος έλεγχος</strong>
             <p>
-                Δημιουργείς φάκελο, ανοίγεις κάθε χώρο, σκανάρεις QR, οριστικοποιείς τον χώρο και στο τέλος οριστικοποιείς τον φάκελο.
+                Δημιουργείς φάκελο, ανοίγεις κάθε χώρο, σκανάρεις QR, βλέπεις βρέθηκαν/λείπουν/άλλος χώρος και οριστικοποιείς.
             </p>
         </div>
 
         <div class="info-box">
-            <strong>Για χρήστες</strong>
+            <strong>Πρώτη απογραφή</strong>
             <p>
-                Το επόμενο μεγάλο βήμα μπορεί να είναι login/ρόλοι ώστε να ξέρουμε ποιος δημιούργησε και ποιος οριστικοποίησε κάθε απογραφή.
+                Ξεκινάς με κενό φάκελο. Περνάς χώρους και αντικείμενα από κινητά/tablet, κάνεις έλεγχο από PC, τυπώνεις QR και στο τέλος ο φάκελος γίνεται baseline για την επόμενη χρονιά.
             </p>
         </div>
     </aside>
 </section>
 
 <style>
-    .settings-snapshot-card {
+    .settings-snapshot-card,
+    .audit-mode-card {
         border: 1px solid rgba(34, 211, 238, 0.22);
         border-radius: 20px;
         padding: 1rem;
@@ -142,7 +176,8 @@
             rgba(2, 6, 23, 0.28);
     }
 
-    .settings-snapshot-card h2 {
+    .settings-snapshot-card h2,
+    .audit-mode-card h2 {
         margin: 0 0 0.8rem;
         color: #f8fafc;
         font-size: 1.05rem;
@@ -173,6 +208,42 @@
         color: #f8fafc;
         margin: 0;
         overflow-wrap: anywhere;
+    }
+
+    .audit-mode-option {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.8rem;
+        align-items: start;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 16px;
+        padding: 0.85rem;
+        margin-top: 0.7rem;
+        background: rgba(15, 23, 42, 0.42);
+        cursor: pointer;
+    }
+
+    .audit-mode-option input {
+        margin-top: 0.25rem;
+        width: 18px;
+        height: 18px;
+    }
+
+    .audit-mode-option strong,
+    .audit-mode-option small {
+        display: block;
+    }
+
+    .audit-mode-option small {
+        color: #94a3b8;
+        margin-top: 0.25rem;
+        line-height: 1.35;
+    }
+
+    .check-row small {
+        display: block;
+        margin-top: 0.2rem;
+        font-weight: 400;
     }
 
     @@media (max-width: 720px) {

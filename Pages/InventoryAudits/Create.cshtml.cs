@@ -8,6 +8,12 @@ namespace SchoolInventoryManager.Pages.InventoryAudits;
 
 public class CreateModel : PageModel
 {
+    public const string AuditModeAnnual = "AnnualAudit";
+    public const string AuditModeFirstInventory = "FirstInventory";
+
+    private const string AuditModeAnnualMarker = "[AuditMode:AnnualAudit]";
+    private const string AuditModeFirstInventoryMarker = "[AuditMode:FirstInventory]";
+
     private readonly AppDbContext _db;
 
     public CreateModel(AppDbContext db)
@@ -20,6 +26,9 @@ public class CreateModel : PageModel
 
     [BindProperty]
     public bool IncludeEmptyRooms { get; set; }
+
+    [BindProperty]
+    public string AuditMode { get; set; } = AuditModeAnnual;
 
     public int RoomsWithActiveItemsCount { get; set; }
 
@@ -46,6 +55,8 @@ public class CreateModel : PageModel
     {
         await ApplySchoolSettingsSnapshotAsync();
 
+        NormalizeAuditMode();
+
         if (string.IsNullOrWhiteSpace(Folder.Title))
         {
             ModelState.AddModelError("Folder.Title", "Συμπλήρωσε τίτλο φακέλου.");
@@ -63,51 +74,59 @@ public class CreateModel : PageModel
         }
 
         var now = DateTime.Now;
+        var isFirstInventory = AuditMode == AuditModeFirstInventory;
 
         Folder.Title = Folder.Title.Trim();
         Folder.SchoolName = Folder.SchoolName.Trim();
         Folder.SchoolType = Folder.SchoolType?.Trim();
         Folder.SchoolYear = Folder.SchoolYear?.Trim();
         Folder.ResponsibleName = Folder.ResponsibleName?.Trim();
+        Folder.Notes = BuildModeNotes(Folder.Notes, AuditMode);
         Folder.CreatedAt = now;
         Folder.UpdatedAt = now;
 
-        var roomStatsQuery = _db.Rooms
-            .Select(room => new
-            {
-                room.Id,
-                room.Name,
-                room.SortOrder,
-                ActiveItemsCount = room.Items.Count(item => item.IsActive)
-            });
-
-        if (!IncludeEmptyRooms)
+        if (!isFirstInventory)
         {
-            roomStatsQuery = roomStatsQuery.Where(x => x.ActiveItemsCount > 0);
-        }
+            var roomStatsQuery = _db.Rooms
+                .Select(room => new
+                {
+                    room.Id,
+                    room.Name,
+                    room.SortOrder,
+                    ActiveItemsCount = room.Items.Count(item => item.IsActive)
+                });
 
-        var roomStats = await roomStatsQuery
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Name)
-            .ToListAsync();
-
-        foreach (var room in roomStats)
-        {
-            Folder.RoomSessions.Add(new InventoryAuditRoomSession
+            if (!IncludeEmptyRooms)
             {
-                RoomId = room.Id,
-                RoomNameSnapshot = room.Name,
-                ExpectedItemsCount = room.ActiveItemsCount,
-                MissingItemsCount = room.ActiveItemsCount,
-                CreatedAt = now,
-                UpdatedAt = now
-            });
+                roomStatsQuery = roomStatsQuery.Where(x => x.ActiveItemsCount > 0);
+            }
+
+            var roomStats = await roomStatsQuery
+                .OrderBy(x => x.SortOrder)
+                .ThenBy(x => x.Name)
+                .ToListAsync();
+
+            foreach (var room in roomStats)
+            {
+                Folder.RoomSessions.Add(new InventoryAuditRoomSession
+                {
+                    RoomId = room.Id,
+                    RoomNameSnapshot = room.Name,
+                    ExpectedItemsCount = room.ActiveItemsCount,
+                    MissingItemsCount = room.ActiveItemsCount,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
+            }
         }
 
         _db.InventoryAuditFolders.Add(Folder);
         await _db.SaveChangesAsync();
 
-        TempData["Message"] = "Ο φάκελος απογραφής δημιουργήθηκε.";
+        TempData["Message"] = isFirstInventory
+            ? "Ο φάκελος πρώτης απογραφής δημιουργήθηκε κενός. Οι χώροι και τα αντικείμενα θα προστεθούν από κινητό/tablet ή από το web app."
+            : "Ο φάκελος απογραφής δημιουργήθηκε.";
+
         return RedirectToPage("./Details", new { id = Folder.Id });
     }
 
@@ -155,5 +174,30 @@ public class CreateModel : PageModel
 
         ActiveItemsCount = await _db.InventoryItems
             .CountAsync(item => item.IsActive);
+    }
+
+    private void NormalizeAuditMode()
+    {
+        AuditMode = AuditMode == AuditModeFirstInventory
+            ? AuditModeFirstInventory
+            : AuditModeAnnual;
+    }
+
+    private static string BuildModeNotes(string? notes, string auditMode)
+    {
+        var marker = auditMode == AuditModeFirstInventory
+            ? AuditModeFirstInventoryMarker
+            : AuditModeAnnualMarker;
+
+        var cleaned = notes?.Trim() ?? string.Empty;
+
+        cleaned = cleaned
+            .Replace(AuditModeAnnualMarker, string.Empty)
+            .Replace(AuditModeFirstInventoryMarker, string.Empty)
+            .Trim();
+
+        return string.IsNullOrWhiteSpace(cleaned)
+            ? marker
+            : $"{marker}{Environment.NewLine}{cleaned}";
     }
 }
