@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using SchoolInventoryManager.Utilities;
 
@@ -371,14 +371,10 @@ VALUES
 
     private static void AddColumnIfMissing(AppDbContext db, string tableName, string columnName, string columnDefinition)
     {
-        EnsureSafeSqlIdentifier(tableName, nameof(tableName));
-        EnsureSafeSqlIdentifier(columnName, nameof(columnName));
-        EnsureSafeSqlColumnDefinition(columnDefinition);
+        var escapedTableName = tableName.Replace("'", "''");
 
         var tableExists = db.Database
-            .SqlQueryRaw<int>(
-                "SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = @tableName",
-                new SqliteParameter("@tableName", tableName))
+            .SqlQueryRaw<int>($"SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = '{escapedTableName}'")
             .AsEnumerable()
             .FirstOrDefault();
 
@@ -388,53 +384,13 @@ VALUES
         }
 
         var existingColumns = db.Database
-            .SqlQueryRaw<string>(
-                "SELECT name AS Value FROM pragma_table_info(@tableName)",
-                new SqliteParameter("@tableName", tableName))
+            .SqlQueryRaw<string>($"SELECT name AS Value FROM pragma_table_info('{escapedTableName}')")
             .AsEnumerable()
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         if (!existingColumns.Contains(columnName))
         {
-            var sql = "ALTER TABLE "
-                + QuoteSqlIdentifier(tableName)
-                + " ADD COLUMN "
-                + QuoteSqlIdentifier(columnName)
-                + " "
-                + columnDefinition
-                + ";";
-
-            db.Database.ExecuteSqlRaw(sql);
+            db.Database.ExecuteSqlRaw($"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};");
         }
     }
-
-    private static void EnsureSafeSqlIdentifier(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("SQL identifier cannot be empty.", parameterName);
-        }
-
-        if (value.Any(ch => !char.IsLetterOrDigit(ch) && ch != '_'))
-        {
-            throw new ArgumentException($"Unsafe SQL identifier: {value}", parameterName);
-        }
-    }
-
-    private static void EnsureSafeSqlColumnDefinition(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("SQL column definition cannot be empty.", nameof(value));
-        }
-
-        if (value.Contains(';') || value.Contains("--") || value.Contains("/*") || value.Contains("*/"))
-        {
-            throw new ArgumentException($"Unsafe SQL column definition: {value}", nameof(value));
-        }
-    }
-
-    private static string QuoteSqlIdentifier(string value)
-    {
-        return "\"" + value.Replace("\"", "\"\"") + "\"";
-    }}
+}
