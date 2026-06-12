@@ -1,49 +1,60 @@
 # Roadmap
 
-## Web app — short term
+## Completed by v0.7.0
 
-- Navigation cleanup.
-- Better grouping of menu items:
-  - Απογραφή
-  - QR / Ετικέτες
-  - Mobile Scanner
-  - Διαχείριση εξοπλισμού
-  - Ρυθμίσεις / Βοήθεια
-- Improve discoverability of:
-  - Νέα ευρήματα
-  - QR νέων ευρημάτων
-  - Android Scanner
-- Review mobile findings workflow after real-world testing.
-- Add screenshots to README.
+- Core inventory management.
+- Rooms and categories.
+- Excel import/export.
+- Duplicate/conflict review during import.
+- Destruction workflow.
+- Technical specs for devices.
+- Technical reference library.
+- Spare parts / consumables stock.
+- Technical audit reports.
+- QR identity for items.
+- QR labels and QR item card.
+- Audit folders.
+- QR room audit sessions.
+- Android/mobile scanner API.
+- Android/mobile scan sync.
+- Mobile-created findings.
+- Web review workflow for mobile-created findings.
+- QR labels for mobile-created findings.
+- First inventory / discovery mode.
+- Empty first-inventory folders.
+- Mobile API for creating rooms inside audit folders.
+- End-to-end first inventory flow:
+  - empty folder
+  - Android room creation
+  - Android item creation
+  - web review
+  - QR labels
 
-## Android Scanner — short term
+## Candidate v0.8.0
 
-- Tablet layout test.
-- Proper README.
-- Release notes.
-- Tag working versions.
-- App icon finalization.
-- Splash screen.
-- First-run mini tutorial.
-- Tooltips/help hints.
-- Keep changes small and one-by-one.
+- Dedicated first-inventory review dashboard.
+- Better baseline/finalization workflow for first inventory.
+- Reports for first-inventory folders.
+- Room-by-room progress summary for discovery mode.
+- Bulk approval tools for reviewed mobile findings.
+- Cleaner QR label workflow by first-inventory folder and room.
+- Optional first-inventory report package.
 
-## Web app — medium term
+## Candidate v0.9.0
 
-- Login / users / roles.
-- Admin area.
-- Audit log.
-- Backup / restore from UI.
-- Server-side PDF export.
-- More detailed technical inventory for labs.
+- Authentication and roles.
+- Admin / teacher / view-only style permissions where useful.
+- Audit log for important changes.
+- Backup / restore UI.
+- Database export package.
+- GDPR/privacy documentation.
+- Deployment guide for school/local network use.
 
-## Inventory scope — later phase
+## Later
 
-Expand beyond IT/digital equipment:
-
-- Desks.
-- Chairs.
-- Office furniture.
-- Cabinets.
-- General school assets.
-- Equipment useful for full school handover inventory when a principal/director changes.
+- Full furniture/general-assets support.
+- More advanced hardware reference tables.
+- Import templates per asset type.
+- Mobile offline mode.
+- Multi-device sync conflict handling.
+- Installer/deployment packaging.
