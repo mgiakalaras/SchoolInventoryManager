@@ -75,6 +75,13 @@ public class RoomSessionScanModel : PageModel
 
         if (item == null)
         {
+            var alreadyScanned = await _db.InventoryAuditScanLogs
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.InventoryAuditRoomSessionId == session.Id &&
+                    x.ScannedCode == normalizedCode &&
+                    x.Status == AuditScanStatus.Unknown);
+
             await SaveUnknownScanAsync(session, normalizedCode);
             await MobileAuditLiveCalculator.RecalculateSessionAsync(_db, session);
             await _db.SaveChangesAsync();
@@ -83,15 +90,25 @@ public class RoomSessionScanModel : PageModel
             {
                 Ok = true,
                 Found = false,
+                AlreadyScanned = alreadyScanned,
                 Status = AuditScanStatus.Unknown,
                 Code = normalizedCode,
-                Message = "Άγνωστο QR. Καταγράφηκε στα άγνωστα."
+                Message = alreadyScanned
+                    ? "Το άγνωστο QR έχει ήδη σαρωθεί σε αυτόν τον χώρο."
+                    : "Άγνωστο QR. Καταγράφηκε στα άγνωστα."
             };
         }
         else
         {
             var sameRoom = MobileAuditLiveCalculator.IsSameRoom(session, item);
             var status = sameRoom ? AuditScanStatus.Found : AuditScanStatus.WrongRoom;
+
+            var alreadyScanned = await _db.InventoryAuditScanLogs
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.InventoryAuditRoomSessionId == session.Id &&
+                    x.InventoryItemId == item.Id &&
+                    x.Status == status);
 
             await SaveItemScanAsync(session, item, normalizedCode, status);
             await MobileAuditLiveCalculator.RecalculateSessionAsync(_db, session);
@@ -103,11 +120,16 @@ public class RoomSessionScanModel : PageModel
             {
                 Ok = true,
                 Found = sameRoom,
+                AlreadyScanned = alreadyScanned,
                 Status = status,
                 Code = normalizedCode,
-                Message = sameRoom
-                    ? "Το αντικείμενο βρέθηκε σωστά στον χώρο."
-                    : $"Το αντικείμενο είναι δηλωμένο σε άλλο χώρο: {item.Room?.Name ?? "Χωρίς χώρο"}",
+                Message = alreadyScanned
+                    ? sameRoom
+                        ? "Το αντικείμενο έχει ήδη σαρωθεί σε αυτόν τον χώρο."
+                        : $"Το αντικείμενο έχει ήδη σαρωθεί ως λάθος χώρος. Δηλωμένος χώρος: {item.Room?.Name ?? "Χωρίς χώρο"}"
+                    : sameRoom
+                        ? "Το αντικείμενο βρέθηκε σωστά στον χώρο."
+                        : $"Το αντικείμενο είναι δηλωμένο σε άλλο χώρο: {item.Room?.Name ?? "Χωρίς χώρο"}",
                 Item = new
                 {
                     item.Id,
@@ -246,6 +268,7 @@ public class RoomSessionScanModel : PageModel
     {
         public bool Ok { get; set; }
         public bool Found { get; set; }
+        public bool AlreadyScanned { get; set; }
         public string Status { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
