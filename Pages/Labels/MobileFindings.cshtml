@@ -290,90 +290,225 @@
         color: #94a3b8;
     }
 
-    .labels-print-area {
-        display: none;
+    .qr-print-root {
+        margin-top: 18px;
+    }
+
+    .qr-label-page {
+        display: grid;
+        grid-template-columns: repeat(3, 70mm);
+        grid-template-rows: repeat(7, 42.3mm);
+        grid-auto-flow: column;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto 14px;
+        padding: 0;
+        background: #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-sizing: border-box;
+    }
+
+    .qr-print-label {
+        width: 70mm;
+        height: 42.3mm;
+        border: 1px dashed rgba(148, 163, 184, 0.35);
+        border-radius: 0;
+        background: #ffffff;
+        color: #111827;
+        display: grid;
+        grid-template-columns: 32mm minmax(0, 1fr);
+        gap: 2mm;
+        align-items: center;
+        padding: 2.2mm;
+        box-sizing: border-box;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .qr-print-image-box {
+        width: 30mm;
+        height: 30mm;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        align-self: center;
+        overflow: hidden;
+        flex: 0 0 auto;
+    }
+
+    .qr-print-image-box img {
+        width: 30mm !important;
+        height: 30mm !important;
+        max-width: 30mm !important;
+        max-height: 30mm !important;
+        object-fit: contain;
+        display: block;
+        background: #ffffff;
+        image-rendering: pixelated;
+    }
+
+    .qr-print-text {
+        min-width: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        background: #ffffff;
+    }
+
+    .qr-print-text strong,
+    .qr-print-text span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .qr-print-text strong {
+        font-size: 8.5pt;
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 1mm;
+        white-space: nowrap;
+    }
+
+    .qr-print-text span {
+        font-size: 7pt;
+        line-height: 1.12;
+        color: #111827;
+    }
+
+    .qr-print-text .label-item-name {
+        font-weight: 800;
+        font-size: 7.6pt;
+        max-height: 16pt;
     }
 
     @@media print {
-        body * {
-            visibility: hidden !important;
+        .topbar,
+        .footer,
+        .mobile-bottom-nav,
+        .screen-only,
+        .no-print {
+            display: none !important;
         }
 
-        .labels-print-area,
-        .labels-print-area * {
-            visibility: visible !important;
-        }
-
-        .labels-print-area {
+        html,
+        body,
+        body.sim-ops-theme {
+            width: 210mm !important;
+            min-width: 210mm !important;
+            max-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
             display: block !important;
-            position: absolute;
-            left: 0;
-            top: -18mm;
-            width: 210mm;
-            margin: 0;
-            padding: 0;
+            min-height: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        body.sim-ops-theme main.container,
+        body.sim-ops-theme .container,
+        .container,
+        main {
+            width: 210mm !important;
+            max-width: 210mm !important;
+            min-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            display: block !important;
+        }
+
+        .qr-print-root {
+            /* Same calibrated print engine as Pages/Labels/Qr.cshtml.
+               Typotrust TL2111: 3 columns x 7 rows, 70mm x 42.3mm.
+               Previously calibrated top offset: -18mm. */
+            --label-offset-x: 0mm;
+            --label-offset-y: -18mm;
+            width: 210mm !important;
+            max-width: 210mm !important;
+            min-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            transform: translate(var(--label-offset-x), var(--label-offset-y)) !important;
+            line-height: 1 !important;
+            font-size: 0 !important;
+        }
+
+        .qr-label-page {
+            display: grid !important;
+            grid-template-columns: repeat(3, 70mm) !important;
+            grid-template-rows: repeat(7, 42.3mm) !important;
+            grid-auto-flow: column !important;
+            width: 210mm !important;
+            min-width: 210mm !important;
+            max-width: 210mm !important;
+            height: 297mm !important;
+            min-height: 297mm !important;
+            max-height: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-sizing: border-box !important;
+            background: #ffffff !important;
+            overflow: hidden !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .qr-label-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        .qr-label-page.is-print-hidden {
+            display: none !important;
+        }
+
+        .qr-print-label {
+            width: 70mm !important;
+            height: 42.3mm !important;
+            border: none !important;
+            border-radius: 0 !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+
+        .qr-print-label.is-print-hidden {
+            display: none !important;
+        }
+
+        .qr-print-image-box {
+            width: 30mm !important;
+            height: 30mm !important;
+            overflow: hidden !important;
+        }
+
+        .qr-print-image-box img {
+            width: 30mm !important;
+            height: 30mm !important;
+            max-width: 30mm !important;
+            max-height: 30mm !important;
         }
 
         @@page {
-            size: A4;
+            size: 210mm 297mm;
             margin: 0;
-        }
-
-        .print-label-sheet {
-            width: 210mm;
-            height: 297mm;
-            display: grid;
-            grid-template-columns: repeat(3, 70mm);
-            grid-template-rows: repeat(7, 42.3mm);
-            grid-auto-flow: column;
-            page-break-after: always;
-            break-after: page;
-            margin: 0;
-            padding: 0;
-        }
-
-        .print-label {
-            width: 70mm;
-            height: 42.3mm;
-            box-sizing: border-box;
-            padding: 3.2mm 4mm;
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: 21mm 1fr;
-            gap: 2.5mm;
-            align-items: center;
-            color: #000 !important;
-            background: #fff !important;
-            font-family: Arial, sans-serif;
-        }
-
-        .print-label img {
-            width: 20mm;
-            height: 20mm;
-        }
-
-        .print-label strong {
-            display: block;
-            font-size: 8.5pt;
-            line-height: 1.05;
-            margin-bottom: 1mm;
-        }
-
-        .print-label span,
-        .print-label small {
-            display: block;
-            font-size: 6.8pt;
-            line-height: 1.05;
-        }
-
-        .print-label .room {
-            font-weight: 700;
-        }
-
-        .screen-only {
-            display: none !important;
         }
     }
+
 
     @@media (max-width: 900px) {
         .new-qr-hero,
@@ -511,7 +646,7 @@
                             var missingBrandModel = string.IsNullOrWhiteSpace(item.BrandModel);
 
                             <article class="new-qr-row">
-                                <input type="checkbox" class="mobile-finding-label-checkbox" value="@item.Id" checked />
+                                <input type="checkbox" class="mobile-finding-label-checkbox" data-label-id="label-@item.Id" value="@item.Id" checked />
 
                                 <img src="@item.QrImageDataUrl" alt="QR @item.AssetCode" />
 
@@ -551,59 +686,83 @@
     </section>
 </div>
 
-<div class="labels-print-area" aria-hidden="true">
+<section class="qr-print-root" aria-label="Εκτύπωση QR ετικετών νέων ευρημάτων">
     @foreach (var pageItems in labelPages)
     {
-        <section class="print-label-sheet">
+        <section class="qr-label-page">
             @foreach (var item in pageItems)
             {
-                <article class="print-label" data-label-id="@item.Id">
-                    <img src="@item.QrImageDataUrl" alt="QR @item.AssetCode" />
-                    <div>
+                <article class="qr-print-label" id="label-@item.Id">
+                    <div class="qr-print-image-box">
+                        <img src="@item.QrImageDataUrl" alt="QR @item.AssetCode" />
+                    </div>
+
+                    <div class="qr-print-text">
                         <strong>@item.AssetCode</strong>
-                        <span>@item.Name</span>
-                        <span class="room">@item.RoomName</span>
-                        <small>Απογραφή: @item.InventoryDateText</small>
+                        <span class="label-item-name">@item.Name</span>
+                        <span>@item.RoomName</span>
+                        <span>Απογραφή: @item.InventoryDateText</span>
+
                         @if (!string.IsNullOrWhiteSpace(item.SerialNumber))
                         {
-                            <small>SN: @item.SerialNumber</small>
+                            <span>SN: @item.SerialNumber</span>
                         }
                     </div>
                 </article>
             }
         </section>
     }
-</div>
+</section>
 
 <script>
     function selectAllMobileFindingLabels(checked) {
-        document.querySelectorAll('.mobile-finding-label-checkbox').forEach(function (box) {
-            box.checked = checked;
+        document.querySelectorAll(".mobile-finding-label-checkbox").forEach(function (checkbox) {
+            checkbox.checked = checked;
+        });
+
+        syncMobileFindingLabelVisibility();
+    }
+
+    function syncMobileFindingLabelVisibility() {
+        document.querySelectorAll(".mobile-finding-label-checkbox").forEach(function (checkbox) {
+            const labelId = checkbox.getAttribute("data-label-id");
+            const label = document.getElementById(labelId);
+
+            if (!label) {
+                return;
+            }
+
+            label.classList.toggle("is-print-hidden", !checkbox.checked);
+        });
+
+        document.querySelectorAll(".qr-label-page").forEach(function (page) {
+            const visibleLabels = Array.from(page.querySelectorAll(".qr-print-label"))
+                .filter(function (label) { return !label.classList.contains("is-print-hidden"); });
+
+            page.classList.toggle("is-print-hidden", visibleLabels.length === 0);
         });
     }
 
     function printSelectedMobileFindingLabels() {
-        const selected = new Set(
-            Array.from(document.querySelectorAll('.mobile-finding-label-checkbox:checked'))
-                .map(x => x.value)
-        );
+        syncMobileFindingLabelVisibility();
 
-        if (selected.size === 0) {
-            alert('Δεν έχεις επιλέξει καμία ετικέτα για εκτύπωση.');
+        const selectedCount = Array.from(document.querySelectorAll(".mobile-finding-label-checkbox"))
+            .filter(function (checkbox) { return checkbox.checked; })
+            .length;
+
+        if (selectedCount === 0) {
+            alert("Δεν έχεις επιλέξει καμία ετικέτα για εκτύπωση.");
             return;
         }
 
-        document.querySelectorAll('.print-label').forEach(function (label) {
-            const id = label.getAttribute('data-label-id');
-            label.style.display = selected.has(id) ? '' : 'none';
+        window.print();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".mobile-finding-label-checkbox").forEach(function (checkbox) {
+            checkbox.addEventListener("change", syncMobileFindingLabelVisibility);
         });
 
-        window.print();
-
-        setTimeout(function () {
-            document.querySelectorAll('.print-label').forEach(function (label) {
-                label.style.display = '';
-            });
-        }, 500);
-    }
+        syncMobileFindingLabelVisibility();
+    });
 </script>
