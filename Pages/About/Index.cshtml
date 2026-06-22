@@ -6,346 +6,313 @@
     ViewData["Title"] = "About";
 }
 
-<section class="about-hero">
-    <div class="about-hero-copy">
-        <span class="hero-kicker">About the project</span>
-        <h1>School Inventory Manager</h1>
-        <p>
-            Μια web εφαρμογή για την απογραφή, την τεχνική παρακολούθηση και την οργανωμένη διαχείριση
-            ψηφιακού εξοπλισμού σε σχολικές μονάδες.
-        </p>
-
-        <div class="about-version-strip">
-            <span>Έκδοση <strong>@AppVersion.Current</strong></span>
-            <span>@AppVersion.ReleaseName</span>
-            <span>@AppVersion.Channel</span>
-        </div>
-    </div>
-
-    <div class="about-hero-logo">
-        <img src="~/assets/brand/sim-logo-lockup-dark.svg" alt="School Inventory Manager" />
-    </div>
-</section>
-
-<section class="about-grid">
-    <article class="about-card about-card-primary">
-        <span class="about-card-kicker">Σκοπός</span>
-        <h2>Γιατί δημιουργήθηκε</h2>
-        <p>
-            Το School Inventory Manager δημιουργήθηκε για να καλύψει πραγματικές ανάγκες σχολικής απογραφής:
-            καταγραφή εξοπλισμού ανά χώρο, τεκμηρίωση κατάστασης, εκτυπώσιμες αναφορές, εισαγωγή/εξαγωγή Excel
-            και πιο γρήγορη μελλοντική απογραφή με QR labels.
-        </p>
-        <p>
-            Στόχος δεν είναι απλώς να υπάρχει μια λίστα αντικειμένων, αλλά ένα πρακτικό εργαλείο που βοηθά τον
-            υπεύθυνο εργαστηρίου, τον εκπαιδευτικό Πληροφορικής ή τη σχολική μονάδα να έχει καθαρή εικόνα
-            του εξοπλισμού της.
-        </p>
-    </article>
-
-    <article class="about-card">
-        <span class="about-card-kicker">Χρήση</span>
-        <h2>Για σχολικό δίκτυο</h2>
-        <p>
-            Η εφαρμογή έχει σχεδιαστεί για χρήση μέσα σε τοπικό σχολικό δίκτυο, από υπολογιστή, laptop,
-            tablet ή κινητό. Μπορεί να τρέξει σε σχολικό server, ZimaOS, CasaOS, Linux server, Windows μηχάνημα
-            ή Docker/Portainer περιβάλλον.
-        </p>
-        <div class="about-warning">
-            <strong>Σημείωση ασφάλειας:</strong>
-            Δεν προτείνεται δημόσια έκθεση στο Internet χωρίς login, ρόλους χρηστών και HTTPS.
-        </div>
-    </article>
-</section>
-
-<section class="about-section">
-    <div class="section-title-row">
+<section class="about48-page">
+    <section class="about48-hero">
         <div>
-            <h2>Κύριες δυνατότητες</h2>
-            <p class="muted">Οι βασικοί άξονες λειτουργίας της εφαρμογής.</p>
-        </div>
-    </div>
+            <span class="about48-kicker">About the project</span>
+            <h1>School Inventory Manager</h1>
+            <p>
+                Ένα πρακτικό σύστημα σχολικής απογραφής για εξοπλισμό, QR ετικέτες, φακέλους απογραφής,
+                Android scanning, νέα ευρήματα, τεχνική παρακολούθηση και απόθεμα ανταλλακτικών.
+            </p>
 
-    <div class="about-feature-grid">
-        <div>
-            <img src="~/assets/icons/room-pin.svg" alt="" />
-            <strong>Χώροι και εξοπλισμός</strong>
-            <span>Καταγραφή αντικειμένων ανά αίθουσα, γραφείο, εργαστήριο ή αποθήκη.</span>
-        </div>
-
-        <div>
-            <img src="~/assets/icons/qr-scan.svg" alt="" />
-            <strong>QR labels</strong>
-            <span>Μοναδικός κωδικός και QR ανά αντικείμενο για γρήγορη αναγνώριση.</span>
+            <div class="about48-version">
+                <span>Έκδοση <strong>@AppVersion.Current</strong></span>
+                <span>@AppVersion.ReleaseName</span>
+                <span>@AppVersion.Channel</span>
+            </div>
         </div>
 
-        <div>
-            <img src="~/assets/icons/folder-audit.svg" alt="" />
-            <strong>Φάκελοι απογραφής</strong>
-            <span>Οργάνωση απογραφών ανά σχολικό έτος, χώρο και κατάσταση ολοκλήρωσης.</span>
+        <div class="about48-logo-card">
+            <img src="~/assets/brand/sim-logo-lockup-dark.svg" alt="School Inventory Manager" />
+            <span>Built for real school inventory workflows</span>
+        </div>
+    </section>
+
+    <section class="about48-grid">
+        <article class="about48-panel about48-wide">
+            <span class="about48-panel-label">Σκοπός</span>
+            <h2>Γιατί υπάρχει</h2>
+            <p>
+                Η εφαρμογή δημιουργήθηκε για να λύσει ένα πολύ συγκεκριμένο πρόβλημα: η σχολική απογραφή δεν είναι
+                απλώς μια λίστα σε Excel. Είναι χώροι, αντικείμενα, serial numbers, αλλαγές, μετακινήσεις, QR,
+                τεχνική κατάσταση, αναφορές, καταστροφές υλικού και ετήσιοι έλεγχοι.
+            </p>
+            <p>
+                Στόχος είναι να υπάρχει ένα εργαλείο που να βοηθά πραγματικά τον υπεύθυνο εργαστηρίου,
+                τον εκπαιδευτικό Πληροφορικής ή τη σχολική μονάδα να ξέρει τι υπάρχει, πού βρίσκεται και
+                τι χρειάζεται προσοχή.
+            </p>
+        </article>
+
+        <article class="about48-panel">
+            <span class="about48-panel-label">Περιβάλλον</span>
+            <h2>Σχολικό δίκτυο</h2>
+            <p>
+                Σχεδιασμένο για χρήση σε τοπικό δίκτυο σχολείου, σε server, Windows μηχάνημα, Linux,
+                Docker ή Portainer.
+            </p>
+            <div class="about48-warning">
+                Δεν προτείνεται δημόσια έκθεση στο Internet χωρίς authentication, ρόλους και HTTPS.
+            </div>
+        </article>
+
+        <article class="about48-panel">
+            <span class="about48-panel-label">Κατεύθυνση</span>
+            <h2>Όχι απλώς CRUD</h2>
+            <p>
+                Η κατεύθυνση είναι να γίνει operational εργαλείο: dashboard, ροές εργασίας,
+                scanner, reports, review, τεχνικά σήματα και καθαρή εικόνα για τη σχολική μονάδα.
+            </p>
+        </article>
+    </section>
+
+    <section class="about48-panel">
+        <div class="about48-panel-head">
+            <div>
+                <span class="about48-panel-label">Δυνατότητες</span>
+                <h2>Οι βασικοί άξονες</h2>
+            </div>
         </div>
 
-        <div>
-            <img src="~/assets/icons/android-phone.svg" alt="" />
-            <strong>Android Scanner</strong>
-            <span>Προετοιμασία για native εφαρμογή σάρωσης QR από κινητό ή tablet.</span>
+        <div class="about48-feature-grid">
+            <div><b>⌂</b><strong>Χώροι & εξοπλισμός</strong><span>Οργάνωση ανά αίθουσα, γραφείο, εργαστήριο ή αποθήκη.</span></div>
+            <div><b>⌗</b><strong>QR ετικέτες</strong><span>Μοναδική ταυτοποίηση αντικειμένων και γρήγορο scan.</span></div>
+            <div><b>▣</b><strong>Φάκελοι απογραφής</strong><span>Ετήσιοι έλεγχοι, πρώτη απογραφή και κατάσταση ολοκλήρωσης.</span></div>
+            <div><b>▯</b><strong>Android Scanner</strong><span>Native εφαρμογή για κινητό/tablet και επιτόπια σάρωση.</span></div>
+            <div><b>＋</b><strong>Νέα ευρήματα</strong><span>Quick add από κινητό και review από το web app.</span></div>
+            <div><b>⚙</b><strong>Τεχνικός έλεγχος</strong><span>Specs, RAM, δίσκοι, τεχνικές ελλείψεις και αναβαθμίσεις.</span></div>
+            <div><b>✚</b><strong>Απόθεμα</strong><span>Ανταλλακτικά, αναλώσιμα και ιστορικό χρήσης.</span></div>
+            <div><b>▤</b><strong>Αναφορές</strong><span>Εκτυπώσεις, Excel/PDF workflows και τεκμηρίωση.</span></div>
         </div>
+    </section>
 
-        <div>
-            <img src="~/assets/icons/sync-cloud.svg" alt="" />
-            <strong>Import / Export</strong>
-            <span>Excel import/export, CSV export και καθαρές εκτυπώσεις/αναφορές.</span>
-        </div>
+    <section class="about48-grid bottom">
+        <article class="about48-panel">
+            <span class="about48-panel-label">Τεχνολογίες</span>
+            <h2>Τεχνική βάση</h2>
+            <ul class="about48-list">
+                <li>ASP.NET Core Razor Pages</li>
+                <li>Entity Framework Core</li>
+                <li>SQLite</li>
+                <li>QRCoder</li>
+                <li>ClosedXML</li>
+                <li>Docker / Portainer friendly deployment</li>
+            </ul>
+        </article>
 
-        <div>
-            <img src="~/assets/icons/help-book.svg" alt="" />
-            <strong>Τεκμηρίωση</strong>
-            <span>Help pages, οδηγίες χρήσης και οργανωμένο workflow για τη σχολική μονάδα.</span>
-        </div>
-    </div>
-</section>
-
-<section class="about-section about-two-col">
-    <article class="about-card">
-        <span class="about-card-kicker">Τεχνολογίες</span>
-        <h2>Τεχνική βάση</h2>
-        <ul class="about-list">
-            <li>ASP.NET Core Razor Pages</li>
-            <li>.NET 8</li>
-            <li>Entity Framework Core</li>
-            <li>SQLite</li>
-            <li>ClosedXML για Excel import/export</li>
-            <li>QRCoder για QR generation</li>
-            <li>Docker / Docker Compose / Portainer-friendly deployment</li>
-            <li>Responsive HTML, CSS και JavaScript</li>
-        </ul>
-    </article>
-
-    <article class="about-card">
-        <span class="about-card-kicker">Κατάσταση έργου</span>
-        <h2>School testing</h2>
-        <p>
-            Το project βρίσκεται σε ενεργή ανάπτυξη και δοκιμή σε πραγματικές σχολικές συνθήκες.
-            Η τρέχουσα προτεραιότητα είναι η σταθεροποίηση της ροής QR απογραφής και η δημιουργία native
-            Android εφαρμογής scanner.
-        </p>
-        <p>
-            Κάθε νέα έκδοση δοκιμάζεται βήμα-βήμα, με στόχο η εφαρμογή να παραμένει πρακτική,
-            κατανοητή και διαχειρίσιμη από σχολικές μονάδες χωρίς πολύπλοκη υποδομή.
-        </p>
-    </article>
-</section>
-
-<section class="about-section about-creator">
-    <div>
-        <span class="about-card-kicker">Δημιουργός</span>
-        <h2>Marios Giakalaras</h2>
-        <p>
-            Ο Μάριος Γιακαλάρας είναι εκπαιδευτικός Πληροφορικής και διαχειρίζεται σχολικό εργαστήριο
-            και ψηφιακές υποδομές. Η εφαρμογή δημιουργήθηκε μέσα από πραγματικές ανάγκες απογραφής,
-            υποστήριξης και τεχνικής οργάνωσης σχολικού εξοπλισμού.
-        </p>
-
-        <div class="about-links">
-            <a class="btn secondary" href="mailto:mgiakalaras@hotmail.com">Email επικοινωνίας</a>
-            <a class="btn secondary" href="https://github.com/mgiakalaras" target="_blank" rel="noopener">GitHub @@mgiakalaras</a>
-            <a class="btn secondary" href="@AppVersion.RepositoryUrl" target="_blank" rel="noopener">Repository</a>
-        </div>
-    </div>
+        <article class="about48-panel">
+            <span class="about48-panel-label">Δημιουργός</span>
+            <h2>Μάριος Γιακαλάρας</h2>
+            <p>
+                Εκπαιδευτικός Πληροφορικής. Το project αναπτύσσεται πάνω σε πραγματικές ανάγκες απογραφής,
+                τεχνικής υποστήριξης και οργάνωσης σχολικού εξοπλισμού.
+            </p>
+            <div class="about48-links">
+                <a href="https://github.com/mgiakalaras" target="_blank" rel="noopener">GitHub @@mgiakalaras</a>
+                <a href="https://github.com/mgiakalaras/SchoolInventoryManager" target="_blank" rel="noopener">Repository</a>
+            </div>
+        </article>
+    </section>
 </section>
 
 <style>
-    .about-hero {
+    .about48-page {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 1rem;
+        padding-bottom: 3rem;
+    }
+
+    .about48-hero,
+    .about48-panel,
+    .about48-logo-card {
+        border: 1px solid rgba(148, 163, 184, .15);
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .10), transparent 34%),
+            rgba(15, 23, 42, .84);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, .22);
+    }
+
+    .about48-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
         gap: 1rem;
         align-items: stretch;
-        margin-bottom: 1rem;
-    }
-
-    .about-hero-copy,
-    .about-hero-logo,
-    .about-card,
-    .about-section,
-    .about-creator {
-        border: 1px solid rgba(34, 211, 238, 0.18);
         border-radius: 28px;
-        background:
-            radial-gradient(circle at top left, rgba(34, 211, 238, 0.11), transparent 34%),
-            rgba(15, 23, 42, 0.78);
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+        padding: clamp(1rem, 1.6vw, 1.6rem);
     }
 
-    .about-hero-copy {
-        padding: clamp(1.25rem, 3vw, 2rem);
-    }
-
-    .about-hero-copy h1 {
-        color: #f8fafc;
-        font-size: clamp(2.4rem, 5vw, 5rem);
-        line-height: 0.94;
-        letter-spacing: -0.06em;
-        margin: 0.45rem 0 0.8rem;
-    }
-
-    .about-hero-copy p {
-        color: #cbd5e1;
-        font-size: 1.08rem;
-        line-height: 1.6;
-        max-width: 820px;
-        margin: 0;
-    }
-
-    .about-hero-logo {
-        display: grid;
-        place-items: center;
-        padding: 1.1rem;
-        overflow: hidden;
-    }
-
-    .about-hero-logo img {
-        width: min(100%, 620px);
-        height: auto;
-        display: block;
-    }
-
-    .about-version-strip {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.55rem;
-        margin-top: 1.15rem;
-    }
-
-    .about-version-strip span {
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        border-radius: 999px;
-        padding: 0.5rem 0.7rem;
-        color: #cbd5e1;
-        background: rgba(2, 6, 23, 0.25);
-        font-size: 0.88rem;
-    }
-
-    .about-version-strip strong {
-        color: #22d3ee;
-    }
-
-    .about-grid,
-    .about-two-col {
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .about-card,
-    .about-section,
-    .about-creator {
-        padding: 1.25rem;
-    }
-
-    .about-card-primary {
-        border-color: rgba(34, 211, 238, 0.26);
-    }
-
-    .about-card-kicker {
+    .about48-kicker,
+    .about48-panel-label {
         display: inline-flex;
-        border: 1px solid rgba(34, 211, 238, 0.20);
+        width: fit-content;
+        margin-bottom: .55rem;
+        padding: .25rem .58rem;
         border-radius: 999px;
-        padding: 0.35rem 0.6rem;
-        color: #67e8f9;
-        background: rgba(34, 211, 238, 0.08);
-        font-size: 0.78rem;
-        font-weight: 850;
-        letter-spacing: 0.04em;
+        border: 1px solid rgba(34, 211, 238, .28);
+        background: rgba(8, 47, 73, .38);
+        color: #a5f3fc;
+        font-weight: 900;
+        font-size: .72rem;
+        letter-spacing: .04em;
         text-transform: uppercase;
     }
 
-    .about-card h2,
-    .about-section h2,
-    .about-creator h2 {
+    .about48-hero h1,
+    .about48-panel h2 {
+        margin: 0;
         color: #f8fafc;
-        margin: 0.75rem 0 0.55rem;
-        font-size: clamp(1.4rem, 2.5vw, 2rem);
     }
 
-    .about-card p,
-    .about-section p,
-    .about-creator p,
-    .about-list li {
+    .about48-hero h1 {
+        font-size: clamp(2rem, 3.4vw, 4rem);
+        line-height: .95;
+    }
+
+    .about48-hero p,
+    .about48-panel p {
+        color: #94a3b8;
+    }
+
+    .about48-version {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        margin-top: 1rem;
+    }
+
+    .about48-version span,
+    .about48-links a {
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: rgba(2, 6, 23, .34);
         color: #cbd5e1;
-        line-height: 1.62;
+        padding: .4rem .65rem;
+        text-decoration: none;
+        font-weight: 850;
+        font-size: .82rem;
     }
 
-    .about-warning {
-        margin-top: 1rem;
-        border: 1px solid rgba(245, 158, 11, 0.26);
-        border-radius: 18px;
-        padding: 0.9rem;
-        color: #fed7aa;
-        background: rgba(245, 158, 11, 0.08);
-    }
-
-    .about-feature-grid {
+    .about48-logo-card {
+        border-radius: 24px;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.85rem;
-        margin-top: 1rem;
+        place-items: center;
+        text-align: center;
+        padding: 1rem;
     }
 
-    .about-feature-grid div {
-        border: 1px solid rgba(148, 163, 184, 0.14);
-        border-radius: 20px;
-        padding: 0.95rem;
-        background: rgba(2, 6, 23, 0.28);
+    .about48-logo-card img {
+        max-width: min(260px, 100%);
+        height: auto;
     }
 
-    .about-feature-grid img {
-        width: 52px;
-        height: 52px;
-        margin-bottom: 0.65rem;
+    .about48-logo-card span {
+        color: #94a3b8;
+        margin-top: .8rem;
+        font-weight: 800;
     }
 
-    .about-feature-grid strong,
-    .about-feature-grid span {
+    .about48-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(280px, .8fr) minmax(280px, .8fr);
+        gap: 1rem;
+    }
+
+    .about48-grid.bottom {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .about48-panel {
+        border-radius: 24px;
+        padding: 1rem;
+    }
+
+    .about48-panel-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: .8rem;
+    }
+
+    .about48-warning {
+        margin-top: .8rem;
+        padding: .8rem;
+        border-radius: 16px;
+        border: 1px solid rgba(245, 158, 11, .28);
+        background: rgba(30, 23, 10, .62);
+        color: #fbbf24;
+        font-weight: 850;
+    }
+
+    .about48-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: .75rem;
+    }
+
+    .about48-feature-grid div {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: .7rem;
+        padding: .85rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, .13);
+        background: rgba(2, 6, 23, .34);
+    }
+
+    .about48-feature-grid b {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        border: 1px solid rgba(34, 211, 238, .22);
+        background: rgba(34, 211, 238, .12);
+        color: #67e8f9;
+    }
+
+    .about48-feature-grid strong,
+    .about48-feature-grid span {
         display: block;
     }
 
-    .about-feature-grid strong {
+    .about48-feature-grid strong {
         color: #f8fafc;
-        margin-bottom: 0.25rem;
     }
 
-    .about-feature-grid span {
+    .about48-feature-grid span {
         color: #94a3b8;
-        line-height: 1.45;
+        font-size: .84rem;
+        margin-top: .15rem;
     }
 
-    .about-list {
-        margin: 0.8rem 0 0;
+    .about48-list {
+        margin: .8rem 0 0;
         padding-left: 1.2rem;
+        color: #cbd5e1;
     }
 
-    .about-creator {
-        margin-bottom: 1rem;
+    .about48-list li {
+        margin-bottom: .35rem;
     }
 
-    .about-links {
+    .about48-links {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.65rem;
-        margin-top: 1rem;
+        gap: .55rem;
+        margin-top: .9rem;
     }
 
-    @@media (max-width: 980px) {
-        .about-hero,
-        .about-grid,
-        .about-two-col,
-        .about-feature-grid {
+    @@media (max-width: 1100px) {
+        .about48-hero,
+        .about48-grid,
+        .about48-grid.bottom {
             grid-template-columns: 1fr;
         }
 
-        .about-hero-copy h1 {
-            font-size: 2.7rem;
+        .about48-logo-card {
+            justify-items: start;
+            text-align: left;
         }
     }
 </style>

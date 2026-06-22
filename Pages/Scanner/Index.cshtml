@@ -3,316 +3,382 @@
 
 @{
     ViewData["Title"] = "Android Scanner";
+    const string ScannerReleasesUrl = "https://github.com/mgiakalaras/SchoolInventoryScanner/releases";
+    const string ScannerRepoUrl = "https://github.com/mgiakalaras/SchoolInventoryScanner";
 }
 
+<section class="scanner48-page">
+    <section class="scanner48-hero">
+        <div>
+            <span class="scanner48-kicker">Android field app</span>
+            <h1>School Inventory Scanner</h1>
+            <p>
+                Η native Android εφαρμογή για QR σάρωση, έλεγχο χώρων, πρώτη απογραφή και γρήγορη προσθήκη νέων αντικειμένων.
+            </p>
+        </div>
+
+        <div class="scanner48-actions">
+            <a class="scanner48-btn primary" href="@ScannerReleasesUrl" target="_blank" rel="noopener">
+                Λήψη APK από GitHub Releases
+            </a>
+            <a class="scanner48-btn" href="@ScannerRepoUrl" target="_blank" rel="noopener">
+                Repository Scanner
+            </a>
+            <a class="scanner48-btn" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
+        </div>
+    </section>
+
+    <section class="scanner48-grid">
+        <aside class="scanner48-panel scanner48-connect">
+            <span class="scanner48-panel-label">Σύνδεση</span>
+            <h2>Server URL για το κινητό</h2>
+            <p>Βάλε αυτό στη ρύθμιση server της Android εφαρμογής.</p>
+
+            <code>@Model.SuggestedServerUrl</code>
+
+            <p class="scanner48-muted">Health check:</p>
+            <code>@Model.SuggestedServerUrl/api/mobile/health</code>
+
+            <div class="scanner48-status-box">
+                <strong>Πριν σκανάρεις</strong>
+                <span>Άνοιξε το health check από browser στο κινητό. Αν δεν ανοίγει, το app δεν θα βλέπει τον server.</span>
+            </div>
+        </aside>
+
+        <main class="scanner48-panel scanner48-flow">
+            <div class="scanner48-panel-head">
+                <div>
+                    <span class="scanner48-panel-label">Ροή χρήσης</span>
+                    <h2>Από το web στον χώρο</h2>
+                </div>
+                <a class="scanner48-btn small" asp-page="/Scanner/Index">Οδηγίες</a>
+            </div>
+
+            <div class="scanner48-steps">
+                <article>
+                    <b>01</b>
+                    <strong>Φτιάξε φάκελο απογραφής</strong>
+                    <span>Από το web app δημιουργείς ετήσιο έλεγχο ή πρώτη απογραφή.</span>
+                </article>
+
+                <article>
+                    <b>02</b>
+                    <strong>Άνοιξε το Android app</strong>
+                    <span>Βάζεις server URL και επιλέγεις φάκελο.</span>
+                </article>
+
+                <article>
+                    <b>03</b>
+                    <strong>Διάλεξε ή δημιούργησε χώρο</strong>
+                    <span>Σε πρώτη απογραφή μπορείς να δημιουργείς χώρους από το κινητό.</span>
+                </article>
+
+                <article>
+                    <b>04</b>
+                    <strong>Σκάναρε QR</strong>
+                    <span>Το app ενημερώνει live βρέθηκαν / λείπουν / λάθος χώρος / άγνωστα.</span>
+                </article>
+
+                <article>
+                    <b>05</b>
+                    <strong>Πρόσθεσε νέα ευρήματα</strong>
+                    <span>Αν βρεθεί κάτι εκτός βάσης, το περνάς προσωρινά από κινητό.</span>
+                </article>
+
+                <article>
+                    <b>06</b>
+                    <strong>Κάνε review από web</strong>
+                    <span>Διορθώνεις στοιχεία και τυπώνεις QR για τα νέα ευρήματα.</span>
+                </article>
+            </div>
+        </main>
+
+        <aside class="scanner48-panel scanner48-download">
+            <span class="scanner48-panel-label">APK / εγκατάσταση</span>
+            <h2>Τελευταία έκδοση</h2>
+            <p>
+                Η εγκατάσταση εκτός Google Play γίνεται από το APK που βρίσκεται στα GitHub Releases του Scanner repository.
+            </p>
+
+            <a class="scanner48-release-card" href="@ScannerReleasesUrl" target="_blank" rel="noopener">
+                <strong>GitHub Releases</strong>
+                <span>Κατέβασε το αρχείο τύπου <b>SchoolInventoryScanner-*-github.apk</b></span>
+                <em>Άνοιγμα ↗</em>
+            </a>
+
+            <div class="scanner48-warning">
+                <strong>Σημείωση</strong>
+                <span>Το `.aab` είναι για Google Play Console. Για εγκατάσταση σε συσκευή θέλεις `.apk`.</span>
+            </div>
+        </aside>
+    </section>
+
+    <section class="scanner48-panel scanner48-quicklinks">
+        <a asp-page="/InventoryAudits/FirstInventory">
+            <strong>Πρώτη απογραφή</strong>
+            <span>Χώροι και αντικείμενα από κινητό/tablet.</span>
+        </a>
+        <a asp-page="/InventoryAudits/MobileFindings">
+            <strong>Νέα ευρήματα</strong>
+            <span>Review αντικειμένων που προστέθηκαν από Android.</span>
+        </a>
+        <a asp-page="/Labels/MobileFindings">
+            <strong>QR νέων ευρημάτων</strong>
+            <span>Εκτύπωση ετικετών για τα νέα αντικείμενα.</span>
+        </a>
+        <a asp-page="/Labels/Qr">
+            <strong>QR υπάρχοντος εξοπλισμού</strong>
+            <span>Ετικέτες για την κανονική βάση.</span>
+        </a>
+    </section>
+</section>
+
 <style>
-    .scanner-page {
-        max-width: 1180px;
-        margin: 0 auto;
+    .scanner48-page {
+        display: grid;
+        gap: 1rem;
         padding-bottom: 3rem;
     }
 
-    .scanner-hero {
+    .scanner48-hero,
+    .scanner48-panel {
+        border: 1px solid rgba(148, 163, 184, .15);
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .10), transparent 34%),
+            rgba(15, 23, 42, .84);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, .22);
+    }
+
+    .scanner48-hero {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 1.25rem;
-        align-items: center;
-        padding: 1.35rem;
-        border: 1px solid rgba(34, 211, 238, .22);
-        border-radius: 22px;
-        background:
-            radial-gradient(circle at top left, rgba(34, 211, 238, .16), transparent 38%),
-            radial-gradient(circle at bottom right, rgba(52, 211, 153, .10), transparent 34%),
-            linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(17, 24, 39, .92));
-        box-shadow: 0 18px 42px rgba(0, 0, 0, .28);
-        margin-bottom: 1rem;
+        gap: 1rem;
+        align-items: end;
+        border-radius: 26px;
+        padding: clamp(1rem, 1.4vw, 1.5rem);
     }
 
-    .scanner-hero h1,
-    .scanner-card h2,
-    .scanner-card h3 {
-        margin: 0;
-    }
-
-    .scanner-hero p,
-    .scanner-card p {
-        margin-bottom: 0;
-    }
-
-    .scanner-badge {
+    .scanner48-kicker,
+    .scanner48-panel-label {
         display: inline-flex;
         width: fit-content;
-        padding: .25rem .55rem;
+        margin-bottom: .55rem;
+        padding: .25rem .58rem;
         border-radius: 999px;
-        border: 1px solid rgba(34, 211, 238, .32);
+        border: 1px solid rgba(34, 211, 238, .28);
+        background: rgba(8, 47, 73, .38);
         color: #a5f3fc;
-        background: rgba(8, 47, 73, .42);
-        font-weight: 800;
+        font-weight: 900;
         font-size: .72rem;
-        letter-spacing: .03em;
+        letter-spacing: .04em;
         text-transform: uppercase;
-        margin-bottom: .65rem;
     }
 
-    .scanner-actions {
+    .scanner48-hero h1,
+    .scanner48-panel h2 {
+        margin: 0;
+        color: #f8fafc;
+    }
+
+    .scanner48-hero p,
+    .scanner48-panel p,
+    .scanner48-muted {
+        color: #94a3b8;
+    }
+
+    .scanner48-actions {
         display: flex;
         flex-wrap: wrap;
         gap: .55rem;
         justify-content: flex-end;
     }
 
-    .scanner-grid {
+    .scanner48-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: .55rem .8rem;
+        border-radius: 13px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: rgba(2, 6, 23, .34);
+        color: #e5e7eb;
+        font-weight: 850;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .scanner48-btn.primary {
+        color: #06111f;
+        border-color: transparent;
+        background: linear-gradient(135deg, #22d3ee, #818cf8);
+    }
+
+    .scanner48-btn.small {
+        min-height: 32px;
+        padding: .35rem .55rem;
+        font-size: .82rem;
+    }
+
+    .scanner48-grid {
         display: grid;
-        grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+        grid-template-columns: minmax(280px, .8fr) minmax(0, 1.6fr) minmax(300px, .85fr);
         gap: 1rem;
         align-items: start;
     }
 
-    .scanner-card {
-        border: 1px solid rgba(148, 163, 184, .16);
-        border-radius: 22px;
-        background:
-            radial-gradient(circle at top left, rgba(34, 211, 238, .06), transparent 40%),
-            rgba(15, 23, 42, .82);
+    .scanner48-panel {
+        border-radius: 24px;
         padding: 1rem;
-        box-shadow: 0 14px 34px rgba(0, 0, 0, .22);
-        margin-bottom: 1rem;
     }
 
-    .scanner-card.success {
-        border-color: rgba(52, 211, 153, .26);
-        background:
-            radial-gradient(circle at top left, rgba(52, 211, 153, .10), transparent 36%),
-            rgba(6, 30, 25, .72);
+    .scanner48-panel-head {
+        display: flex;
+        justify-content: space-between;
+        gap: .8rem;
+        align-items: flex-start;
+        margin-bottom: .85rem;
     }
 
-    .scanner-card.warning {
-        border-color: rgba(245, 158, 11, .30);
-        background:
-            radial-gradient(circle at top left, rgba(245, 158, 11, .12), transparent 36%),
-            rgba(30, 23, 10, .72);
-    }
-
-    .scanner-steps {
-        counter-reset: scanner-step;
-        display: grid;
-        gap: .65rem;
-    }
-
-    .scanner-step {
-        counter-increment: scanner-step;
-        display: grid;
-        grid-template-columns: 42px minmax(0, 1fr);
-        gap: .75rem;
-        align-items: start;
+    .scanner48-connect code {
+        display: block;
+        width: 100%;
         padding: .85rem;
-        border: 1px solid rgba(148, 163, 184, .14);
-        border-radius: 16px;
-        background: rgba(2, 6, 23, .30);
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: rgba(2, 6, 23, .50);
+        color: #a5f3fc;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin: .65rem 0;
     }
 
-    .scanner-step::before {
-        content: counter(scanner-step);
+    .scanner48-status-box,
+    .scanner48-warning {
+        display: grid;
+        gap: .2rem;
+        margin-top: .85rem;
+        padding: .85rem;
+        border-radius: 16px;
+        border: 1px solid rgba(245, 158, 11, .30);
+        background: rgba(30, 23, 10, .62);
+    }
+
+    .scanner48-status-box strong,
+    .scanner48-warning strong {
+        color: #fbbf24;
+    }
+
+    .scanner48-status-box span,
+    .scanner48-warning span {
+        color: #f8fafc;
+        font-size: .86rem;
+    }
+
+    .scanner48-steps {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .7rem;
+    }
+
+    .scanner48-steps article,
+    .scanner48-release-card,
+    .scanner48-quicklinks a {
+        border: 1px solid rgba(148, 163, 184, .13);
+        background: rgba(2, 6, 23, .34);
+        border-radius: 18px;
+        padding: .85rem;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .scanner48-steps b {
         display: grid;
         place-items: center;
         width: 34px;
         height: 34px;
         border-radius: 12px;
-        background: rgba(34, 211, 238, .14);
+        background: rgba(34, 211, 238, .13);
+        border: 1px solid rgba(34, 211, 238, .24);
         color: #67e8f9;
-        font-weight: 900;
-        border: 1px solid rgba(34, 211, 238, .32);
+        margin-bottom: .55rem;
     }
 
-    .scanner-step strong,
-    .scanner-step span {
+    .scanner48-steps strong,
+    .scanner48-steps span,
+    .scanner48-release-card strong,
+    .scanner48-release-card span,
+    .scanner48-release-card em,
+    .scanner48-quicklinks strong,
+    .scanner48-quicklinks span {
         display: block;
     }
 
-    .scanner-step span {
+    .scanner48-steps strong,
+    .scanner48-release-card strong,
+    .scanner48-quicklinks strong {
+        color: #f8fafc;
+    }
+
+    .scanner48-steps span,
+    .scanner48-release-card span,
+    .scanner48-quicklinks span {
         color: #94a3b8;
         margin-top: .2rem;
+        font-size: .84rem;
     }
 
-    .scanner-code {
+    .scanner48-release-card {
         display: block;
-        width: 100%;
-        padding: .8rem;
-        border-radius: 14px;
-        border: 1px solid rgba(148, 163, 184, .16);
-        background: rgba(2, 6, 23, .46);
-        color: #a5f3fc;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        overflow-x: auto;
-        white-space: nowrap;
+        border-color: rgba(34, 211, 238, .22);
+        background:
+            radial-gradient(circle at top left, rgba(34, 211, 238, .12), transparent 34%),
+            rgba(2, 6, 23, .42);
+        margin-top: .9rem;
     }
 
-    .scanner-checklist {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: .55rem;
-    }
-
-    .scanner-checklist li {
-        padding: .7rem .8rem;
-        border-radius: 14px;
-        border: 1px solid rgba(148, 163, 184, .14);
-        background: rgba(2, 6, 23, .28);
-        color: #cbd5e1;
-    }
-
-    .scanner-checklist li::before {
-        content: "✓";
-        color: #34d399;
+    .scanner48-release-card em {
+        color: #67e8f9;
+        font-style: normal;
         font-weight: 900;
-        margin-right: .55rem;
+        margin-top: .7rem;
     }
 
-    .scanner-warning-list li::before {
-        content: "!";
-        color: #f59e0b;
+    .scanner48-quicklinks {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .75rem;
     }
 
-    @@media (max-width: 900px) {
-        .scanner-hero,
-        .scanner-grid {
+    @@media (max-width: 1250px) {
+        .scanner48-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .scanner48-flow {
+            grid-column: 1 / -1;
+            order: -1;
+        }
+
+        .scanner48-quicklinks {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 820px) {
+        .scanner48-hero,
+        .scanner48-grid,
+        .scanner48-steps,
+        .scanner48-quicklinks {
             grid-template-columns: 1fr;
         }
 
-        .scanner-actions {
+        .scanner48-actions {
             justify-content: flex-start;
+        }
+
+        .scanner48-actions .scanner48-btn {
+            width: 100%;
         }
     }
 </style>
-
-<div class="scanner-page">
-    <section class="scanner-hero">
-        <div>
-            <span class="scanner-badge">Mobile QR workflow</span>
-            <h1>Android Scanner</h1>
-            <p class="muted">
-                Η κάμερα QR γίνεται από κινητό ή tablet. Το web app μένει το κέντρο διαχείρισης, αναφορών και οριστικοποίησης.
-            </p>
-        </div>
-
-        <div class="scanner-actions">
-            <a class="btn primary" asp-page="/InventoryAudits/Index">Φάκελοι απογραφής</a>
-            <a class="btn secondary" asp-page="/Audit/Room">Χειροκίνητος έλεγχος</a>
-            <a class="btn secondary" asp-page="/Labels/Qr">QR ετικέτες</a>
-        </div>
-    </section>
-
-    <div class="scanner-grid">
-        <div>
-            <section class="scanner-card success">
-                <h2>Τι κάνει</h2>
-                <p class="muted">
-                    Η εφαρμογή Android συνδέεται στον server, φορτώνει φακέλους/χώρους και στέλνει κάθε scan πίσω στη βάση.
-                </p>
-
-                <ul class="scanner-checklist" style="margin-top: .9rem;">
-                    <li>Σάρωση QR με κάμερα</li>
-                    <li>Χειροκίνητη καταχώρηση κωδικού ως fallback</li>
-                    <li>Live ενημέρωση βρέθηκαν / λείπουν</li>
-                    <li>Συγχρονισμός με web app και φάκελο απογραφής</li>
-                </ul>
-            </section>
-
-            <section class="scanner-card warning">
-                <h2>Πριν το χρησιμοποιήσεις</h2>
-
-                <ul class="scanner-checklist scanner-warning-list" style="margin-top: .9rem;">
-                    <li>Το κινητό πρέπει να βλέπει τον server από browser.</li>
-                    <li>Ο φάκελος απογραφής πρέπει να έχει δημιουργηθεί μετά την εισαγωγή των αντικειμένων.</li>
-                    <li>Τα QR labels πρέπει να έχουν σωστό Application Base URL.</li>
-                    <li>Για κάμερα σε Android δεν χρησιμοποιούμε browser scanner από το web.</li>
-                </ul>
-            </section>
-
-            <section class="scanner-card">
-                <h2>Server URL</h2>
-                <p class="muted">
-                    Βάλε στην Android εφαρμογή τη διεύθυνση που ανοίγει από το κινητό.
-                </p>
-
-                <code class="scanner-code">@Model.SuggestedServerUrl</code>
-
-                <p class="muted" style="margin-top: .75rem;">
-                    Health check:
-                </p>
-
-                <code class="scanner-code">@Model.SuggestedServerUrl/api/mobile/health</code>
-            </section>
-        </div>
-
-        <div>
-            <section class="scanner-card">
-                <h2>Ροή χρήσης</h2>
-
-                <div class="scanner-steps" style="margin-top: .9rem;">
-                    <div class="scanner-step">
-                        <div>
-                            <strong>Δημιούργησε φάκελο απογραφής στο web app</strong>
-                            <span>Ο φάκελος φτιάχνει χώρους και αναμενόμενα αντικείμενα.</span>
-                        </div>
-                    </div>
-
-                    <div class="scanner-step">
-                        <div>
-                            <strong>Άνοιξε την Android εφαρμογή</strong>
-                            <span>Βάλε το server URL και κάνε έλεγχο σύνδεσης.</span>
-                        </div>
-                    </div>
-
-                    <div class="scanner-step">
-                        <div>
-                            <strong>Επίλεξε φάκελο και χώρο</strong>
-                            <span>Το app φορτώνει την επίσημη απογραφή του χώρου.</span>
-                        </div>
-                    </div>
-
-                    <div class="scanner-step">
-                        <div>
-                            <strong>Σκάναρε τα QR</strong>
-                            <span>Κάθε scan ενημερώνει τον server και τη λίστα βρέθηκαν / λείπουν.</span>
-                        </div>
-                    </div>
-
-                    <div class="scanner-step">
-                        <div>
-                            <strong>Έλεγξε και οριστικοποίησε από το web app</strong>
-                            <span>Η τελική επιβεβαίωση γίνεται από τον φάκελο απογραφής.</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="scanner-card">
-                <h2>Δοκιμή από κινητό</h2>
-                <p class="muted">
-                    Άνοιξε από browser στο κινητό:
-                </p>
-
-                <code class="scanner-code">@Model.SuggestedServerUrl/api/mobile/health</code>
-
-                <p class="muted" style="margin-top:.75rem;">
-                    Αν δεν ανοίγει αυτό, δεν θα δουλέψει ούτε η Android εφαρμογή.
-                </p>
-            </section>
-
-            <section class="scanner-card">
-                <h2>APK / εγκατάσταση</h2>
-                <p class="muted">
-                    Προς το παρόν το Android Scanner εγκαθίσταται χειροκίνητα ως sideload APK για δοκιμές.
-                    Κανονικό signed release θα γίνει αργότερα όταν σταθεροποιηθεί η εφαρμογή.
-                </p>
-
-                <div class="scanner-actions" style="justify-content:flex-start; margin-top:.9rem;">
-                    <a class="btn secondary" href="https://github.com/mgiakalaras/SchoolInventoryManager" target="_blank" rel="noopener">GitHub repository</a>
-                </div>
-            </section>
-        </div>
-    </div>
-</div>

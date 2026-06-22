@@ -1,0 +1,94 @@
+/*
+ * Patch 48a - adaptive wide layout layer
+ * Purpose: stop wasting horizontal screen space on wide displays while preserving mobile readability.
+ */
+
+:root {
+    --sim-wide-gutter: clamp(0.65rem, 1.05vw, 1.35rem);
+    --sim-readable-width: 92rem;
+}
+
+html,
+body {
+    overflow-x: clip;
+}
+
+body.sim-ops-theme main.container,
+main.container,
+.container {
+    width: calc(100vw - (var(--sim-wide-gutter) * 2)) !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin-left: calc(50% - 50vw + var(--sim-wide-gutter)) !important;
+    margin-right: calc(50% - 50vw + var(--sim-wide-gutter)) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Common page shells that were previously centered. */
+main.container > section,
+main.container > div,
+main.container > form,
+.scanner-page,
+.about-page,
+.first-inventory-page,
+.new-qr-page,
+.qr-page,
+.help-page,
+.contact-page,
+.settings-page,
+.reports-page,
+.audit-page,
+.maintenance-page,
+.update-page {
+    max-width: none !important;
+}
+
+/* Make common grids use the available width instead of behaving like a narrow landing page. */
+.card,
+.page-header,
+.section-title-row,
+.table-wrap,
+.table-responsive {
+    max-width: none !important;
+}
+
+/* Tables should use the full operational surface but still scroll on small screens. */
+.table-wrap,
+.table-responsive,
+.sim-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Forms/cards should not become absurdly wide unless the page explicitly asks for it. */
+.form-card,
+.readable-card,
+.help-article,
+.about-readable,
+.settings-readable {
+    max-width: var(--sim-readable-width);
+}
+
+/* Desktop comfort. */
+@media (min-width: 1600px) {
+    :root {
+        --sim-wide-gutter: clamp(0.85rem, 1.2vw, 1.75rem);
+    }
+}
+
+/* Mobile safety. */
+@media (max-width: 720px) {
+    :root {
+        --sim-wide-gutter: 0.65rem;
+    }
+
+    body.sim-ops-theme main.container,
+    main.container,
+    .container {
+        width: calc(100vw - 1.3rem) !important;
+        margin-left: 0.65rem !important;
+        margin-right: 0.65rem !important;
+    }
+}
